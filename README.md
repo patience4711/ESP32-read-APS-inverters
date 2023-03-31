@@ -12,9 +12,10 @@ The system is meant for reading APS Systems inverters. The program can pair and 
 Please see the <a href='https://github.com/patience4711/read-APSystems-YC600-QS1-DS3/wiki'>WIKI</a> for information on building it, the working, etc. 
 
 ## downloads
-march 31 2023: There is a new experimental version [ESP32-ECU_v0_0c](https://github.com/patience4711/ESP32-read-APS-inverters/blob/main/ESP32-ECU_v0-0c.bin) available. Relative to the ESP there is a new feature: in the frontpage we have a link to each inverter that shows us the other details like dc voltage, temperature, etc.
-
+march 31 2023: There is a new experimental version [ESP32-ECU_v0_0c](https://github.com/patience4711/ESP32-read-APS-inverters/blob/main/ESP32-ECU_v0-0c.bin) available. Relative to the ESP there is a new feature: in the frontpage we have a link to each inverter that shows us the other details like dc voltage, temperature, etc.<br><br>
+The frontpage:<br>
 ![frontpage](https://user-images.githubusercontent.com/12282915/229239150-05f6d29d-7620-4363-94fc-787b09d11fad.jpg)
+<br><br>The details page:<br>
 ![details](https://user-images.githubusercontent.com/12282915/229239148-fc0c345e-5291-49b7-a36c-70f452333a61.jpg)
 
 ## features
@@ -40,8 +41,7 @@ APS works with their own zigbee implementation. The ESP-ECU sends zigbee command
 The ESP communicates with the zigbee module through the alternative serial port (wired).
 The ESP-ECU starts a coordinator (an entity that can start a zigbee network). The coordinator binds the inverters and sends the poll requests to them.
 The interesting values are send via mqtt and displayed on the main page.
-
-![frontpage](https://user-images.githubusercontent.com/12282915/138686152-3b065a7c-88f8-49d6-bf89-c512f82fd562.jpg)
+<br><br> example of a sensor in Domoticz:<br>
 ![graph2](https://user-images.githubusercontent.com/12282915/139062602-71e92216-9703-4fc4-acc6-fabf544c4ffd.jpg)
 
 ## get started ##
