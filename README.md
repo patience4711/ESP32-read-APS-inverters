@@ -50,5 +50,5 @@ Once you flashed the binary and powered up you'l notice the blue led is on. <br>
 Visit the wiki of the ESP8266 project for more [details](https://github.com/patience4711/read-APSystems-YC600-QS1-DS3/wiki)
 
 ## changelog ##
-version ESP-ECU_V9_6c:
-
+version ESP32-ECU_V0_0b:
+Relative to the esp8266 implementation the frontpage is more handy, we have links for each inverter to enter the other deltails like dc voltage, temperature etc.
