@@ -54,6 +54,9 @@ gnd  --->  gnd<br>
 Once you flashed the binary and powered up you'l notice the blue led is on. <br> This means you should connect it to your wifi.
 Visit the wiki of the ESP8266 project for more [details](https://github.com/patience4711/read-APSystems-YC600-QS1-DS3/wiki)
 
+## firmware update ##
+This works slightly different. When the fil is uploaded you have to refert back to the menupage and reboot. (or press the reset button or power cycle)
+
 ## changelog ##
 version ESP32-ECU_V0_0b:
 Relative to the esp8266 implementation the frontpage is more handy, we have links for each inverter to enter the other details like dc voltage, temperature etc.
