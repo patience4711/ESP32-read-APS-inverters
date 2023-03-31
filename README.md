@@ -12,7 +12,7 @@ The system is meant for reading APS Systems inverters. The program can pair and 
 Please see the <a href='https://github.com/patience4711/read-APSystems-YC600-QS1-DS3/wiki'>WIKI</a> for information on building it, the working, etc. 
 
 ## downloads
-march 31 2023: There is a new experimental version [ESP32-ECU_v0_0b](https://github.com/patience4711/ESP32-read-APS-inverters/blob/main/ESP32-ECU_v0-0b.bin) available. Relative to the ESP there is a new feature: in the frontpage we have a link to each inverter that shows us the other details like dc voltage, temperature, etc.
+march 31 2023: There is a new experimental version [ESP32-ECU_v0_0c](https://github.com/patience4711/ESP32-read-APS-inverters/blob/main/ESP32-ECU_v0-0c.bin) available. Relative to the ESP there is a new feature: in the frontpage we have a link to each inverter that shows us the other details like dc voltage, temperature, etc.
 ![frontpage](https://user-images.githubusercontent.com/12282915/229179248-28a2a888-a3b0-48db-9f67-9818206739f7.jpg)
 ![details](https://user-images.githubusercontent.com/12282915/229179300-c010226c-65e7-42ef-8b96-59570bae542f.jpg)
 
