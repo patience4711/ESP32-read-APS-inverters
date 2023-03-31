@@ -54,4 +54,4 @@ Visit the wiki of the ESP8266 project for more [details](https://github.com/pati
 
 ## changelog ##
 version ESP32-ECU_V0_0b:
-Relative to the esp8266 implementation the frontpage is more handy, we have links for each inverter to enter the other deltails like dc voltage, temperature etc.
+Relative to the esp8266 implementation the frontpage is more handy, we have links for each inverter to enter the other details like dc voltage, temperature etc.
