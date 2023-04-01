@@ -12,7 +12,7 @@ The system is meant for reading APS Systems inverters. The program can pair and 
 Please see the <a href='https://github.com/patience4711/read-APSystems-YC600-QS1-DS3/wiki'>WIKI</a> for information on building it, the working, etc. 
 
 ## downloads
-march 31 2023: There is a new experimental version [ESP32-ECU_v0_0d](https://github.com/patience4711/ESP32-read-APS-inverters/blob/main/ESP32-ECU_v0-0d.bin) available. Relative to the ESP there is a new feature: in the frontpage we have a link to each inverter that shows us the other details like dc voltage, temperature, etc. There is also e nwe way of constructing the poll command which should lead to more stability of the zigbee module.<br><br>
+march 31 2023: There is a new experimental version [ESP32-ECU_v0_0d](https://github.com/patience4711/ESP32-read-APS-inverters/blob/main/ESP32-ECU_v0-0d.bin) available. Relative to the ESP there is a new feature: in the frontpage we have a link to each inverter that shows us the other details like dc voltage, temperature, etc. There is also a new way of constructing the poll command which should lead to more stability of the zigbee module.<br><br>
 The frontpage:<br>
 ![frontpage](https://user-images.githubusercontent.com/12282915/229239150-05f6d29d-7620-4363-94fc-787b09d11fad.jpg)
 <br><br>The details page:<br>
