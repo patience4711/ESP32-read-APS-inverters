@@ -12,7 +12,7 @@ The system is meant for reading APS Systems inverters. The program can pair and 
 Please see the <a href='https://github.com/patience4711/read-APSystems-YC600-QS1-DS3/wiki'>WIKI</a> for information on building it, the working, etc. 
 
 ## downloads
-march 31 2023: There is a new experimental version [ESP32-ECU_v0_0d](https://github.com/patience4711/ESP32-read-APS-inverters/blob/main/ESP32-ECU_v0-0d.bin) available. Relative to the ESP there is a new feature: in the frontpage we have a link to each inverter that shows us the other details like dc voltage, temperature, etc. There is also a new way of constructing the poll command which should lead to more stability of the zigbee module.<br><br>
+april 6 2023: There is a new version [ESP32-ECU_v0_1a](https://github.com/patience4711/ESP32-read-APS-inverters/blob/main/ESP32-ECU_v0-1a.bin) available. Please see changelog. <br><br>
 The frontpage:<br>
 ![frontpage](https://user-images.githubusercontent.com/12282915/229239150-05f6d29d-7620-4363-94fc-787b09d11fad.jpg)
 <br><br>The details page:<br>
@@ -58,5 +58,8 @@ Visit the wiki of the ESP8266 project for more [details](https://github.com/pati
 This works slightly different. When the fil is uploaded you have to refert back to the menupage and reboot. (or press the reset button or power cycle)
 
 ## changelog ##
-version ESP32-ECU_V0_0b:
-Relative to the esp8266 implementation the frontpage is more handy, we have links for each inverter to enter the other details like dc voltage, temperature etc.
+version ESP32-ECU_V0_1a:
+Relative to the esp8266:
+* new frontpage with buttons to inverter details 
+* removed the websocket console to releave the webserver
+* added a serial console to issue commands
