@@ -61,5 +61,5 @@ This works slightly different. When the fil is uploaded you have to refert back 
 version ESP32-ECU_V0_1a:
 Relative to the esp8266:
 * new frontpage with buttons to inverter details 
-* removed the websocket console to releave the webserver
+* removed the websocket console to relieve the webserver
 * added a serial console to issue commands
