@@ -25,7 +25,7 @@ The frontpage:<br>
 - data can be requested via http and mosquitto
 - There are 4 different mqtt json formats
 - Fast asyc webserver
-- a very smart on-line console to send commands and debugging
+- a serial console to send commands and debugging
 - Smart timekeeping
 - A lot of system info on the webpage
 
