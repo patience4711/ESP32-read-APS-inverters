@@ -48,7 +48,7 @@ The interesting values are send via mqtt and displayed on the main page.
 The wiring of the zigbeemodule to the esp32:<br>
 P02  --->  TX2 (pin 17)<br>
 P03  --->  RX2 (pin 16)<br>
-rst  --->  pin 14<br>
+rst  --->  pin D5<br>
 vcc  --->  3.3V<br>
 gnd  --->  gnd<br>
 Once you flashed the binary and powered up you'l notice the blue led is on. <br> This means you should connect it to your wifi.
