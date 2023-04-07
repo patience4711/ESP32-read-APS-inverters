@@ -3,7 +3,7 @@ This project is derived from the project [ESP-ECU](https://github.com/patience47
 especially when multiple inverters were connected. Due to the massive webpages, the webserver crashed the system. Hopefully the ESP32 has more juice to handle all the requests.
 Moreover, the ESP32 has a 2nd UART that is used for the zigbee communication. Now we have the 1st UART available for debugging on the serial monitor via usb.
 
-See it in action on [youtube](https://youtu.be/WKFVQ6d8KhQ)
+See it in action on [YouTube](https://youtu.be/WKFVQ6d8KhQ)
 
 ## status ##
 So far i tested the system with a zigbee module connected. The coordinator is brought up without problems. I tested also the construction and sending of the relative zigbee commands. I also tested the decoding of samples of poll answers of the 3 different types of inverters. All worked fine so i have confidence that it will work in the real world. 
