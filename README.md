@@ -11,7 +11,7 @@ So far i tested the system with a zigbee module connected. The coordinator is br
 ## purpose ##
 The system is meant for reading APS Systems inverters. The program can pair and poll YC600 QS1 and DS3 inverters, up to 9 pieces. The read values are displayed on a web page and sent via mosquitto in a Json format.
 
-Please see the <a href='https://github.com/patience4711/read-APSystems-YC600-QS1-DS3/wiki'>WIKI</a> for information on building it, the working, etc. 
+Please see the <a href='https://github.com/patience4711/ESP32-read-APS-inverters/wiki'>WIKI</a> for information on building it, the working, etc. 
 
 ## downloads
 april 6 2023: There is a new version [ESP32-ECU_v0_1a](https://github.com/patience4711/ESP32-read-APS-inverters/blob/main/ESP32_ECU_v0_1a.zip) available. Please see changelog. <br><br>
