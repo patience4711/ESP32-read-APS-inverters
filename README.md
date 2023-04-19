@@ -6,7 +6,7 @@ Moreover, the ESP32 has a 2nd UART that is used for the zigbee communication. No
 See it in action on [YouTube](https://youtu.be/WKFVQ6d8KhQ)
 
 ## status ##
-So far i tested the system with a zigbee module connected. The coordinator is brought up without problems. I tested also the construction and sending of the relative zigbee commands. I also tested the decoding of samples of poll answers of the 3 different types of inverters. All worked fine so i have confidence that it will work in the real world. 
+I tested the system with a zigbee module connected. The coordinator is brought up without problems. Pairing an inverter worked at one shot. The data of my inverter are nicely displayed and mqtt-ed.
 
 ## purpose ##
 The system is meant for reading APS Systems inverters. The program can pair and poll YC600 QS1 and DS3 inverters, up to 9 pieces. The read values are displayed on a web page and sent via mosquitto in a Json format.
@@ -14,7 +14,7 @@ The system is meant for reading APS Systems inverters. The program can pair and 
 Please see the <a href='https://github.com/patience4711/ESP32-read-APS-inverters/wiki'>WIKI</a> for information on building it, the working, etc. 
 
 ## downloads
-april 6 2023: There is a new version [ESP32-ECU_v0_1a](https://github.com/patience4711/ESP32-read-APS-inverters/blob/main/ESP32_ECU_v0_1a.zip) available. Please see changelog. <br><br>
+april 19 2023: There is a new version [ESP32-ECU_v0_1b](https://github.com/patience4711/ESP32-read-APS-inverters/blob/main/ESP32-ECU_v0-1b.bin) available. Please see changelog. <br><br>
 The frontpage:<br>
 ![frontpage](https://user-images.githubusercontent.com/12282915/229239150-05f6d29d-7620-4363-94fc-787b09d11fad.jpg)
 <br><br>The details page:<br>
