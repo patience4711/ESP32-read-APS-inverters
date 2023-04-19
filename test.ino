@@ -10,20 +10,29 @@ int len = strlen(InputBuffer_Serial);
       {
         sendCmd[i] = InputBuffer_Serial[i+7];
       }
-     
-       //len at the begin
-       strcpy(temp, sLengte(sendCmd).c_str() ) ;
-       strcpy(sendCmd, strncat(temp, sendCmd, sizeof(temp) + sizeof(sendCmd))); //build command plus sln at the beginning
+ // we preceed with len
+      char comMand[254];
+      sprintf(comMand, "%02X", (strlen(sendCmd) / 2 - 2));
+      delayMicroseconds(250);
+      Serial.print("len = "); Serial.println(String(comMand));
+      strcat(comMand, sendCmd);    
+
        // CRC at the end
-       strcpy(temp, checkSumString(sendCmd).c_str() ) ;        
-       strcpy(sendCmd, strncat(sendCmd, temp, sizeof(sendCmd) + sizeof(temp)) );
-       DebugPrintln("sendCmd = FE" + String(sendCmd));
+       //strcpy(temp, checkSumString(comMand).c_str() ) ;        
+       //strcpy(sendCmd, strncat(sendCmd, temp, sizeof(sendCmd) + sizeof(temp)) );
+       //strcat(comMand, temp);
+       strcat(comMand,checkSumString(comMand).c_str()) ;
+       DebugPrintln("sendCmd = FE" + String(comMand));
        //now we send this command
        //DebugPrintln("sendCmd = " + String(sendCmd));
-       sendZigbee(sendCmd);
+       sendZigbee(comMand);
        if ( waitSerial2Available() ) { readZigbee(); } else { readCounter = 0;}
        DebugPrintln("received : " + String(inMessage));
        DebugPrintln("answer " + String(inMessage));
+    memset(&comMand, 0, sizeof(comMand)); //zero out all buffers 
+    delayMicroseconds(250);    
+    memset(&sendCmd, 0, sizeof(sendCmd)); //zero out all buffers we could work with "messageToDecode"
+    delayMicroseconds(250);
 }
 
 

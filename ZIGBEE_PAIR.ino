@@ -4,7 +4,7 @@ void pairOnActionflag() {
    
    String term = "start pairing inverter sn " + String(Inv_Prop[iKeuze].invSerial);
    Update_Log("pairing", term);
-    if( !coordinator_init() ) {
+    if( !coordinator(false) ) {
       term="pairing failed, zb system down";
       Update_Log("pairing", term);
       DebugPrintln(term);
@@ -46,14 +46,14 @@ void handlePair(AsyncWebServerRequest *request) {
 
 bool pairing(int which) {
 // we call this function when coordinator is up for pairing
-
+//free(); // free up some memory 
 char pairCmd[254]={0};
 char ecu_id_reverse[13]; //= {ECU_REVERSE()}; // 
 ECU_REVERSE().toCharArray(ecu_id_reverse, 13);
 //char short_ecu_id_reverse
 char infix[] = "FFFF10FFFF";
 char outfix[] = "10FFFF";
-String toLog ="";
+//String toLog ="";
 //    String pcmd[6] = {
 //    "5",
 //    "6700",
@@ -82,7 +82,8 @@ char pairBaseCommand[][254] = {
     "24020FFFFFFFFFFFFFFFFF14FFFF14010103000F0600",  // + ecu_id_reverse
 
 };
-char temp[8]={0};
+//char temp[8]={0};
+//Serial.println("heap 1" + String(esp_get_free_heap_size()));
 //now build the commands
 
 // ***************************** command 2 ********************************************
@@ -116,6 +117,7 @@ DebugPrintln("Cmd 4 constructed = " + String(pairBaseCommand[4]));  // ok
 //Serial.println("Cmd 5 initial = " + String(pairBaseCommand[5]));
 strncat(pairBaseCommand[5], ecu_id_reverse, sizeof(ecu_id_reverse));
 DebugPrintln("Cmd 5 constructed = " + String(pairBaseCommand[5]));  // ok
+Serial.println("heap 2" + String(esp_get_free_heap_size()));
 
 // now send the  5 commands
 // the first command is the healtcheck so we could do checkZigbeeRadio and if this failes break
@@ -126,21 +128,27 @@ DebugPrintln("Cmd 5 constructed = " + String(pairBaseCommand[5]));  // ok
       //cmd 0 tm / 9 alles ok
 
       strncpy(pairCmd, pairBaseCommand[y], sizeof(pairBaseCommand[y] ));
-      //add sln 
-      strcpy(temp, sLengte(pairCmd).c_str() ) ;
-      strcpy(pairCmd, strncat(temp, pairCmd, sizeof(temp) + sizeof(pairCmd))); 
+// we preceed with len
+      char comMand[254];
+      sprintf(comMand, "%02X", (strlen(pairCmd) / 2 - 2));
       delayMicroseconds(250);
-      // add CRC at the end 
-      strcpy(temp, checkSumString(pairCmd).c_str() ) ;
-      strcpy(pairCmd, strncat(pairCmd, temp, sizeof(pairCmd) + sizeof(temp)) );
+      Serial.print("len = "); Serial.println(String(comMand));
+      strcat(comMand, pairCmd);
+      delayMicroseconds(250);
+//      now we have comMand which is len+paircommand
+      // now add CRC at the end 
+      //strcpy(temp, checkSumString(comMand).c_str() ) ;
+      //strcpy(comMand, strncat(comMand, temp, sizeof(comMand) + sizeof(temp)));
+      //strcat(comMand, temp);
+      strcat(comMand,checkSumString(comMand).c_str()) ;
       delayMicroseconds(250);
       // send and read
-      if(diagNose)DebugPrintln("pair command = " + String(pairCmd));      
+      if(diagNose)DebugPrintln("pair command = " + String(comMand));      
       DebugPrintln("sending paircmd " + String(y));
       //toLog="sending cmd " + String(y);
       //if(Log) Update_Log("pair", toLog);
 
-      sendZigbee(pairCmd);
+      sendZigbee(comMand);
       delay(1500); // give the inverter the chance to answer
       //waitSerialAvailable();
       //check if anything was received

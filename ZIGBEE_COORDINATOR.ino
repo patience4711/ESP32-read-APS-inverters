@@ -4,6 +4,7 @@ bool coordinator(bool normal) { // if true we send the extra command for normal 
     if(normal) sendNO();
     // now check if running
     delay(1000); // to give the ZB the time to start
+    empty_serial2(); //otherwise the check fails
     if ( checkCoordinator() == 0 ) // can be 0 1 or 2
      
     {
@@ -20,7 +21,7 @@ bool coordinator(bool normal) { // if true we send the extra command for normal 
     }
 }
 
-bool coordinator_init() {
+void coordinator_init() {
 DebugPrintln("init zb coordinator");
 zigbeeUp = 11; //initial it is initializing 11, 0=down 1=up
 yield();
@@ -53,7 +54,7 @@ yield();
 char ecu_id_reverse[13]; //= {ECU_REVERSE()};
 ECU_REVERSE().toCharArray(ecu_id_reverse, 13);
 char initCmd[254]={0};
-char temp[8]={0};
+//char temp[8]={0};
 
 
 // commands for setting up coordinater
@@ -95,20 +96,28 @@ DebugPrintln("initCmd 4 constructed = " + String(initBaseCommand[4]));
       DebugPrintln("cmd : " + String(y)); 
       //DebugPrintln(String(initCmd));
       //add sLen at the beginning
-      strcpy(temp, sLengte(initCmd).c_str() ) ;
-      strcpy(initCmd, strncat( temp, initCmd, sizeof(temp) + sizeof(initCmd)) ); 
+      //strcpy(temp, sLengte(initCmd).c_str() ) ;
+      //strcpy(initCmd, strncat( temp, initCmd, sizeof(temp) + sizeof(initCmd)) ); 
       //DebugPrintln("initCmd after sLen" + String(y) + " = " + String(initCmd));
+      char comMand[254];
+      sprintf(comMand, "%02X", (strlen(initCmd) / 2 - 2));
+      delayMicroseconds(250);    
+      strcat(comMand, initCmd);
+      // now we have comMand = len + initComd
       delayMicroseconds(250);
+      //DebugPrintln("comMand after sLen" + String(y) + " = " + String(comMand));
       // CRC at the end of the command
       //we put the checksum in temp
-      strcpy(temp, checkSumString(initCmd).c_str() ) ;      
-      strcpy(initCmd, strncat(initCmd, temp, sizeof(initCmd) + sizeof(temp)));
-      DebugPrintln("initCmd after len and checkSum = " + String(initCmd));
+      //strcpy(temp, checkSumString(comMand).c_str() ) ;      
+      //strcpy(comMand, strncat(comMand, temp, sizeof(comMand) + sizeof(temp)));
+      //strcat(comMand, temp);
+      strcat(comMand,checkSumString(comMand).c_str()) ;
+      DebugPrintln("comMand after len and checkSum = " + String(comMand));
       
       delayMicroseconds(250);
       DebugPrintln("zb send cmd " + String(y));
   
-      sendZigbee(initCmd);
+      sendZigbee(comMand);
       ledblink(1,50);
       //delay(1000); // give the inverter the chance to answer
       //check if anything was received
@@ -124,14 +133,14 @@ DebugPrintln("initCmd 4 constructed = " + String(initBaseCommand[4]));
     delayMicroseconds(250);
     memset(&initBaseCommand, 0, sizeof(&initBaseCommand)); //zero out all buffers we could work with "messageToDecode"
     delayMicroseconds(250);    
- 
+
 }
 // **************************************************************************************
 //                the extra command for normal operations
 // **************************************************************************************
 void sendNO() {
   char initCmd[254] ={0} ;   //  we have to send the 10th command
-  char temp[128]={0};
+  //char temp[128]={0};
   char ecu_id_reverse[13]; //= {ECU_REVERSE()};
   ECU_REVERSE().toCharArray(ecu_id_reverse, 13);
 
@@ -146,27 +155,29 @@ void sendNO() {
     //Serial.println("initCmd 9 after ecu_reverse = " + String(initCmd));
     strncat(lastCmd[0], lastCmd[1], sizeof(lastCmd[1]));
     delayMicroseconds(250);
-    strcpy(initCmd, lastCmd[0]);
+    //strcpy(initCmd, lastCmd[0]);
     DebugPrintln("initCmd NO constructed = " + String(initCmd));
     //add sln at the beginning
-    // we know that the len = 28 so this was added already
-    strcpy(temp, sLengte(initCmd).c_str() ) ;
-    //DebugPrintln("temp after sLen  = " + String(temp));
-    strcpy(initCmd, strncat( temp, initCmd, sizeof(temp) + sizeof(initCmd)) ); 
-    delayMicroseconds(250);
-    //DebugPrintln("normal ops initCmd after sLen  = " + String(initCmd));
+      char comMand[254];
+      sprintf(comMand, "%02X", (strlen(lastCmd[0]) / 2 - 2));
+      delayMicroseconds(250);
+      Serial.print("len = "); Serial.println(String(comMand));     
+      strcat(comMand, lastCmd[0]);
+    
     //put in the CRC at the end of the command
-    strcpy(temp, checkSumString(initCmd).c_str() ); 
+    //strcpy(temp, checkSumString(comMand).c_str() ); 
     //DebugPrintln("temp after checksum  = " + String(temp));
-    strcpy( initCmd, strncat(initCmd, temp, sizeof(initCmd) + sizeof(temp)) );
-    DebugPrintln("normal ops initCmd after len and checksum = " + String(initCmd));
+    //strcpy( comMand, strncat(comMand, temp, sizeof(comMand) + sizeof(temp)) );
+    //strcat(comMand, temp);
+    strcat(comMand,checkSumString(comMand).c_str()) ;
+    DebugPrintln("normal ops initCmd after len and checksum = " + String(comMand));
     delayMicroseconds(250);
     // send and read
 //    if(Log) Update_Log("zb-out",initCmd);
     DebugPrintln("sending NO cmd");
 //    Serial.flush();
 
-    sendZigbee(initCmd);
+    sendZigbee(comMand);
     //delay(1000); // give the inverter the chance to answer
     //check if anything was received
     waitSerial2Available();

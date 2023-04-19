@@ -42,7 +42,7 @@ void polling(int which) {
 //    strcpy(temp, sLengte(pollCommand).c_str() ) ;
 //    strcpy(pollCommand, strncat( temp, pollCommand, sizeof(temp) + sizeof(pollCommand))); //build command plus sln at the beginning
 
-
+    //the length is hardcoded 1D so we do not have to preceed
     snprintf(pollCommand, sizeof(pollCommand), "1D2401%.2s%.2s1414060001000F13%sFBFB06BB000000000000C1FEFE", Inv_Prop[which].invID + 4, Inv_Prop[which].invID + 2, ecu_id_reverse);
 
     // put in the CRC at the end of the command
