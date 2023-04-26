@@ -5,64 +5,71 @@ DebugPrintln("starting server");
 //    request->send_P(200, "text/html", CONSOLE_HTML);
 //  });
 
+//server.on("/details", HTTP_GET, [](AsyncWebServerRequest *request) {
+//iKeuze = atoi(request->arg("inv").c_str()) ;
+//requestUrl = request->url();
+//sendPageDetails(request);
+////request->send(200, "text/html", toSend);
+//});
+
 server.on("/details", HTTP_GET, [](AsyncWebServerRequest *request) {
-int i = atoi(request->arg("inv").c_str()) ;
+iKeuze = atoi(request->arg("inv").c_str()) ;
 requestUrl = request->url();
-sendPageDetails(i);
-request->send(200, "text/html", toSend);
+//sendPageDetails(request);
+request->send_P(200, "text/html", DETAILSPAGE);
 });
 
 // Simple Firmware Update
-//  server.on("/FWUPDATE", HTTP_GET, [](AsyncWebServerRequest *request){
-//    requestUrl = "/";
-//    if (!request->authenticate("admin", pswd) ) return request->requestAuthentication();
-//    request->send_P(200, "text/html", UPDATE_FORM); 
-//    });
-//  server.on("/handleFwupdate", HTTP_POST, [](AsyncWebServerRequest *request){
-//    Serial.println("FWUPDATE requested");
-//    if( !Update.hasError() ) {
-//    toSend="<br><br><center><h2>UPDATE SUCCESS !!</h2><br><br>";
-//    toSend +="click here to reboot<br><br><a href='/REBOOT'><input style='font-size:3vw;' type='submit' value='REBOOT'></a>";
-//    } else {
-//    toSend="<br><br><center><kop>update failed<br><br>";
-//    toSend +="click here to go back <a href='/FWUPDATE'>BACK</a></center>";
-//    }
-//    AsyncWebServerResponse *response = request->beginResponse(200, "text/html", toSend);
-//    response->addHeader("Connection", "close");
-//    request->send(response);
-//  
-//  },[](AsyncWebServerRequest *request, String filename, size_t index, uint8_t *data, size_t len, bool final){
-//    //Serial.println("filename = " + filename);
-//    if(filename != "") {
-//    if(!index){
-//      //#ifdef DEBUG
-//        Serial.printf("start firmware update: %s\n", filename.c_str());
-//      //#endif
-//      Update.runAsync(true);
-//      if(!Update.begin((ESP.getFreeSketchSpace() - 0x1000) & 0xFFFFF000)){
-//        //#ifdef DEBUG
-//          Update.printError(Serial);
-//        //#endif
-//      }
-//    }
-//    } else {
-//      DebugPrintln("filename empty, aborting");
-////     Update.hasError()=true;
-//    }
-//    if(!Update.hasError()){
-//      if(Update.write(data, len) != len){
-//          Serial.println("update failed with error: " );
-//          Update.printError(Serial);
-//      }
-//    }
-//    if(final){
-//      if(Update.end(true)){
-//        Serial.printf("firmware Update Success: %uB\n", index+len);
-//      } else {
-//        Update.printError(Serial);
-//      }
-//    }
-//  });
+  server.on("/FWUPDATE", HTTP_GET, [](AsyncWebServerRequest *request){
+    requestUrl = "/";
+    if (!request->authenticate("admin", pswd) ) return request->requestAuthentication();
+    request->send_P(200, "text/html", otaIndex); 
+    });
+  server.on("/handleFwupdate", HTTP_POST, [](AsyncWebServerRequest *request){
+    Serial.println("FWUPDATE requested");
+    if( !Update.hasError() ) {
+    toSend="<br><br><center><h2>UPDATE SUCCESS !!</h2><br><br>";
+    toSend +="click here to reboot<br><br><a href='/REBOOT'><input style='font-size:3vw;' type='submit' value='REBOOT'></a>";
+    } else {
+    toSend="<br><br><center><kop>update failed<br><br>";
+    toSend +="click here to go back <a href='/FWUPDATE'>BACK</a></center>";
+    }
+    AsyncWebServerResponse *response = request->beginResponse(200, "text/html", toSend);
+    response->addHeader("Connection", "close");
+    request->send(response);
+  
+  },[](AsyncWebServerRequest *request, String filename, size_t index, uint8_t *data, size_t len, bool final){
+    //Serial.println("filename = " + filename);
+    if(filename != "") {
+    if(!index){
+      //#ifdef DEBUG
+        Serial.printf("start firmware update: %s\n", filename.c_str());
+      //#endif
+      //Update.runAsync(true);
+      if(!Update.begin((ESP.getFreeSketchSpace() - 0x1000) & 0xFFFFF000)){
+        //#ifdef DEBUG
+          Update.printError(Serial);
+        //#endif
+      }
+    }
+    } else {
+      DebugPrintln("filename empty, aborting");
+//     Update.hasError()=true;
+    }
+    if(!Update.hasError()){
+      if(Update.write(data, len) != len){
+          Serial.println("update failed with error: " );
+          Update.printError(Serial);
+      }
+    }
+    if(final){
+      if(Update.end(true)){
+        Serial.printf("firmware Update Success: %uB\n", index+len);
+      } else {
+        Update.printError(Serial);
+      }
+    }
+  });
 // ***********************************************************************************
 //                                     homepage
 // ***********************************************************************************
@@ -321,29 +328,48 @@ server.on("/get.Times", HTTP_GET, [](AsyncWebServerRequest *request) {
 //     json = String();
 //});
 
-server.on("/get.Inverter", HTTP_GET, [](AsyncWebServerRequest *request) {     
+server.on("/get.Inverter", HTTP_GET, [](AsyncWebServerRequest *request) { 
+// this is used by the detailspage and for http requests      
 // set the array into a json object
   String json;
-  int panelCount=2;
-  int i = (request->arg("inv").toInt()) ;
-  //Serial.println("i = " + String(i));
+//  int panelCount=4;
+  int i;
+  if (request->hasArg("inv")) {
+     i = (request->arg("inv").toInt()) ;
+  } else {
+     i = iKeuze;
+  }
+
   if( i < inverterCount) {
       json="{";
-
-      if(Inv_Prop[i].invType == 1) panelCount=4;
+      json += "\"inv\":\"" + String(i) + "\"";
+      json += ",\"polled\":\"" + String(polled[i]) + "\"";
+      json += ",\"serial\":\"" + String(Inv_Prop[i].invSerial)  + "\"";      
+      json += ",\"sid\":\""  + String(Inv_Prop[i].invID) + "\""; //freq = a char
+      json += ",\"type\":\"" + String(Inv_Prop[i].invType) + "\"";
       
-      json += "\"serial\":\"" + String(Inv_Prop[i].invSerial)  + "\"";      
       json += ",\"freq\":"  + String(atof(Inv_Data[i].freq)); //freq = a char    
       json += ",\"temp\":"  + String(atof(Inv_Data[i].heath));
       json += ",\"acv\":"   + String(atof(Inv_Data[i].acv));
-
-      for(int z = 0; z < panelCount; z++ ) 
+      json += ",\"sq\":" + String(atof(Inv_Data[i].sigQ));
+      
+// we need to provide values foar all panel so when connected this is n/e
+      for(int z = 0; z < 4; z++ ) 
       {
-        json += ",\"dcv" + String(z) + "\":" + String(atof(Inv_Data[i].dcv[z]));
-        json += ",\"dcc" + String(z) + "\":" + String(atof(Inv_Data[i].dcc[z]));
-        json += ",\"pow" + String(z) + "\":" + String(atof(Inv_Data[i].power[z]));
-        json += ",\"en" + String(z) + "\":" + String(en_saved[i][z], 2);
+         if(Inv_Prop[i].conPanels[z]) // is this panel connected?
+         {
+            json += ",\"dcv" + String(z) + "\":" + String(atof(Inv_Data[i].dcv[z]));
+            json += ",\"dcc" + String(z) + "\":" + String(atof(Inv_Data[i].dcc[z]));
+            json += ",\"pow" + String(z) + "\":" + String(atof(Inv_Data[i].power[z]));
+            json += ",\"en" + String(z) + "\":" + String(en_saved[i][z], 2);  
+         }   else {
+             json += ",\"dcv" + String(z) + "\":\"n/e\"";
+             json += ",\"dcc" + String(z) + "\":\"n/e\"";
+             json += ",\"pow" + String(z) + "\":\"n/e\"";
+             json += ",\"en" + String(z) +  "\":\"n/e\"";
+         }
       }
+      
       json += ",\"power\":" + String(atof(Inv_Data[i].power[4]));
       json += ",\"energy\":" + String(Inv_Data[i].en_total, 2);
       json += "}";     
@@ -413,6 +439,8 @@ if(String(Inv_Prop[i].invLocation) != "N/A") {
  
 });
 
+
+
 server.on("/get.Paired", HTTP_GET, [](AsyncWebServerRequest *request) {     
 // set the array into a json object
 String json="{";
@@ -430,7 +458,7 @@ server.onNotFound([](AsyncWebServerRequest *request){
   //Serial.println("unknown request");
   handleNotFound(request);
 });
-AsyncElegantOTA.begin(&server);
+//AsyncElegantOTA.begin(&server);
 server.begin(); 
 }
 

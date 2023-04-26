@@ -1,45 +1,44 @@
 bool mqttConnect() {   // MQTT connection (documented way from AutoConnect : https://github.com/Hieromon/AutoConnect/tree/master/examples/mqttRSSI_NA)
+
+// we are here because w'r not connected. Signal with the LED
+    ledblink(2,70);    
     if ( Mqtt_Broker[0] == '\0' || Mqtt_Broker[0] == '0'  ) 
     {
-      Mqtt_Format = 0; // we proberen het niet opnieuw
-      //DebugPrintln("no broker, cancelling");
+      Mqtt_Format = 0; // we don't try again
+      //DebugPrintln("no broker, cancel");
       return false;
     }
-    //DebugPrint("going to connect to mqtt broker "); DebugPrint(String(Mqtt_Broker));
+    DebugPrint(F("mqtt try to connect to ")); DebugPrintln(String(Mqtt_Broker));
     //DebugPrintln("connecting to mqtt");
     if (Mqtt_Port == "" ) Mqtt_Port = "1883";   // just in case ....
     uint8_t retry = 3;
-    //String clientId = String(ESP.getChipId());
-    String clientId = "ESP32-ECU";
-    DebugPrintln("\nAttempting MQTT connect.. ");
+
+    // We generate a unique name for this device to avoid mqtt problems 
+    // in case if you have multiple RFlink-ESP devices
+    String clientId = getChipId();
+    
     while (!MQTT_Client.connected()) {
 
-     //MQTT_Client.setServer(Mqtt_Broker.c_str(), Mqtt_Port.toInt());
-
-
-      //We generate a unique name for this device to avoid mqtt problems in case if you have multiple RFlink-ESP devices
-      //String clientId = Adv_HostName + "-" + String(GET_CHIPID(), HEX);
-      //String clientId = String(ESP.getChipId());
       if (MQTT_Client.connect(clientId.c_str() , Mqtt_Username.c_str(), Mqtt_Password.c_str())) 
       {
-        //DebugPrint(F("MQTT connection Established with ID : ")); //+ String(clientId));
-        //DebugPrintln(clientId);
-        // ... and subscribe, send = MQTTtoRF
-        //String topic = Mqtt_Topic;
-         MQTT_Client.subscribe ( Mqtt_inTopic.c_str() ) ;   // 
-         //DebugPrint("MQTT subscribed on topic "); //DebugPrintln(Mqtt_inTopic);
-         Update_Log("mqtt", "connected");
-         return true;
-    } else {
-        String term = "connection failed state: " + String(MQTT_Client.state());
-        Update_Log("mqtt", term);
-        ////DebugPrintln("Connection mqttserver:" + String(Mqtt_Broker));
-        ////DebugPrintln("Connection failed:" + String(MQTT_Client.state()));
-              if (!--retry) break;
+          DebugPrint(F("MQTT connection Established with ID : ")); //+ String(clientId));
+          DebugPrintln(clientId);
+          //connected, so we and subscribe to inTopic
+         
+          MQTT_Client.subscribe ( Mqtt_inTopic.c_str() ) ;   // 
+          DebugPrint(F("\nMQTT subscribed on topic ")); DebugPrintln(Mqtt_inTopic);
+          Update_Log("mqtt", "connected");
+          return true;
+      } 
       delay(500);
-    }
+      if (!--retry) {
+          String term = "connection failed state: " + String(MQTT_Client.state());
+          Update_Log("mqtt", term); 
+          break;
+       }
   }
-  //Mqtt_Enabled = false; // we proberen het niet opnieuw
+  // if we are here, connection failed after 3 attempts
+  // Mqtt_Enabled = false; // we don't try again
   return false;
 }
 

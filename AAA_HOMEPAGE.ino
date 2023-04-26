@@ -121,19 +121,19 @@ function getAll() {
   for (let i = 0; i < cnt; i++) {
   term = "get.Power?inv=" + i;
   table_row = "inv" + i;
-  console.log("table_row = " + table_row); 
-  console.log("term = " + term); 
+  //console.log("table_row = " + table_row); 
+  //console.log("term = " + term); 
   getData(i);
   }
 }
 
 function getData(invnr) {
-  console.log("term = " + term);
+  //console.log("term = " + term);
   var xhttp = new XMLHttpRequest();
   xhttp.onreadystatechange = function() {
     if (this.readyState == 4 && this.status == 200) {
       var antwoord = this.responseText;
-      console.log("answer = " + antwoord);
+      //console.log("answer = " + antwoord);
       var obj = JSON.parse(antwoord);
       var nm = obj.nm;
       var polled = obj.polled;
@@ -170,7 +170,7 @@ function getData(invnr) {
       var regel = "r" + String(invnr);
       document.getElementById(regel).style.display="table-row";
       var cel = "i" + String(invnr);
-      document.getElementById(cel).innerHTML = "<a href='/details/?inv=" + String(invnr) + "'><button class='btn'>" + String(invnr) + "</button></a>";
+      document.getElementById(cel).innerHTML = "<a href='/details?inv=" + String(invnr) + "'><button class='btn'>" + String(invnr) + "</button></a>";
       celbgc(cel);
 
       var cel = "p" + String(invnr) + "0";
@@ -277,8 +277,8 @@ function getTimes() {
 )=====";
 
 
-
-void sendHomepage() {
-    toSend = FPSTR(ECU_HOMEPAGE);
-    toSend.replace("#ID",String(ECU_ID));
-  }
+//
+//void sendHomepage() {
+//    toSend = FPSTR(ECU_HOMEPAGE);
+//    toSend.replace("#ID",String(ECU_ID));
+//  }

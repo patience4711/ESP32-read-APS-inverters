@@ -24,7 +24,7 @@ void handle_Serial () {
      if (strlen(InputBuffer_Serial) > 6) {                                // need to see minimal 8 characters on the serial port
        if (strncmp (InputBuffer_Serial,"10;",3) == 0) {                 // Command from Master to RFLink
   
-          if (strncasecmp(InputBuffer_Serial+3,"LIST",4) == 0) {
+          if (strncasecmp(InputBuffer_Serial+3,"HELP",4) == 0) {
               scroll(4);
               Serial.println(F("*** AVAILABLE COMMANDS ***"));
               Serial.println(F("10;DIAG; (set diagNose for more serial output)"));
@@ -126,15 +126,53 @@ void handle_Serial () {
                 return; } else {
                    Serial.print(F("\n\npoll inverter ")); Serial.println(String(kz));
                 polling(kz);
+                Serial.println(F("\n\npolling ready"));
                 return; }
           } else
            
-//          if (strncasecmp(InputBuffer_Serial+3,"FAKE=",5) == 0) {
-//            //input can be 10;POLL=0;  
-//              int kz = String(InputBuffer_Serial[8]).toInt();
-//              Serial.println("simulate inverter " + String(kz));
-//              fakeInverter(kz);
-//              return;
+          if (strncasecmp(InputBuffer_Serial+3,"FORCE",5) == 0) {
+            Serial.println(F("\n\nforce values in Inv_Data")); 
+            int z=0;
+            polled[z] = true; 
+                sprintf(Inv_Prop[z].invID, "%s", "0xA1B2");
+                
+                strcpy(Inv_Data[z].acv, "220.1");
+                strcpy(Inv_Data[z].heath, "16.2");
+                strcpy(Inv_Data[z].sigQ, "79");
+                strcpy(Inv_Data[z].freq, "50.1");
+                Serial.println("check freq = " + String(Inv_Data[z].freq)); 
+                // dtostrf(float_value, min_width, num_digits_after_decimal, where_to_store_string)             
+             float number;                // now for all panels
+             number=1.23; dtostrf(number,5, 2, Inv_Data[z].dcc[0]);
+             number=30.11; dtostrf(number,5, 2, Inv_Data[z].dcv[0]);
+             number=300.1; dtostrf(number,5, 1, Inv_Data[z].power[0]);
+              
+             number=1.24; dtostrf(number,5, 2, Inv_Data[z].dcc[1]);
+             number=31.22; dtostrf(number,5, 2, Inv_Data[z].dcv[1]);
+             number=310.2; dtostrf(number,5, 1, Inv_Data[z].power[1]);
+
+             number=1.25; dtostrf(number,4, 2, Inv_Data[z].dcc[2]);
+             number=32.33; dtostrf(number,5, 2, Inv_Data[z].dcv[2]);
+             number=330.3; dtostrf(number,5, 1, Inv_Data[z].power[2]);
+
+             number=1.26; dtostrf(number,4, 2, Inv_Data[z].dcc[3]);
+             number=33.44; dtostrf(number,5, 2, Inv_Data[z].dcv[3]);
+             number=340.4; dtostrf(number,5, 1, Inv_Data[z].power[3]);            
+             Serial.println("check power = " + String(Inv_Data[z].power[3]));
+             return;
+          } else
+
+
+//          if (strncasecmp(InputBuffer_Serial+3,"WIFICON=",8) == 0) {
+//            int len = strlen(InputBuffer_Serial);  
+//           for(int i=8; i<len; i++) 
+//           {
+//              tmp[i] = InputBuffer_Serial[i+7];
+//           }
+//          Serial.print(F("command = 10;WIFICON=")); Serial.println(String(tmp));
+//          // we have a string like "ssid;passwd"
+//          //extract the first part until#;
+//           
 //          } else
 
 
@@ -238,7 +276,7 @@ void handle_Serial () {
               Serial.println(F("\n\nhard reset the cc2530"));
               ZBhardReset();
               return; 
-//         } else
+           } else
 
 //           if (strncasecmp(InputBuffer_Serial+3,"PAIRSIM",7) == 0) {  
 //              strncpy(Inv_Prop[1].invID, "0xABCD",6);
@@ -248,14 +286,7 @@ void handle_Serial () {
 //              return;
 //          } else
 
-//
-//           if (strncasecmp(InputBuffer_Serial+3,"TESTQS1",6) == 0) {  
-//              Serial.println("going to analyze a QS1 string");
-//              qstest(1);
-//              return; 
 #ifdef TEST
-      } else 
-
       if (strncasecmp(InputBuffer_Serial+3, "TESTINV",7) == 0)  
       {
         DebugPrintln("command = " + String(InputBuffer_Serial) );  
@@ -266,17 +297,20 @@ void handle_Serial () {
       }
       testDecode(); // test a fake polling answer for the invType
     //}
+      return;
+      } else
 #endif    
-          } else {
-          
+          {
+          // if we are here no command was reconnized
           Serial.print( String(InputBuffer_Serial)); Serial.println(F(" INVALID COMMAND" ));     
           }
        } // end if if (strncmp (InputBuffer_Serial,"10;",3) == 0)
-    Serial.print(String(InputBuffer_Serial)); Serial.println(F(" UNKNOWN COMMAND"));
+    
     } //  end if strlen(InputBuffer_Serial) > 6
+    Serial.print(String(InputBuffer_Serial)); Serial.println(F(" UNKNOWN COMMAND"));
   // the buffercontent is not making sense so we empty the buffer
   empty_serial();
-  } // 
+} // 
 
   void scroll(int aantal) {
     for (int x=0;x<aantal; x++) { Serial.println(F("\n")); }

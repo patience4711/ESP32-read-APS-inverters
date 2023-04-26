@@ -3,7 +3,7 @@
 // ******************************************************************
 int decodePollAnswer(int which)
 {
-DebugPrintln("1 decodePollAnswer which = " + String(which) );
+DebugPrintln("decodePollAnswer which = " + String(which) );
 // we need the fullincomingMessge and the inverterSerial
   char messageToDecode[CC2530_MAX_SERIAL_BUFFER_SIZE] = {0};
 
@@ -28,16 +28,16 @@ if(!*inMessage) return 50; // if empty we return with erroCode 50
     delayMicroseconds(250);
     
     char *tail;
-
+    int fault=0;
     if(strstr(messageToDecode,  "FE01640100") == NULL) // answer to AF_DATA_REQUEST 00=success
     {
      if(diagNose) DebugPrintln("AF_DATA_REQUEST failed");
-     return 10;    
+     fault = 10;    
     } else
     if (strstr(messageToDecode, "FE03448000") == NULL) //  AF_DATA_CONFIRM the 00 byte = success
     {
       if(diagNose) DebugPrintln("no AF_DATA_CONFIRM");
-      return 11;
+      fault = 11;
     } else
     if (strstr(messageToDecode, "FE0345C4") == NULL) //  ZDO_SRC_RTG_IND
     {
@@ -47,9 +47,13 @@ if(!*inMessage) return 50; // if empty we return with erroCode 50
     if (strstr(messageToDecode, "4481") == NULL)
     {
       if(diagNose) DebugPrintln("no  AF_INCOMING_MSG");
-      return 13;
+      fault=13;
     }
-   
+    if(fault > 9 ) {
+       memset(&messageToDecode, 0, sizeof(messageToDecode)); //zero out 
+       delayMicroseconds(250); 
+      return fault;
+    }
    
     if (strlen(messageToDecode) < 223) // this message is not valid inverter data
     {

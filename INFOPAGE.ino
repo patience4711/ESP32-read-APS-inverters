@@ -1,4 +1,3 @@
-
 const char INFOPAGE [] PROGMEM = R"=====(
 <!DOCTYPE html><html><head>
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -16,6 +15,7 @@ function loadTime() {
   xhttp.onreadystatechange = function() {
     if (this.readyState == 4 && this.status == 200) {
       var antwoord = this.responseText;
+           console.log("answer = " + antwoord);
       var obj = JSON.parse(antwoord);
       var hr = obj.uur;
       var mn = obj.min;
@@ -26,6 +26,7 @@ function loadTime() {
   xhttp.open("GET", "get.currentTime", true);
   xhttp.send();
 }
+
 </script>
 </head><body onload='loadTime()'><center>
 )=====";
@@ -33,12 +34,12 @@ function loadTime() {
 void handleInfo(AsyncWebServerRequest *request) {
 DebugPrintln("we are at handleInfopage() ");
 
-toSend = FPSTR(INFOPAGE);
-//toSend.replace("tieTel", swName );
+String pageSend = FPSTR(INFOPAGE);
+//pageSend.replace("tieTel", swName );
 
-toSend += "<h2>Hansiart ECU STATUS INFORMATION</h2>";
+pageSend += "<h2>Hansiart ECU STATUS INFORMATION</h2>";
 
-toSend += "<div style='position:fixed; text-align:center; width:100%;'<br><a href='/MENU'><button style='width:150px; height:50px;text-align:center; font-weight:bold; font-size:20px; background:#db97b9;'>close</button></a></div>"; 
+pageSend += "<div style='position:fixed; text-align:center; width:100%;'<br><a href='/MENU'><button style='width:150px; height:50px;text-align:center; font-weight:bold; font-size:20px; background:#db97b9;'>close</button></a></div>"; 
 
 String zt = "summertime";
 switch (dst) {
@@ -46,67 +47,67 @@ switch (dst) {
   case 0: zt="no dst set"; break;
 }
 
-toSend += "<br><br><br><br>system time = <span style='font-size:20px;font-weight:bold' id='tijdveld'></span> hr.&nbsp&nbsp " + zt + "<br>";
+pageSend += "<br><br><br><br>system time = <span style='font-size:20px;font-weight:bold' id='tijdveld'></span> hr.&nbsp&nbsp " + zt + "<br>";
 
-toSend += "firmware version : " + String(VERSION) + "<br>";
+pageSend += "firmware version : " + String(VERSION) + "<br>";
 
-toSend += "time retrieved today : "; if ( timeRetrieved ) { toSend += "yes<br>"; } else { toSend += "no<br>"; }
+pageSend += "time retrieved today : "; if ( timeRetrieved ) { pageSend += "yes<br>"; } else { pageSend += "no<br>"; }
 
 //
 long rssi = WiFi.RSSI();
-toSend += "the wifi signalstrength (rssi) = " + String(rssi) + "<br>";
+pageSend += "the wifi signalstrength (rssi) = " + String(rssi) + "<br>";
 
 if ( Mqtt_Format != 0 ) { //bool == y en er is een mqtt adres, ja kijk dan of er een sensor is ingesteld
 // check if connected
     //String clientId = "ESPClient#";
     //String clientId = "ESP32-ECU";
     String clientId = getChipId() ;
-    toSend += "de mqtt clientId = : " + clientId + "<br>";    
+    pageSend += "de mqtt clientId = : " + clientId + "<br>";    
     if ( MQTT_Client.connected() ) {
-       toSend += "status mqtt : connected to " + Mqtt_Broker + "<br>";
+       pageSend += "status mqtt : connected to " + Mqtt_Broker + "<br>";
        } else {
-       toSend += "status mqtt : not connected<br>";
+       pageSend += "status mqtt : not connected<br>";
        }
     } else {
-   toSend += "mosquitto not configured<br>";
-   toSend += "check the mosquitto settings<br>";  
+   pageSend += "mosquitto not configured<br>";
+   pageSend += "check the mosquitto settings<br>";  
 }
 
   int minutens = millis()/60000;
   int urens = minutens/60;
   int dagen = urens/24;
-  toSend += "system up time: " + String(dagen) + " days " + String(urens-dagen*24) + " hrs " + String(minutens - urens*60) + " min.<br> ";
-  toSend += "current errorCode = " + String(errorCode) + "<br>"; 
+  pageSend += "system up time: " + String(dagen) + " days " + String(urens-dagen*24) + " hrs " + String(minutens - urens*60) + " min.<br> ";
+  pageSend += "current errorCode = " + String(errorCode) + "<br>"; 
 
 
 
-toSend += "<br><br><table><tr><TH> ESP INFORMATION</th></tr>";
-toSend += "<tr><td>ESP CHIP ID nr: <td>" + getChipId().substring(10);
-toSend += "<td>min. heap size<td>" +  String(esp_get_minimum_free_heap_size()) + " bytes</tr>";
-toSend += "<tr><td>Free heap<td>" +  String(esp_get_free_heap_size()) + " bytes<td>remote IP<td>" + request->client()->remoteIP().toString() + "</table>";
+pageSend += "<br><br><table><tr><TH> ESP INFORMATION</th></tr>";
+pageSend += "<tr><td>ESP CHIP ID nr: <td>" + getChipId().substring(10);
+pageSend += "<td>min. heap size<td>" +  String(esp_get_minimum_free_heap_size()) + " bytes</tr>";
+pageSend += "<tr><td>Free heap<td>" +  String(esp_get_free_heap_size()) + " bytes<td>remote IP<td>" + request->client()->remoteIP().toString() + "</table>";
 
-toSend += "<h4>variables dump</h4>";
-toSend += "value=" + String(value)  + "  inverterCount=" + String(inverterCount) + "  zigbeeUp=" + String(zigbeeUp) + "<br>";
-toSend += "switchonTime=" + String(switchonTime)  + "  switchoffTime=" + String(switchoffTime)+ "<br>";
-toSend += "unixtime=" + String(now()) + "<br>";
-toSend += "polled = " + String(polled[0]) + String(polled[1]) + String(polled[2]) + String(polled[3]) + String(polled[4]) + String(polled[5]) + String(polled[6]) + String(polled[7]) + String(polled[8]) + "<br>";
-toSend += "ZB resetCounter = " + String(resetCounter);
-toSend += "  pollOffset = " + String(pollOffset) + "  Mqtt_Format = " + String(Mqtt_Format) + "<br>";
-toSend += "  Polling = " + String(Polling) + "<br>";
+pageSend += "<h4>variables dump</h4>";
+pageSend += "value=" + String(value)  + "  inverterCount=" + String(inverterCount) + "  zigbeeUp=" + String(zigbeeUp) + "<br>";
+pageSend += "switchonTime=" + String(switchonTime)  + "  switchoffTime=" + String(switchoffTime)+ "<br>";
+pageSend += "unixtime=" + String(now()) + "<br>";
+pageSend += "polled = " + String(polled[0]) + String(polled[1]) + String(polled[2]) + String(polled[3]) + String(polled[4]) + String(polled[5]) + String(polled[6]) + String(polled[7]) + String(polled[8]) + "<br>";
+pageSend += "ZB resetCounter = " + String(resetCounter);
+pageSend += "  pollOffset = " + String(pollOffset) + "  Mqtt_Format = " + String(Mqtt_Format) + "<br>";
+pageSend += "  Polling = " + String(Polling) + "<br>";
 #ifdef TEST
-toSend += "  testCounter = " + String(testCounter) + " inv0 type = " + String(Inv_Prop[0].invType);
+pageSend += "  testCounter = " + String(testCounter) + " inv0 type = " + String(Inv_Prop[0].invType);
 #endif
-toSend += "<h3>Content filesystem :</h3>";
+pageSend += "<h3>Content filesystem :</h3>";
 
 File root = SPIFFS.open("/");
 File file = root.openNextFile();
 while (file) {
-    toSend += String(file.name()) + "   size ";
-    toSend += String(file.size()) + "<br>";
+    pageSend += String(file.name()) + "   size ";
+    pageSend += String(file.size()) + "<br>";
     file = root.openNextFile();
 }
 
  //DebugPrintln("end infopage "); 
- //DebugPrint("de lengte van toSend na de infopage = "); //DebugPrintln( toSend.length() );
- request->send(200, "text/html", toSend); //send the html code to the client
+ //DebugPrint("de lengte van pageSend na de infopage = "); //DebugPrintln( pageSend.length() );
+ request->send(200, "text/html", pageSend); //send the html code to the client
 }

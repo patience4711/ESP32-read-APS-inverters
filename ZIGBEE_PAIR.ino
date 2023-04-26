@@ -131,26 +131,19 @@ Serial.println("heap 2" + String(esp_get_free_heap_size()));
 // we preceed with len
       char comMand[254];
       sprintf(comMand, "%02X", (strlen(pairCmd) / 2 - 2));
-      delayMicroseconds(250);
-      Serial.print("len = "); Serial.println(String(comMand));
       strcat(comMand, pairCmd);
       delayMicroseconds(250);
-//      now we have comMand which is len+paircommand
-      // now add CRC at the end 
-      //strcpy(temp, checkSumString(comMand).c_str() ) ;
-      //strcpy(comMand, strncat(comMand, temp, sizeof(comMand) + sizeof(temp)));
-      //strcat(comMand, temp);
-      strcat(comMand,checkSumString(comMand).c_str()) ;
-      delayMicroseconds(250);
+      // now we have comMand which is len+paircommand
+      // now add CRC at the end now done at sendZigbee()
+      //strcat(comMand,checkSumString(comMand).c_str()) ; // do this in sendZigbee
+
       // send and read
       if(diagNose)DebugPrintln("pair command = " + String(comMand));      
       DebugPrintln("sending paircmd " + String(y));
-      //toLog="sending cmd " + String(y);
-      //if(Log) Update_Log("pair", toLog);
 
       sendZigbee(comMand);
       delay(1500); // give the inverter the chance to answer
-      //waitSerialAvailable();
+
       //check if anything was received
       readZigbee();
 
@@ -210,34 +203,34 @@ char temp[13];
   if ( strstr(messageToDecode, Inv_Prop[which].invSerial) ) { 
   result = split(messageToDecode, Inv_Prop[which].invSerial);
   }
-DebugPrintln("result after 1st splitting = " + String(result));
-// now we keep splitting as long as result contains the serial nr
-  while ( strstr(result, Inv_Prop[which].invSerial) ) 
-  { 
-  result = split(result, Inv_Prop[which].invSerial);
+  DebugPrintln("result after 1st splitting = " + String(result));
+  // now we keep splitting as long as result contains the serial nr
+    while ( strstr(result, Inv_Prop[which].invSerial) ) 
+    { 
+    result = split(result, Inv_Prop[which].invSerial);
+    }
+    DebugPrintln("result after splitting = " + String(result));
+  
+  // now we know that it is what we expect so do the next test
+  
+  strncpy(temp, result, 4);
+  temp[4]='\0';
+  DebugPrintln("found invID on MessageToDecode" + String(temp));
+  memset(&Inv_Prop[which].invID, 0, sizeof(Inv_Prop[which].invID)); //zero out the 
+  delayMicroseconds(250);  
+  strncpy(Inv_Prop[which].invID, "0x", 2);
+  strncat(Inv_Prop[which].invID, temp + 2, 2);
+  strncat(Inv_Prop[which].invID, temp, 2);
+  Inv_Prop[which].invID[6] = '\0';
+  if ( String(temp) == "0000" ) {
+  //String term = "pairing failed, returning false";
+  //Update_Log("pairing" , term);
+  //DebugPrintln(term);
+  DebugPrintln("temp = " + String(temp));
+  return false;    
   }
-  DebugPrintln("result after splitting = " + String(result));
-
-// now we know that it is what we expect so do the next test
-
-strncpy(temp, result, 4);
-temp[4]='\0';
-DebugPrintln("found invID on MessageToDecode" + String(temp));
-memset(&Inv_Prop[which].invID, 0, sizeof(Inv_Prop[which].invID)); //zero out the 
-delayMicroseconds(250);  
-strncpy(Inv_Prop[which].invID, "0x", 2);
-strncat(Inv_Prop[which].invID, temp + 2, 2);
-strncat(Inv_Prop[which].invID, temp, 2);
-Inv_Prop[which].invID[6] = '\0';
-if ( String(temp) == "0000" ) {
-//String term = "pairing failed, returning false";
-//Update_Log("pairing" , term);
-//DebugPrintln(term);
-DebugPrintln("temp = " + String(temp));
-return false;    
-}
-//String term = "success, got invID";
-//Update_Log("pairing" , term);
-//DebugPrintln(term);
-return true;
+  //String term = "success, got invID";
+  //Update_Log("pairing" , term);
+  //DebugPrintln(term);
+  return true;
 } 

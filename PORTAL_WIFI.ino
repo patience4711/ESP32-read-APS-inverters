@@ -189,22 +189,10 @@ request->send(200, "text/html", toSend); //send the html code to the client
     Serial.print("a ");
   }
   if (tryConnectFlag) { // there are credentials provided
-      if (wifiConnect())  {
-        // if true we are connected else not
-        }  else {
-        } // what to do now
-   // we try to connect once so make the  flag false
-   // tryConnectFlag = false; is done in wifiConnect   
+      wifiConnect();
   }
-  
-//  if(Serial.available()) { // make the serial monitor work
-//    handle_Serial();
-//   }
       //DNS
     dnsServer.processNextRequest();
-   //HTTP
-    //portalserver.handleClient();
-    //yield();
   } 
   // ************************ end while loop ******************************* 
 
@@ -300,7 +288,7 @@ if (networksFound == 0) {
 //**********************************************************************
 //      process the provided data and try to connect
 // **********************************************************************
-bool wifiConnect() {
+void wifiConnect() {
   // we are here because bool tryConnectFlag was true in the loop
       digitalWrite(led_onb, LED_UIT);
        tryConnectFlag=false;
@@ -366,49 +354,6 @@ void handlePortalClose() {
 
   ESP.restart();
 }
-
-//// ********************************************************
-////      zet de gevonden netwerken in een string
-//// ********************************************************
-//String makeList(int aantal) { // aantal is het antal gevonden netwerken
-//
-////eerst sorteren
-//      int indices[aantal];
-//      for (int i = 0; i < aantal; i++) {
-//        indices[i] = i;
-//      }
-//
-//      // RSSI SORT
-//
-//      // old sort
-//      for (int i = 0; i < aantal; i++) {
-//        for (int j = i + 1; j < aantal; j++) {
-//          if (WiFi.RSSI(indices[j]) > WiFi.RSSI(indices[i])) {
-//            std::swap(indices[i], indices[j]);
-//          }
-//        }
-//      }   
-//   
-//  String lijst="";
-//  for (int i = 0; i < aantal; i++) {
-//
-//        String item = FPSTR(PORTAL_LIST);
-//        String rssiQ;
-//        //int quality = (WiFi.RSSI(i));
-//        int quality = WiFi.RSSI(indices[i]);
-//        DebugPrint("quality = "); DebugPrintln(quality);
-//        // -50 is groter dan -80
-//        if (quality < -99){ continue; } // skip als kleiner dan -65 bijv -66
-////        item.replace("{v}", WiFi.SSID(i));
-//        item.replace("{v}", WiFi.SSID(indices[i]));        
-//        item.replace("{r}", String(quality));
-//        item.replace("{i}", "");
-//        lijst += item;
-//  }
-//return lijst;  
-//}
-
-
 
 void eraseFiles() {
   DebugPrintln("LittleFS wipe and format");

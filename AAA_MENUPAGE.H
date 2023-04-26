@@ -76,7 +76,7 @@ document.getElementById("help").style.display = "none";
 
   <li><a href='/GEOCONFIG'>time config</a></li>  
   <li><a href='/IPCONFIG'>ip config</a></li>
-  <li><a href='/update'>fw update</a></li>
+  <li><a href='/FWUPDATE'>fw update</a></li>
   <li><a onclick="return confirm('are you sure?')" href='/REBOOT'>reboot</a></li>
   <li><a onclick="return confirm('are you sure?')" href='/STARTAP'>start AP</a></li>
   </section>

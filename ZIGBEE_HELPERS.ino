@@ -4,25 +4,18 @@
 String checkSumString(char Command[])
 {
 char bufferCRC[254] = {0};
-char bufferCRCdiezweite[254] = {0};
+char bufferCRC_2[254] = {0};
 
     strncpy(bufferCRC, Command, 2); //as starting point perhaps called "seed" use the first two chars from "Command"
     delayMicroseconds(250);         //give memset a little bit of time to empty all the buffers
 
     for (uint8_t i = 1; i <= (strlen(Command) / 2 - 1); i++)
     {
-        strncpy(bufferCRCdiezweite, Command + i * 2, 2); //use every iteration the next two chars starting with char 2+3
+        strncpy(bufferCRC_2, Command + i * 2, 2); //use every iteration the next two chars starting with char 2+3
         delayMicroseconds(250);                          //give memset a little bit of time to empty all the buffers
-        sprintf(bufferCRC, "%02x", StrToHex(bufferCRC) ^ StrToHex(bufferCRCdiezweite));
+        sprintf(bufferCRC, "%02X", StrToHex(bufferCRC) ^ StrToHex(bufferCRC_2));
         delayMicroseconds(250); //give memset a little bit of time to empty all the buffers
     }
-    uint8_t iToUpper = 0;
-    while (bufferCRC[iToUpper])
-    {
-        bufferCRC[iToUpper] = toupper(bufferCRC[iToUpper]);
-        iToUpper++;
-    }
-    Serial.println("bufferCRC = " + String(bufferCRC));
     return String(bufferCRC);
 }
 
@@ -30,22 +23,12 @@ char bufferCRCdiezweite[254] = {0};
 String sLengte(char Command[])  
 {
 
-char bufferSln[3];
+char bufferSln[5]; // never more than 4 bytes
 
-    sprintf(bufferSln, "%02x", (strlen(Command) / 2 - 2));
+    sprintf(bufferSln, "%02X", (strlen(Command) / 2 - 2));
     delayMicroseconds(250); //give memset a little bit of time to empty all the buffers
 
-    //convert to uppercase
-    uint8_t iToUpper = 0;
-    while (bufferSln[iToUpper])
-    {
-        bufferSln[iToUpper] = toupper(bufferSln[iToUpper]);
-        iToUpper++;
-    }
-    // is this null terminated?
     Serial.println("bufferSln = " + String(bufferSln));
-    //strcat(bufferSln, "\0");
-    //Serial.println("bufferSln + null = " + String(bufferSln));
     return String(bufferSln);
 }
 // *****************************************************************************
@@ -53,8 +36,10 @@ char bufferSln[3];
 // *****************************************************************************
 void sendZigbee(char printString[])
 {
-//char bufferSend[254];
-    char bufferSend[3];
+    //char bufferSend[254];
+    char bufferSend[5]; // never more than 2 bytes
+    //first add the checksum
+    strcat(printString,checkSumString(printString).c_str()) ;
 
     if (Serial2.availableForWrite() > (uint8_t)strlen(printString))
     {
@@ -145,23 +130,18 @@ void cleanIncoming() {
 //                               data converters
 // **************************************************************************
 
-//// calculate and return the length of the message
-//char *sLen(char Command[])  
-//{
-//char bufferSln[254];
-//    sprintf(bufferSln, "%02x", (strlen(Command) / 2 - 2));
-//    delayMicroseconds(250); //give memset a little bit of time to empty all the buffers
-//
-//    uint8_t iToUpper = 0;
-//    while (bufferSln[iToUpper])
-//    {
-//        bufferSln[iToUpper] = toupper(bufferSln[iToUpper]);
-//        iToUpper++;
-//    }
-//    // is this null terminated?
-//    //DebugPrintln("terminated with ");
-//    return bufferSln;
-//}
+// calculate and return the length of the message
+char *sLen(char Command[])  
+{
+//Serial.println("slen 1");
+    char bufferSln[9]; // why is this so big 254
+//Serial.println("slen 2");    
+    sprintf(bufferSln, "%02X", (strlen(Command) / 2 - 2));
+//Serial.println("slen 3");
+    delayMicroseconds(250); //give memset a little bit of time to empty all the buffers
+//Serial.println("bufferSln=" + String(bufferSln));
+    return bufferSln;
+}
 //
 //// calculate and return the checksum of the message ****************************
 //char *checkSum(char Command[])
@@ -205,49 +185,44 @@ return reverse;
 //                   reboot an inverter
 // *******************************************************************************
 void inverterReset(int which) {
-char ecu_id_reverse[13];  
-ECU_REVERSE().toCharArray(ecu_id_reverse, 13);
-char inv_id[7];
-strncpy(inv_id, Inv_Prop[which].invID, strlen(Inv_Prop[which].invID));
-char resetCmd[80];
-char temp[8]={0};
-char command[][50] = {
-  "2401",
-  "1414060001000F13",
-  "FBFB06C1000000000000A6FEFE",
-  };
-strncpy( resetCmd, command[0], sizeof(command[0]) );
-strncat( resetCmd, inv_id + 4, 2 ); // ad the 2nd byte of inv_id
-strncat( resetCmd, inv_id + 2, 2 );     // ad the 1st byte of inv_id  
-strncat( resetCmd, command[1], sizeof(command[1]) );
-strncat( resetCmd, ecu_id_reverse, sizeof(ecu_id_reverse) );
-strncat( resetCmd, command[2], sizeof(command[2]) );
-DebugPrintln("the resetCmd = " + String(resetCmd));
+    char ecu_id_reverse[13];  
+    ECU_REVERSE().toCharArray(ecu_id_reverse, 13);
+    char inv_id[7];
+    strncpy(inv_id, Inv_Prop[which].invID, strlen(Inv_Prop[which].invID));
+    char resetCmd[80];
+    char temp[8]={0};
+    char command[][50] = {
+      "2401",
+      "1414060001000F13",
+      "FBFB06C1000000000000A6FEFE",
+      };
+    strncpy( resetCmd, command[0], sizeof(command[0]) );
+    strncat( resetCmd, inv_id + 4, 2 ); // ad the 2nd byte of inv_id
+    strncat( resetCmd, inv_id + 2, 2 );     // ad the 1st byte of inv_id  
+    strncat( resetCmd, command[1], sizeof(command[1]) );
+    strncat( resetCmd, ecu_id_reverse, sizeof(ecu_id_reverse) );
+    strncat( resetCmd, command[2], sizeof(command[2]) );
+    DebugPrintln("the resetCmd = " + String(resetCmd));
+    
+    //should be 2401 103A 1414060001000F13 80 97 1B 01 A3 D6 FBFB06C1000000000000A6FEFE
+    // got      1414060001000F1380971B01A3D6FBFB06C1000000000000A6FEFE
+    
+    char comMand[254];
+    //first put the sLen in comMand and than add the command itself
+    sprintf(comMand, "%02X", (strlen(resetCmd) / 2 - 2));
+    strcat(comMand, resetCmd);    
 
-//should be 2401 103A 1414060001000F13 80 97 1B 01 A3 D6 FBFB06C1000000000000A6FEFE
-// got      1414060001000F1380971B01A3D6FBFB06C1000000000000A6FEFE
+    // put in the CRC at the end of the command in sendZigbee
 
+    sendZigbee(comMand);
+    delay(1000);
+    readZigbee();
 
-// calculate and prefix length 
-strcpy(temp, sLengte(resetCmd).c_str() ) ;
-strcpy(resetCmd, strncat(temp, resetCmd, sizeof(temp) + sizeof(resetCmd))); //build command plus sln at the beginning
-// put in the CRC at the end of the command
-strcpy(temp, checkSumString(resetCmd).c_str() ) ; 
-strcpy( resetCmd, strncat(resetCmd, temp, sizeof(resetCmd) + sizeof(temp)) );
-
-////commented out while testing
-//swap_to_zb(); // set serial to the cc2530
-sendZigbee(resetCmd);
-delay(1000);
-////waitSerial(); //check if anything was received
-readZigbee();
-////read_ZB();
-//swap_to_usb(); // set serial back to usb
-
-    if(readCounter == 0) {
-      Serial.println("nothing received");
-    } 
-      Serial.println("readCounter = " + String(readCounter));
+    
+        if(readCounter == 0) {
+          Serial.println("nothing received");
+        } 
+          Serial.println("readCounter = " + String(readCounter));
       DebugPrintln("received : " + String(inMessage) );
 }
 

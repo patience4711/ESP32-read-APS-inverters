@@ -38,7 +38,7 @@ void writeStruct( String whichfile, int nummer) {
            {
              Serial.print(F("Failed open for write : ")); Serial.println(whichfile);            
            } 
-           
+        
               Serial.print(F("Opened for write....")); Serial.println(whichfile);
               configFile.write( (unsigned char *)&Inv_Prop[nummer], sizeof(Inv_Prop[nummer]) );
               configFile.close();
@@ -151,11 +151,13 @@ void mqttConfigsave() {
 
 bool file_open_for_read(String bestand) {
       //DebugPrint("we are in file_open_for_read, bestand = "); //DebugPrintln(bestand); 
-      if (SPIFFS.exists(bestand)) {
+      if (!SPIFFS.exists(bestand)) return false;
+
       //file exists, reading and loading
       //DebugPrintln("bestand bestaat");
         File configFile = SPIFFS.open(bestand, "r");
-        if (configFile) {
+        if (!configFile) return false;
+
            //DebugPrint("opened config file"); //DebugPrintln(bestand);
            size_t size = configFile.size();
           // Allocate a buffer to store contents of the file.
@@ -166,7 +168,7 @@ bool file_open_for_read(String bestand) {
            #ifdef DEBUG 
            serializeJson(doc, Serial); Serial.println(F(""));
            #endif
-             if (!error) {
+             if (error) return false;
               //DebugPrintln("parsed json");
               String jsonStr = ""; // we printen het json object naar een string
             // nu kunnen we eerst controleren of een bepaalde entry bestaat
@@ -205,12 +207,8 @@ bool file_open_for_read(String bestand) {
             
             }
              return true;
-           } else {
-            return false;
-           }
-       }
-   }
-}
+} 
+
 // we do this before swap_to_zigbee
 void printStruct( String bestand ) {
 //input String bestand = "/Inv_Prop" + String(x) + ".str";
