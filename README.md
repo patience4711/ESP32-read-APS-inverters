@@ -6,7 +6,7 @@ Moreover, the ESP32 has a 2nd UART that is used for the zigbee communication. No
 See it in action on [YouTube](https://youtu.be/WKFVQ6d8KhQ)
 
 ## status ##
-I tested the system with a zigbee module connected. The coordinator is brought up without problems. Pairing an inverter worked at one shot. The data of my inverter are nicely displayed and mqtt-ed.
+I tested the system with a zigbee module connected. The coordinator is brought up without problems. Pairing an inverter worked at one shot. The data of my inverter are nicely displayed and mqtt-ed. So it is working fine.
 
 ## purpose ##
 The system is meant for reading APS Systems inverters. The program can pair and poll YC600 QS1 and DS3 inverters, up to 9 pieces. The read values are displayed on a web page and sent via mosquitto in a Json format.
