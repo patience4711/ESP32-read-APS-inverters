@@ -27,7 +27,7 @@ The frontpage:<br>
 - data can be requested via http and mosquitto
 - There are 4 different mqtt json formats
 - Fast asyc webserver
-- a serial console to send commands and debugging
+- a serial- and a web console to send commands and debugging
 - Smart timekeeping
 - A lot of system info on the webpage
 
@@ -59,6 +59,10 @@ Visit the wiki of the ESP8266 project for more [details](https://github.com/pati
 This works slightly different. When the fil is uploaded you have to refert back to the menupage and reboot. (or press the reset button or power cycle)
 
 ## changelog ##
+version ESP32-ECU_V0_3:
+* redesigned the important processes to gain more free heap.
+* some cosmetics
+
 version ESP32-ECU_V0_1d:
 * replaced elegantOta with my own implentation
 * fixed a bug in the pairing proces
