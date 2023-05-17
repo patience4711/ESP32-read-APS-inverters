@@ -14,7 +14,7 @@ The system is meant for reading APS Systems inverters. The program can pair and 
 Please see the <a href='https://github.com/patience4711/ESP32-read-APS-inverters/wiki'>WIKI</a> for information on building it, the working, etc. 
 
 ## downloads
-may 11 2023: There is a new version [ESP32-ECU_v0_3](https://github.com/patience4711/ESP32-read-APS-inverters/blob/main/ESP32_ECU_v0_3.zip) available. Please see changelog.<br> Important: If you want to upgrade from an older verson: Please read [here](https://github.com/patience4711/ESP32-read-APS-inverters/issues/4#issuecomment-1539977508) first.
+may 11 2023: There is a new version [ESP32-ECU_v0_3b](https://github.com/patience4711/ESP32-read-APS-inverters/blob/main/ESP32_ECU_v0_3b.zip) available. Please see changelog.<br> Important: If you want to upgrade from an older verson: Please read [here](https://github.com/patience4711/ESP32-read-APS-inverters/issues/4#issuecomment-1539977508) first.
 <br><br>
 The frontpage:<br>
 ![frontpage](https://user-images.githubusercontent.com/12282915/229239150-05f6d29d-7620-4363-94fc-787b09d11fad.jpg)
@@ -60,7 +60,8 @@ Visit the wiki of the ESP8266 project for more [details](https://github.com/pati
 This works slightly different. When the fil is uploaded you have to refert back to the menupage and reboot. (or press the reset button or power cycle)
 
 ## changelog ##
-version ESP32-ECU_V0_3:
+version ESP32-ECU_V0_3b:
+* fine-tuned the pairing process
 * redesigned the important processes to gain more free heap.
 * some cosmetics and small bugs
 
