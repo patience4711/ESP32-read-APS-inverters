@@ -61,6 +61,7 @@ This works slightly different. When the fil is uploaded you have to refert back 
 
 ## changelog ##
 version ESP32-ECU_V0_3b:
+* some security updates (maintenance from outside the own network)
 * fine-tuned the pairing process
 * redesigned the important processes to gain more free heap.
 * some cosmetics and small bugs
