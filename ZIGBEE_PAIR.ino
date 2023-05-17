@@ -7,24 +7,28 @@ void pairOnActionflag() {
     if( !coordinator(false) ) {
       term="pairing failed, zb system down";
       Update_Log("pairing", term);
-      DebugPrintln(term);
+      if( diagNose != 0 ) consoleOut(term);
        return;
     }
 
-  DebugPrintln("trying pair inv " + String(iKeuze));
+  if( diagNose != 0 ) consoleOut("trying pair inv " + String(iKeuze));
   // now that we know that the radio is up, we don't need to test this in the pairing routine
 
   if( pairing(iKeuze) ) {
-    DebugPrintln("pairing success, saving configfile");
+    //DebugPrintln("pairing success, saving configfile");
     String term = "success, inverter got id " + String(Inv_Prop[iKeuze].invID);
     Update_Log("pairing", term);
-    DebugPrintln(term);  
+    if( diagNose != 0 ) consoleOut(term);
+    //} else if(diagNose==2){ws.textAll(term);}  
+
   } else {
-    DebugPrintln("pairing failed");
-    strncpy(Inv_Prop[iKeuze].invID, "0x0000", 6);
+    //if( diagNose != 0 ) consoleOut("pairing failed");
+    strncpy(Inv_Prop[iKeuze].invID, "0000", 6);
     String term = "failed, inverter got id " + String(Inv_Prop[iKeuze].invID);
     Update_Log("pair", term);
-    DebugPrintln(term);      
+    if( diagNose != 0 ) consoleOut(term);
+    //} else if(diagNose==2){ws.textAll(term);}  
+      
   }
     String bestand = "/Inv_Prop" + String(iKeuze) + ".str"; // /Inv_Prop0.str
     writeStruct(bestand, iKeuze); // alles opslaan in SPIFFS   
@@ -36,201 +40,134 @@ void pairOnActionflag() {
 
 void handlePair(AsyncWebServerRequest *request) {
 
-     strncpy(Inv_Prop[iKeuze].invID, "1x1111\0", 7); // this value makes the pairing page visable
+     strncpy(Inv_Prop[iKeuze].invID, "1111", 4); // this value makes the pairing page visable
      
-     actionFlag = 60; // we do this because no delay is alowed within a async request
+     actionFlag = 60; // we do this because no delay is alowed within an async request
      toSend=FPSTR(WAIT_PAIR);
      toSend.replace("{#}", String(iKeuze));
      request->send(200, "text/html", toSend); //send the html code to the client
 }
 
+
 bool pairing(int which) {
-// we call this function when coordinator is up for pairing
-//free(); // free up some memory 
-char pairCmd[254]={0};
-char ecu_id_reverse[13]; //= {ECU_REVERSE()}; // 
-ECU_REVERSE().toCharArray(ecu_id_reverse, 13);
-//char short_ecu_id_reverse
-char infix[] = "FFFF10FFFF";
-char outfix[] = "10FFFF";
-//String toLog ="";
-//    String pcmd[6] = {
-//    "5",
-//    "6700",
-//2    pcmd_prefix + "0D0200000F1100" + String(inv_sn) + "FFFF10FFFF" + ecu_id_reverse,
-// should be     24020FFFFFFFFFFFFFFFFF14FFFF14 0D0200000F1100 408000158215 FFFF10FFFF 80971B01A3D8
-// constructed = 24020FFFFFFFFFFFFFFFFF14FFFF14 0D0200000F1100 408000158215 FFFF10FFFF 80971B01A3D8 OK
 
-//3    pcmd_prefix + "0C0201000F0600" + String(inv_sn),
-// should be     24020FFFFFFFFFFFFFFFFF14FFFF14 0C0201000F0600 408000158215
-// constructed = 24020FFFFFFFFFFFFFFFFF14FFFF14 0C0201000F0600 408000158215 OK
+  //the pairing process consistst of 4 commands sent to the coordinator
+  char pairCmd[254]={0};
+  char s_d[250]={0};
+  char ecu_id_reverse[13];  
+  ECU_REVERSE().toCharArray(ecu_id_reverse, 13);
+  char ecu_short[5]={0};
+  strncat(ecu_short, ECU_ID + 2, 2); // D8A3011B9780 should be A3D8
+  strncat(ecu_short, ECU_ID, 2);
+  //ecu_short[5]='\0'; no need for as strncat terminates with \0
+  String term = "";
+  bool success=false;
+  for ( int y = 0; y < 4; y++) {
+    switch (y) {
+        case 0:// command 0
+            // build command 0 this is "24020FFFFFFFFFFFFFFFFF14FFFF14" + "0D0200000F1100" + String(invSerial) + "FFFF10FFFF" + ecu_id_reverse
+            snprintf(pairCmd, sizeof(pairCmd), "24020FFFFFFFFFFFFFFFFF14FFFF140D0200000F1100%sFFFF10FFFF%s", Inv_Prop[which].invSerial , ecu_id_reverse);
+            break;
+        case 1:
+            // build command 1 this is "24020FFFFFFFFFFFFFFFFF14FFFF14" + "0C0201000F0600"  + inv serial,
+            snprintf(pairCmd, sizeof(pairCmd), "24020FFFFFFFFFFFFFFFFF14FFFF140C0201000F0600%s", Inv_Prop[which].invSerial );
+            break;
+        case 2:
+            // build command 2 this is "24020FFFFFFFFFFFFFFFFF14FFFF14" + "0F0102000F1100"  + invSerial + short ecu_id_reverse, + 10FFF + ecu_id_reverse
 
-//4    pcmd_prefix + "0F0102000F1100" + String(inv_sn) + ecu_id.substring(2,4) + ecu_id.substring(0,2) + "10FFFF" + ecu_id_reverse,
-// should be 24020FFFFFFFFFFFFFFFFF14FFFF14 0F0102000F1100 408000158215 A3D8 10FFFF 80971B01A3D8
-// construct 24020FFFFFFFFFFFFFFFFF14FFFF14 0F0102000F1100 408000158215 A3D8 10FFFF 80971B01A3D8 OK
-             
-//5    pcmd_prefix + "010103000F0600" + ecu_id_reverse
-// should be 24020FFFFFFFFFFFFFFFFF14FFFF14 010103000F0600 80971B01A3D8
-// construct 24020FFFFFFFFFFFFFFFFF14FFFF14 010103000F0600 80971B01A3D8 OK
+            snprintf(pairCmd, sizeof(pairCmd), "24020FFFFFFFFFFFFFFFFF14FFFF140F0102000F1100%s%s10FFFF%s", Inv_Prop[which].invSerial, ecu_short, ecu_id_reverse);
+            break;
+        case 3:
+            // now build command 3 this is "24020FFFFFFFFFFFFFFFFF14FFFF14"  + "010103000F0600" + ecu_id_reverse,
+            snprintf(pairCmd, sizeof(pairCmd), "24020FFFFFFFFFFFFFFFFF14FFFF14010103000F0600%s", ecu_id_reverse);
+       }
+    delayMicroseconds(250);
+    // send 
+    term = "pair command " + String(y) +  " = " + String(pairCmd);
+    if( diagNose != 0 ) consoleOut(term); 
+    //else if(diagNose == 2) ws.textAll(term);
 
-char pairBaseCommand[][254] = {
-    "5", // not a command but the total commands
-    "2700", // was 67
-    "24020FFFFFFFFFFFFFFFFF14FFFF140D0200000F1100", // + String(inv_sn) + "FFFF10FFFF" + ecu_id_reverse,
-    "24020FFFFFFFFFFFFFFFFF14FFFF140C0201000F0600",  // + String(inv_sn),
-    "24020FFFFFFFFFFFFFFFFF14FFFF140F0102000F1100",  // + String(inv_sn) + ecu_id.substring(2,4) + ecu_id.substring(0,2) + "10FFFF" + ecu_id_reverse,
-    "24020FFFFFFFFFFFFFFFFF14FFFF14010103000F0600",  // + ecu_id_reverse
-
-};
-//char temp[8]={0};
-//Serial.println("heap 1" + String(esp_get_free_heap_size()));
-//now build the commands
-
-// ***************************** command 2 ********************************************
-// now build command 2 this is prefix + "0D0200000F1100" + String(invSerial) + "FFFF10FFFF" + ecu_id_reverse,
-// add the inverter serial;
-strncat(pairBaseCommand[2], Inv_Prop[which].invSerial, sizeof(Inv_Prop[which].invSerial)); 
-delayMicroseconds(250);
-//now add the "FFF10FFF"
-strncat( pairBaseCommand[2], infix, sizeof(infix) );
-//now add ecu_id_reverse 
-strncat(pairBaseCommand[2], ecu_id_reverse, sizeof(ecu_id_reverse));
-// Serial.println("Cmd 2 constructed = " + String(pairBaseCommand[2]));  // ok
-
-// now build command 3 this is prefix + "0C0201000F0600"  + inv serial,
-// add the inverter serial;
-DebugPrintln("Cmd 3 initial = " + String(pairBaseCommand[3]));
-strncat(pairBaseCommand[3], Inv_Prop[which].invSerial,  sizeof(Inv_Prop[which].invSerial));
-DebugPrintln("Cmd 3 constructed = " + String(pairBaseCommand[3]));  // ok
-
-// now build command 4 this is prefix + "0F0102000F1100"  + invSerial + short ecu_id_reverse, + 10FFF + ecu_id_reverse
-// add the inverter serial;
-//Serial.println("Cmd 4 initial = " + String(pairBaseCommand[4]));
-strncat(pairBaseCommand[4], Inv_Prop[which].invSerial,  sizeof(Inv_Prop[which].invSerial));
-strncat(pairBaseCommand[4], ECU_ID + 2, 2); // D8A3011B9780 must be A3D8
-strncat(pairBaseCommand[4], ECU_ID, 2);
-strncat(pairBaseCommand[4], outfix, sizeof(outfix) );
-strncat(pairBaseCommand[4], ecu_id_reverse, sizeof(ecu_id_reverse));
-DebugPrintln("Cmd 4 constructed = " + String(pairBaseCommand[4]));  // ok
-
-//// now build command 5 this is prefix  + "010103000F0600" + ecu_id_reverse,
-//Serial.println("Cmd 5 initial = " + String(pairBaseCommand[5]));
-strncat(pairBaseCommand[5], ecu_id_reverse, sizeof(ecu_id_reverse));
-DebugPrintln("Cmd 5 constructed = " + String(pairBaseCommand[5]));  // ok
-Serial.println("heap 2" + String(esp_get_free_heap_size()));
-
-// now send the  5 commands
-// the first command is the healtcheck so we could do checkZigbeeRadio and if this failes break
-// the radiocheck is done already so we can skip cmd 1    
-    bool success = false;
-    for (int y = 2; y < 6; y++) 
-    {
-      //cmd 0 tm / 9 alles ok
-
-      strncpy(pairCmd, pairBaseCommand[y], sizeof(pairBaseCommand[y] ));
-// we preceed with len
-      char comMand[254];
-      sprintf(comMand, "%02X", (strlen(pairCmd) / 2 - 2));
-      strcat(comMand, pairCmd);
-      delayMicroseconds(250);
-      // now we have comMand which is len+paircommand
-      // now add CRC at the end now done at sendZigbee()
-      //strcat(comMand,checkSumString(comMand).c_str()) ; // do this in sendZigbee
-
-      // send and read
-      if(diagNose)DebugPrintln("pair command = " + String(comMand));      
-      DebugPrintln("sending paircmd " + String(y));
-
-      sendZigbee(comMand);
-      delay(1500); // give the inverter the chance to answer
-
+    sendZB(pairCmd);
+    delay(1500); // give the inverter the chance to answer
       //check if anything was received
-      readZigbee();
+      // after sending cmd 1 or 2 we can expect an answer to decode
+      // we let decodePairMessage retrieve the answer then.
+      // the answers on cmd0 or cmd3 are flushed
+    if(y == 1 || y == 2) {
+      // if y 1 or 2 we catch and decode the answer
+      if ( decodePairMessage(which) ) 
+        {
+           success = true; // if at least one of these 2 where true we had success
+        } 
+    } else { 
+        // if not y == 1 or y == 2 we waste the received message
+        readZB(s_d);  
+    }
+  }
+  //now all 4 commands have been sent
+  if(success) {return true; } else { return false;}  // when paired 0x103A
+}   
 
-      DebugPrintln("received : " + String(inMessage) );
-      // after sending cmd 3 or 4 we can expect an answer to decode
-      if(y == 3 || y == 4) {
-        if ( decodePairMessage(which) ) 
-          {
-             success = true;
-          } 
-      }
-   }
-   if(success) {return true; } else { return false;}
-}
 
 bool decodePairMessage(int which)
 {
-// we need the fullincomingMessge and the invSns  invSns = inverterSerial
-char messageToDecode[CC2530_MAX_SERIAL_BUFFER_SIZE] = {0};
-char _CC2530_answer_string[] = "44810000";
-char _noAnswerFromInverter[32] = "FE0164010064FE034480CD14011F";
-char * result;                                 
-char temp[13];
+    char messageToDecode[CC2530_MAX_SERIAL_BUFFER_SIZE] = {0};
+    char _CC2530_answer_string[] = "44810000";
+    char _noAnswerFromInverter[32] = "FE0164010064FE034480CD14011F";
+    char * result;                                 
+    char temp[13];
+    char s_d[250]={0};
+    String term = "";
 
-//received message with inverter id like : 
-//for testing
-//strncpy(messageToDecode, "FE1C4481000001013A101414003400622305000008FF1A4080001582153A100E08", 66);
-//                          
-//                         FE1C 4481000001013A101414002700321401000008FFFF4080001582153A100E9D
-//  FE0164020067 FE25448100000F0100001414013100204D03000011408000158215A3D610FFFF80971B01A3D63A100DD9FE1C4481000001013A1014140031007D5003000008FFFF4080001582153A100E82
-// the 2nd message is shorter 2524020FFFFFFFFFFFFFFFFF14FFFF140F0102000F1100408000157673A3D810FFFF80971B01A3D8D3
-
-    //Serial.println("inMessage = " + String(inMessage));
-    strncpy(messageToDecode, inMessage, strlen(inMessage));  // get rid of the preceeding FE0164020067
-    delayMicroseconds(250); //give memset a little bit of time to empty all the buffers
-        
+    strcpy(messageToDecode, readZB(s_d));        
     //Serial.println("messageToDecode = " + String(messageToDecode));
-    
-    if (strcmp(messageToDecode, _noAnswerFromInverter) == 0) // default answer if the asked inverter doesn't send us values we compare the whole message
+     if (diagNose != 0 ) consoleOut("decoding : " + String(messageToDecode));
+    if (readCounter == 0 || strlen(messageToDecode) < 6 ) // invalid message
     {
-    DebugPrintln("received noAnswerFromInverter code, returning..");
+      if( diagNose != 0 ) consoleOut("no usable code, returning..");
+    messageToDecode[0]='\0';
     return false;
     }
-
-    if (strlen(messageToDecode) > 222)
+    // can we conclude that a valid pair answer cannot be less than 60 bytes
+    if (strlen(messageToDecode) > 222 || readCounter < 60 || strlen(messageToDecode) < 6)
     {
-      DebugPrintln("no pairing code, returning...");
+      //term = "no pairing code, returning...";
+      if( diagNose!=0 ) consoleOut(F("no valid pairing code, returning..."));
+      messageToDecode[0]='\0';
       return false;   
     }
-// the message is shorter so continueing    
+// the message is shorter but not too short so continueing    
 
  if (!strstr(messageToDecode, Inv_Prop[which].invSerial)) {
-    DebugPrintln("not found serialnr, returning");
+    if( diagNose != 0 ) consoleOut("not found serialnr, returning");
+    //if(diagNose==1) Serial.println(term); else if(diagNose==2) ws.textAll(term);
+    messageToDecode[0]='\0';
     return false;
  }
 
   if ( strstr(messageToDecode, Inv_Prop[which].invSerial) ) { 
   result = split(messageToDecode, Inv_Prop[which].invSerial);
   }
-  DebugPrintln("result after 1st splitting = " + String(result));
+  if( diagNose != 0 ) consoleOut("result after 1st splitting = " + String(result));
+
   // now we keep splitting as long as result contains the serial nr
     while ( strstr(result, Inv_Prop[which].invSerial) ) 
     { 
     result = split(result, Inv_Prop[which].invSerial);
     }
-    DebugPrintln("result after splitting = " + String(result));
+    consoleOut("result after splitting = " + String(result));
+    // result are the bytes behind the serialnr
+    // now we know that it is what we expect, a string right behind the last occurence of the serialnr
   
-  // now we know that it is what we expect so do the next test
-  
-  strncpy(temp, result, 4);
-  temp[4]='\0';
-  DebugPrintln("found invID on MessageToDecode" + String(temp));
-  memset(&Inv_Prop[which].invID, 0, sizeof(Inv_Prop[which].invID)); //zero out the 
-  delayMicroseconds(250);  
-  strncpy(Inv_Prop[which].invID, "0x", 2);
-  strncat(Inv_Prop[which].invID, temp + 2, 2);
-  strncat(Inv_Prop[which].invID, temp, 2);
-  Inv_Prop[which].invID[6] = '\0';
-  if ( String(temp) == "0000" ) {
-  //String term = "pairing failed, returning false";
-  //Update_Log("pairing" , term);
-  //DebugPrintln(term);
-  DebugPrintln("temp = " + String(temp));
-  return false;    
-  }
-  //String term = "success, got invID";
-  //Update_Log("pairing" , term);
-  //DebugPrintln(term);
+    memset(&Inv_Prop[which].invID, 0, sizeof(Inv_Prop[which].invID)); //zero out the 
+    delayMicroseconds(250);  
+    strncpy(Inv_Prop[which].invID, result, 4); // take the 1st 4 bytes
+
+    term = "found invID = " + String(Inv_Prop[which].invID);
+    if( diagNose != 0 ) consoleOut(term);
+    // why is this? Can it get this value?
+    if ( String(Inv_Prop[which].invID) == "0000" ) {
+       return false;    
+     }
   return true;
 } 
