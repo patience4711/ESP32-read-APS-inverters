@@ -1,6 +1,6 @@
 const char INVCONFIG_START[] PROGMEM = R"=====(
 <!DOCTYPE html><html><head><meta charset='utf-8'>
-<title>ESP-ECU</title>
+<title>ESP32-ECU</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="icon" type="image/x-icon" href="/favicon.ico" />
 <link rel="stylesheet" type="text/css" href="/STYLESHEET">
@@ -179,9 +179,9 @@ void handleInverterconfig(AsyncWebServerRequest *request)
   // we only collect the data for this specific inverter
   // read the serverargs and copy the values into the variables
 
-   DebugPrintln("we are in handleInverterconfig");    
-   DebugPrintln("inverterCount initial = " + String(inverterCount));
-   DebugPrintln("iKeuze = " + String(iKeuze));  
+//   if( diagNose != 0 ) consoleOut("we are in handleInverterconfig");    
+//   if( diagNose != 0 ) consoleOut("inverterCount initial = " + String(inverterCount));
+//   if( diagNose != 0 ) consoleOut("iKeuze = " + String(iKeuze));  
    // collect the serverarguments
    strcpy(Inv_Prop[iKeuze].invLocation, request->arg("il").c_str());
    strcpy(Inv_Prop[iKeuze].invSerial, request->arg("iv").c_str());
@@ -190,35 +190,35 @@ void handleInverterconfig(AsyncWebServerRequest *request)
 // the selectboxes
    char tempChar[1] = "";
    String dag = request->arg("pan1");  // mqselect
-   if ( dag == "on") { Inv_Prop[iKeuze].conPanels[0] = true; DebugPrintln("p1 true");} else { Inv_Prop[iKeuze].conPanels[0] = false; }   
+   if ( dag == "on") { Inv_Prop[iKeuze].conPanels[0] = true;} else { Inv_Prop[iKeuze].conPanels[0] = false; }   
    dag = request->arg("pan2");  // mqselect
-   if ( dag == "on") { Inv_Prop[iKeuze].conPanels[1] = true; DebugPrintln("p2 true");} else { Inv_Prop[iKeuze].conPanels[1] = false; }
+   if ( dag == "on") { Inv_Prop[iKeuze].conPanels[1] = true;} else { Inv_Prop[iKeuze].conPanels[1] = false; }
 
    Inv_Prop[iKeuze].conPanels[2] = false;
    Inv_Prop[iKeuze].conPanels[3] = false;
    //we only collect this when type = 1
    if(Inv_Prop[iKeuze].invType == 1) {
    dag = request->arg("pan3");  // mqselect
-   if ( dag == "on") { Inv_Prop[iKeuze].conPanels[2] = true; DebugPrintln("p2 true");}    
+   if ( dag == "on") { Inv_Prop[iKeuze].conPanels[2] = true;}    
    dag = request->arg("pan4");  // mqselect
-   if ( dag == "on") { Inv_Prop[iKeuze].conPanels[3] = true; DebugPrintln("p3 true");}    
+   if ( dag == "on") { Inv_Prop[iKeuze].conPanels[3] = true;}    
    }
    //DebugPrintln("checked panels are : " + String(Inv_Prop[iKeuze].conPanels[0])+ String(Inv_Prop[iKeuze].conPanels[2])+ String(Inv_Prop[iKeuze].conPanels[2])+ String(Inv_Prop[iKeuze].conPanels[3]));
    //is this a addition?
    String bestand = "/Inv_Prop" + String(iKeuze) + ".str"; // /Inv_Prop0.str
-   DebugPrintln("going to write " + bestand ); 
+   if( diagNose != 0 ) consoleOut("going to write " + bestand ); 
    //initial their both 0
    writeStruct(bestand, iKeuze); // alles opslaan in SPIFFS
    if(iKeuze == inverterCount) 
    {
     inverterCount += 1;
-    DebugPrintln("we appended, inverterCount now : " + String(inverterCount)); 
+    if( diagNose != 0 ) consoleOut("we appended, inverterCount now : " + String(inverterCount)); 
     }
    
    basisConfigsave();  // save inverterCount
    #ifdef DEBUG
-   DebugPrintln("\ninverterCount after edit (saved) = " + String(inverterCount));  
-   DebugPrintln("list of the files we have after edit");
+   if( diagNose != 0 ) consoleOut("\ninverterCount after edit (saved) = " + String(inverterCount));  
+   if( diagNose != 0 ) consoleOut("list of the files we have after edit");
    printInverters();
    #endif
        
@@ -239,16 +239,16 @@ void handleInverterdel(AsyncWebServerRequest *request)
   // we only collect the data for this specific inverter
   // read the serverargs and copy the values into the variables
 
-   DebugPrintln("we are in handleInverterdel");    
-   DebugPrintln("inverterCount initial = " + String(inverterCount));
-   DebugPrintln("iKeuze = " + String(iKeuze));  
+  // if( diagNose != 0 ) consoleOut("we are in handleInverterdel");    
+  // if( diagNose != 0 ) consoleOut("inverterCount initial = " + String(inverterCount));
+  // if( diagNose != 0 ) consoleOut("iKeuze = " + String(iKeuze));  
 
    String bestand = "/Inv_Prop" + String(iKeuze) + ".str"; // /Inv_Prop0.str
-   DebugPrintln("remove file " + bestand ); 
+   if( diagNose != 0 ) consoleOut("remove file " + bestand ); 
  
    if(SPIFFS.exists(bestand) ) SPIFFS.remove(bestand);
    
-   DebugPrintln("list of the files we have after removed one");
+   if( diagNose != 0 ) consoleOut("list of the files we have after removed one");
    printInverters();
    inverterCount -= 1;
    basisConfigsave();  // save inverterCount   
@@ -256,26 +256,27 @@ void handleInverterdel(AsyncWebServerRequest *request)
 //   // check if we have one and remove it
       remove_gaps();
       //Serial.println(F("list of the files after remove gaps"));
-    #ifdef DEBUG 
+    
     printInverters(); 
-    #endif
-    DebugPrintln("inverterCount after removal = " + String(inverterCount));
+    
+    if( diagNose != 0 ) consoleOut("inverterCount after removal = " + String(inverterCount));
 
       actionFlag = 10;
 }
 
-void printInverters() {      
-      DebugPrintln(F(" ****** excisting inverter files ******"));
+void printInverters() { 
+      if(diagNose == 0 ) return;     
+      if( diagNose != 0 ) consoleOut(F(" ****** excisting inverter files ******"));
       for (int x=0; x < inverterCount+1; x++) 
       {
       String bestand = "/Inv_Prop" + String(x) + ".str";
-      #ifdef DEBUG
+      
       if(SPIFFS.exists(bestand)) 
           {
-              DebugPrintln("filename: " + bestand);
+              if( diagNose != 0 ) consoleOut("filename: " + bestand);
               printStruct(bestand);
           }
-       #endif   
+         
       }
 }
 
@@ -398,7 +399,7 @@ int verklikker = 0;
         String bestand = "/Inv_Prop" + String(iKeuze) + ".str";
         if(SPIFFS.exists(bestand)) 
        {
-        DebugPrintln("File exists" + bestand);
+        if( diagNose != 0 ) consoleOut("File exists" + bestand);
         //the file exists so we can display the values 
         toSend.replace("{nr}" , String(iKeuze)); // vervang inverter nummer not available
         toSend.replace("000000", String(Inv_Prop[iKeuze].invSerial)); // handled by the script
@@ -425,14 +426,14 @@ int verklikker = 0;
            if (Inv_Prop[iKeuze].conPanels[3]) { toSend.replace("#4check", "checked");}
         }
         
-        if(String(Inv_Prop[iKeuze].invID) != "0x0000") 
+        if(String(Inv_Prop[iKeuze].invID) != "0000") 
         {
            toSend.replace("unpaired", String(Inv_Prop[iKeuze].invID) );
         }
 
         } else {
         // the file does not exist so we show an empty page
-        DebugPrintln("File does not exist");
+        if( diagNose != 0 ) consoleOut("File does not exist");
         toSend.replace("invtype_2", "selected");
         toSend.replace("000000", "");
         toSend.replace("{location}", "");

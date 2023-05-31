@@ -7,6 +7,7 @@
  *  removed the line 336 memset crashed the zigbee
  *  testing sending via sendZB 
  *  changed the notation of the invID, saved as was extracted so inverting not needed anymore
+ *  experimenting with extractValue() )AAA-DECODE
  */
  
 #include <WiFi.h>
@@ -16,7 +17,7 @@
 #include <Update.h>
 #include <Hash.h>
 
-#define VERSION  "ESP32-ECU_v0_3b"
+#define VERSION  "ESP32-ECU_v0_3d"
 
 #include <TimeLib.h>
 #include <time.h>
@@ -109,6 +110,7 @@ int testCounter = 0;
   char timezone[5] = "+120";  //+5.30 GMT
   bool zomerTijd = true;
   char static_ip[16] = "000.000.000.000";
+  uint8_t securityLevel = 6;
 
 
 // ***************************************************************************
@@ -201,17 +203,21 @@ int value = 0;
 int resetCounter=0;
 bool apFlag=false;
 // *******************************  log *************************************
+//// variables To record and display last events on the home page.
+//struct logEvent {
+//  String    Log_date ;
+//  String    Log_kind ;
+//  String    Log_message;
+//};
+// *******************************  log *************************************
 // variables To record and display last events on the home page.
-struct logEvent {
-  String    Log_date ;
-  String    Log_kind ;
-  String    Log_message;
-};
-//bool Log = false;
+char Log_date[20][14];
+char Log_kind[20][14];
+char Log_message[20][30];
+
 static const int Log_MaxEvents = 20;    // Please avoid to make a too big value here, the past events will be stored in memory and displayed in the html home
 bool Log_MaxReached = false;
-byte Log_CurrentEvent = 0;
-logEvent Log_EventList[Log_MaxEvents];  // To stock in memory the last x events (20 by default)
+byte logNr = 0;
 
 WiFiClient espClient ;
 PubSubClient MQTT_Client ( espClient ) ;
@@ -271,8 +277,9 @@ void setup() {
   printInverters(); // show the inverter files
   #endif
 
-  Update_Log("system", "boot up");
-//  // ****************** mqtt init *********************
+  Update_Log("system", "boot up 0");
+
+  // ****************** mqtt init *********************
   MQTT_Client.setKeepAlive(150);
   MQTT_Client.setServer(Mqtt_Broker.c_str(), Mqtt_Port.toInt());
   MQTT_Client.setCallback ( MQTT_Receive_Callback ) ;
@@ -295,7 +302,7 @@ void setup() {
   ledblink(3,500);
 
   Update_Log("zigbee","initial healthcheck");
-          healthCheck(); // check the state of the zigbee system and if oke then poll the inverters
+  healthCheck(); // check the state of the zigbee system and if oke then poll the inverters
   if(zigbeeUp == 1) {
         Update_Log("zigbee","coordinator up");
           // we poll our inverters immediatly
@@ -335,8 +342,8 @@ void loop() {
           if(!dayTime)  
           {
              dayTime = true;
-             String term= "wake-up from nightmode";
-             Update_Log("system", term);
+             String term= "woke-up";
+             //update_log("system".c_str(), term.c_str());
              if( diagNose != 0 ) consoleOut(term);
              // reset the dayly energy at wakeup and send mqtt message
              resetValues(true, true);
@@ -346,7 +353,7 @@ void loop() {
          {
             dayTime = false;
             String term= "start nightmode";
-            Update_Log("system", term);
+            //update_log("system", term);
             if( diagNose != 0 ) consoleOut(term);
             // clean memory
             //memset( &inMessage, 0, sizeof(inMessage) ); //zero out the 
@@ -423,7 +430,7 @@ void loop() {
       if(second() > 0 ) 
       {
         resetValues(true, true); //set all values to zero and sent mqtt
-        Update_Log("system", "all values reset");
+        //update_log("system", "all values reset");
         actionFlag = 0; // to prevent repetition
         //diagNose=0;
        }
@@ -579,7 +586,10 @@ const char* password = "dummy";
       actionFlag = 0; //reset the actionflag
       getTijd(); // recalculate time after change of settings
     }
-
+    if (actionFlag == 43) { //triggered by the console
+        actionFlag = 0; //reset the actionflag
+        rebootInv(iKeuze);
+    }
     if (actionFlag == 44) { //triggered by the webpage zbtest
         actionFlag = 0; //reset the actionflag
         healthCheck(); 
@@ -592,7 +602,7 @@ const char* password = "dummy";
     
     if (actionFlag == 46) { //triggered by the webpage zbtest
         actionFlag = 0; //reset the actionflag
-        rebootInv(iKeuze);
+        showDir(); 
     }
     
     // polling a single inverter
@@ -612,7 +622,7 @@ const char* password = "dummy";
 
 }
 
- void poll_all() { 
+void poll_all() { 
  // poll all inverters, inbetweeen empty serial and feed wdt 
      for(int i=0; i<inverterCount; i++)
      {     
@@ -625,10 +635,22 @@ const char* password = "dummy";
        }
  } 
 
- String getChipId() {
+String getChipId(bool sec) {
     uint32_t chipId = 0;
     for(int i=0; i<17; i=i+8) {
     chipId |= ((ESP.getEfuseMac() >> (40 - i)) & 0xff) << i;
   }
-  return "ESP32-ECU-" + String(chipId);
-}          
+  if(sec) return String(chipId); else return "ESP32-ECU-" + String(chipId);
+}
+
+void showDir() {
+    char temp[50]={0};
+    File root = SPIFFS.open("/");
+    File file = root.openNextFile();
+    while (file) {
+      sprintf(temp, "%s  size %u<br>" , file.name(), file.size() );
+      if (diagNose != 0) consoleOut(String(temp));
+      delay(100);
+      file = root.openNextFile();
+    }
+  }           

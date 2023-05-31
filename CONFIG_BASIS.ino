@@ -68,6 +68,7 @@ void zendPageBasis() {
     }
 //    toSend.replace( "'{ca}'" , "'" + String(calliBration) + "'") ;
 }
+
 void handleBasisconfig(AsyncWebServerRequest *request) { // form action = handleConfigsave
 // verzamelen van de serverargumenten   
    strcpy(ECU_ID, request->arg("ecuid").c_str());

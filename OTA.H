@@ -16,7 +16,7 @@ document.getElementById('reboot').style.display="block";
 
 </head><body>
 <center><h2>ESP32 ECU FIRMWARE UPFATE</h2><br><br>
-if the upload was successful you'l see the reboot button<br><br><br>
+if the upload was successful the reboot button will appear.<br><br><br>
 <form method='POST' action='#' enctype='multipart/form-data' id='upload_form'>
 <input type='file' name='update'>
 <input type='submit' value='Update'>

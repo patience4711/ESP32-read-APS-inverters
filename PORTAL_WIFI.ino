@@ -33,15 +33,15 @@ dnsServer.start(DNS_PORT, "*", apIP);
   //String chipId = getChipId(); 
 
   //String temp = String(chipId);
-  DebugPrintln("\ncould not connect with the last known wificredentials,  starting access point...");
+  Serial.println("\ncould not connect with the last known wificredentials,  starting access point...");
   WiFi.softAPConfig(apIP, apIP, netMsk);
-  const char* apNaam = getChipId().c_str();
+  const char* apNaam = getChipId(false).c_str();
   const char* apPasswd = "123456789";
   WiFi.softAP(apNaam, apPasswd);
 
   delay(500); // without delay tje IP address can be blanco
-  DebugPrint("AP IP address: ");
-  DebugPrintln(WiFi.softAPIP());
+  Serial.println("AP IP address: ");
+  Serial.println(WiFi.softAPIP());
 
   /* Setup web pages: root, wifi config pages, SO captive portal detectors and not found. */
 
@@ -98,31 +98,29 @@ dnsServer.start(DNS_PORT, "*", apIP);
   char ssid[33] = "";
   char pass[40] = "";
 
-//      verwerk de ingegeven gegevens en probeer te verbinden
-strcpy( ssid, request->getParam("s")->value().c_str() );
-strcpy( pass, request->getParam("p")->value().c_str() );  
-strcpy( pswd, request->getParam("pw")->value().c_str() );
-  
-//  ssid = request->getParam("s")->value().c_str();
-//  Serial.println("ssid = " + String(ssid) );
-//  Serial.println("pass = " + String(pass) );
+// process the data and try to connect
+  strcpy( ssid, request->getParam("s")->value().c_str() );
+  strcpy( pass, request->getParam("p")->value().c_str() );  
+  strcpy( pswd, request->getParam("pw")->value().c_str() );
+  securityLevel = request->arg("sl").toInt();  
+
     wifiConfigsave(); // save the admin passwd
 
 // trying to connect now
 // therefor we first go in wifi APSTA
   WiFi.mode(WIFI_AP_STA);
-  DebugPrint("Connecting to "); DebugPrintln(ssid);
+  Serial.println("Connecting to " + String(ssid));
   WiFi.begin(ssid, pass);  
-  DebugPrintln("send confirm page  ");
+  Serial.println("send confirm page  ");
 
 if (connectWifi() == WL_CONNECTED) {
-  DebugPrintln("youpy, connected");
+  Serial.println("youpy, connected");
   esp_task_wdt_reset();
     digitalWrite(led_onb, LED_UIT);
   event=101;
    
     } else {
-  DebugPrintln("could not connect, try again");
+  Serial.println("could not connect, try again");
   esp_task_wdt_reset();
     ledblink(10, 200);
     digitalWrite(led_onb, LED_AAN); // 
@@ -173,7 +171,7 @@ request->send(200, "text/html", toSend); //send the html code to the client
   server.addHandler(new CaptiveRequestHandler()).setFilter(ON_AP_FILTER); //only when requested from AP
 
   server.begin(); // Web server start
-  DebugPrintln("started async HTTP server for the portal");
+  Serial.println("started async HTTP server for the portal");
   digitalWrite(led_onb, LED_AAN);  // led aan
 
   // now we enter an infinitive loop that we leave only after 5 minutes, 
@@ -181,6 +179,7 @@ request->send(200, "text/html", toSend); //send the html code to the client
   //  bool Timed_Out = true;
   Serial.println("entering the infinitive loop with heartbeat");
   laatsteMeting = millis(); //voor de time-out
+
   // this is the infinitive  loop 
   static unsigned long heartbeat = 0;
   while (millis() < laatsteMeting + 300*1000UL) { // 5 minuten== 300 30 == 30sec
@@ -188,11 +187,16 @@ request->send(200, "text/html", toSend); //send the html code to the client
     heartbeat = millis(); // elke 10 sec een heartbeat
     Serial.print("a ");
   }
+//  // SERIAL: *************** see if there is data available **********************
+//  if(Serial.available()) {
+//       handle_Serial();
+//   }
+  
   if (tryConnectFlag) { // there are credentials provided
-      wifiConnect();
+      wifiConnect(); // if connected we break out of this loop
   }
       //DNS
-    dnsServer.processNextRequest();
+    //dnsServer.processNextRequest();
   } 
   // ************************ end while loop ******************************* 
 
@@ -269,7 +273,7 @@ void handleForm() {
 //toSend = FPSTR(PORTAL_HEAD);
 toSend = FPSTR(WIFI_PAGE);
 toSend.replace("{pw}",  String(pswd) );
-
+toSend.replace("{sl}",  String(securityLevel) );
 if (networksFound == 0) {
       toSend.replace("aplijst" ,"WiFi scan not found networks. Restart configuration portal to scan again.");
     } else {
@@ -294,7 +298,7 @@ void wifiConnect() {
        tryConnectFlag=false;
        laatsteMeting = millis();
 
-      DebugPrintln("we are in wifiConnect");
+      Serial.println("we are in wifiConnect");
 
       WiFi.mode(WIFI_AP_STA);
       delay(500);
@@ -303,14 +307,15 @@ void wifiConnect() {
       Serial.println("password =  " + String(pass));
 
       if (connectWifi() == 1) {
-         DebugPrintln("yoepy, connected");
+        Serial.println("youpy, connected");
          ledblink(3, 500);
          event=101;
        } else {
-         DebugPrintln("could not connect, try again");
+         Serial.println("could not connect, try again");
          digitalWrite(led_onb, LED_AAN); // 
          event=100;
         } 
+      // must jump out of the loop
  }
 
 void handlePortalNotFound(AsyncWebServerRequest *request) {
@@ -323,19 +328,20 @@ void handlePortalNotFound(AsyncWebServerRequest *request) {
 }
 
 // ************************************************************************
-//            proberen te verbinden met de nieuwe credentials
+//          try to connect with new credentials
 // ************************************************************************
 
 //int connectWifi(String ssid, String pass) {
 int connectWifi() {  
-  DebugPrintln("try connect with the new credentials");
+  Serial.println("try connect with the new credentials");
   Serial.println(ssid);
   Serial.println(pass);
+  
   WiFi.begin(ssid, pass);// Start Wifi with new values.
   
   int connRes = WiFi.waitForConnectResult();
-  DebugPrint ("Connection result is : ");
-  DebugPrintln(WiFi.localIP());
+  Serial.print("Connection result is : " + connRes);
+  Serial.println(WiFi.localIP());
   checkFixed(); // set static ip if configured
 
   return connRes;
@@ -356,7 +362,7 @@ void handlePortalClose() {
 }
 
 void eraseFiles() {
-  DebugPrintln("LittleFS wipe and format");
+  Serial.println("LittleFS wipe and format");
   String toSend = F("<!DOCTYPE html><html><head>");
   toSend += F("<script type='text/javascript'>setTimeout(function(){ window.location.href='/redirect'; }, 1000 ); </script>");
 #ifdef DUTCH
@@ -372,11 +378,11 @@ void eraseFiles() {
      if (SPIFFS.exists("/basisconfig.json")) { SPIFFS.remove("/basisconfig.json"); }
      if (SPIFFS.exists("/timerconfig.json")) { SPIFFS.remove("/timerconfig.json"); }
      SPIFFS.format();
-     DebugPrintln("We gaan LittleFS wissen");
+     Serial.println("We gaan LittleFS wissen");
 }
 
 void resetStatic() {
-   DebugPrintln("static ip wissen");
+   Serial.println("static ip wissen");
   String toSend = F("<!DOCTYPE html><html><head>");
   toSend += F("<script type='text/javascript'>setTimeout(function(){ window.location.href='/redirect'; }, 500 ); </script>");
 #ifdef DUTCH

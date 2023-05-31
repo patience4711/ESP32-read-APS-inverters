@@ -1,10 +1,10 @@
 void handle_Serial () {
-      DebugPrintln(F("we are in handle serial"));  
+      //DebugPrintln(F("we are in handle serial"));  
       int SerialInByteCounter = 0;
       InputBuffer_Serial[0] = '\0'; // make it like empty
       byte SerialInByte;  
       delay(200); // wait untill maybe more data available
-      DebugPrintln("normal serial: data available, number = " + String(Serial.available()) );
+      Serial.println("serial data available: " + String(Serial.available()) );
   
       while(Serial.available()) {
              SerialInByte=Serial.read(); 
@@ -15,11 +15,12 @@ void handle_Serial () {
             }    
             if(SerialInByte=='\n') {                                              // new line character
               InputBuffer_Serial[SerialInByteCounter]=0;
-              DebugPrintln(F("found new line"));
+              //DebugPrintln(F("found new line"));
              break; // serieel data is complete
             }
        }  
-     DebugPrintln("InputBuffer_Serial = " + String(InputBuffer_Serial) );
+     Serial.println("InputBuffer_Serial = " + String(InputBuffer_Serial) );
+     diagNose = 1; // direct the output to serial
      // evaluate the incomming data
      if (strlen(InputBuffer_Serial) > 6) {                                // need to see minimal 8 characters on the serial port
        if (strncmp (InputBuffer_Serial,"10;",3) == 0) {                 // Command from Master to RFLink
@@ -27,15 +28,14 @@ void handle_Serial () {
           if (strncasecmp(InputBuffer_Serial+3,"HELP",4) == 0) {
               scroll(4);
               Serial.println(F("*** AVAILABLE COMMANDS ***"));
-              Serial.println(F("10;DIAG; (set diagNose for more serial output)"));
+              Serial.println(F("10;DIAG=x; (if x = 1 set diagNose for serial debug)"));
               Serial.println(F("10;POLL=x; (poll inverter nr x (9=all))"));                            
               Serial.println(F("10;ZBT=; (send zigbee message, e.g. 10;zbt=2101 (ping))"));
-              //Serial.println(F("10;ERASE; (delete all inverter configfiles)"));
               Serial.println(F("10;DELETE=<file>; (delete a file)"));              
               Serial.println(F("10;HEALTH; (perform healthcheck zigbee)"));             
               Serial.println(F("10;INV_REBOOT; (reboot an unresponsive inverter)"));
               Serial.println(F("10;ZB_reset; (reset the cc2530 via its resetpin)"));
-              Serial.println(F("10;EDIT=x-0xAABB; (fake pair an inverter)"));
+              Serial.println(F("10;EDIT=x-AABB; (edit the id of an inverter)"));
               #ifdef TEST
               Serial.println(F("10;TESTINV; (decode a testanswer for inv 0)"));
               #endif
@@ -61,13 +61,11 @@ void handle_Serial () {
       {
         tmp[i] = InputBuffer_Serial[i+7];
       }
-      Serial.print(F("command = ")); Serial.println(String(tmp));
-             
-              testMessage();
-
-               return;             
+      Serial.print("command = " + String(tmp));
+      actionFlag = 45;
+      return;             
           
-          } else 
+      } else 
           
           
           if (strncasecmp(InputBuffer_Serial+3,"REBOOT_INVERTER=",16) == 0) {
@@ -79,16 +77,14 @@ void handle_Serial () {
                  Serial.println(F("\n\nerror, non-excisting inverter"));
                  return;  
               }
-                 inverterReset(kz);
+                 rebootInv(kz);
               return;
           } else 
 
-          if (strncasecmp(InputBuffer_Serial+3,"DIAG",4) == 0) {
-              if(diagNose == 1) {
-                diagNose = 0;
-              } else { diagNose = 1; }
-               
-              Serial.println(F("\n\ndiagNose = ")); Serial.println(String(diagNose));
+          if (strncasecmp(InputBuffer_Serial+3,"DIAG", 4) == 0) {
+              //int kz = String(InputBuffer_Serial[8]).toInt();
+              if(diagNose != 0) diagNose = 0; else diagNose = 1;
+              Serial.print(F("\n\nset diagNose to ")); Serial.println(String(diagNose));
               return;
           } else
 
@@ -99,11 +95,11 @@ void handle_Serial () {
               Serial.println(F("\n\nerror, no such inverter"));
               return;  
               }
-              char invid[7];
-              for(int i=10;  i<17; i++) { invid[i-10] = InputBuffer_Serial[i]; }
+              char invid[5];
+              for(int i=10;  i<15; i++) { invid[i-10] = InputBuffer_Serial[i]; }
               Serial.print(F("\n\nedit inverter ")); Serial.println(String(kz));
               Serial.print(F("id = ")); Serial.println(String(invid));
-              strncpy(Inv_Prop[kz].invID, invid, 6);
+              strncpy(Inv_Prop[kz].invID, invid, 4);
               String bestand = "/Inv_Prop" + String(kz) + ".str"; // /Inv_Prop0.str
               writeStruct(bestand, kz); // save in SPIFFS 
               return;
@@ -121,7 +117,7 @@ void handle_Serial () {
                 ledblink(1,100);
                 for(int i=0; i<inverterCount; i++)
                 {     
-                  if(String(Inv_Prop[i].invID) != "0x0000") polling(i);
+                  if(String(Inv_Prop[i].invID) != "0000") polling(i);
                 } 
                 return; } else {
                    Serial.print(F("\n\npoll inverter ")); Serial.println(String(kz));
@@ -129,12 +125,14 @@ void handle_Serial () {
                 Serial.println(F("\n\npolling ready"));
                 return; }
           } else
-           
+          
+  
+
           if (strncasecmp(InputBuffer_Serial+3,"FORCE",5) == 0) {
             Serial.println(F("\n\nforce values in Inv_Data")); 
             int z=0;
             polled[z] = true; 
-                sprintf(Inv_Prop[z].invID, "%s", "0xA1B2");
+                sprintf(Inv_Prop[z].invID, "%s", "A1B2");
                 
                 strcpy(Inv_Data[z].acv, "220.1");
                 strcpy(Inv_Data[z].heath, "16.2");
@@ -163,18 +161,40 @@ void handle_Serial () {
           } else
 
 
-//          if (strncasecmp(InputBuffer_Serial+3,"WIFICON=",8) == 0) {
-//            int len = strlen(InputBuffer_Serial);  
-//           for(int i=8; i<len; i++) 
+          if (strncasecmp(InputBuffer_Serial+3,"WIFICON=", 7) == 0) {
+          char * pass;
+          char * ssid;
+          char * tmp;
+          int len = strlen(InputBuffer_Serial);
+          Serial.println("bufferlength = " + String(len) );  
+//           for(int i=11; i<len; i++) 
 //           {
-//              tmp[i] = InputBuffer_Serial[i+7];
+//              strcat(tmp, InputBuffer_Serial[i] );
 //           }
-//          Serial.print(F("command = 10;WIFICON=")); Serial.println(String(tmp));
-//          // we have a string like "ssid;passwd"
-//          //extract the first part until#;
-//           
-//          } else
+          Serial.print(F("command = 10;WIFICON=")); Serial.println(String(tmp));
+          // we have a string like "ssid;passwd"
+          //extract the first part until#;
+            tmp = strtok(InputBuffer_Serial, "=");        // store SSID
+            ssid = strtok(NULL, ",");        // store SSID
+            pass = strtok(NULL, ",");
+            Serial.println("ssid/pass=" + String(ssid) + "/" + String(pass) );
+            event=0;
+            while (WiFi.status() != WL_CONNECTED) {
+              delay(500);
+              Serial.print("*");
+              WiFi.begin();
+              event+=1;
+              if (event==10) {break;}
+              }
+              if (event == 10) Serial.println("wifi failed");
+              return;
+          
+          } else
 
+           if (strncasecmp(InputBuffer_Serial+3,"FILES",5) == 0) {  
+              showDir();
+              return;  
+          } else
 
 //           if (strncasecmp(InputBuffer_Serial+3,"PAIR",7) == 0) {  
 //              Serial.println("going to setup zigbee coordinator 0");
@@ -187,7 +207,7 @@ void handle_Serial () {
 //              Serial.println("going to unpair the specified inverter");
 //              int kz = String(InputBuffer_Serial[10]).toInt(); 
 //              Serial.println("going to unpair inverter " + String(kz));
-//              strcpy(Inv_Prop[kz].invID, "0x0000"); //unpair
+//              strcpy(Inv_Prop[kz].invID, "0000"); //unpair
 //                writeStruct("/Inv_Prop" + String(kz) + ".str", kz); 
 //              return;             
 //          
@@ -250,14 +270,7 @@ void handle_Serial () {
               healthCheck();
               return;             
           } else
-
-           
-//           if (strncasecmp(InputBuffer_Serial+3,"CC2530_CFG",10) == 0) {  
-//              Serial.println("send general config cmds to zb radio ");
-//              cc2530Config();
-//              return;             
-//          } else
-           
+  
           if (strncasecmp(InputBuffer_Serial+3,"DOMIDX=",6) == 0) {  
             //input can be 10;POLL=0; 
             //ws.textAll("received " + String( (char*)data) + "<br>"); 
@@ -279,7 +292,7 @@ void handle_Serial () {
            } else
 
 //           if (strncasecmp(InputBuffer_Serial+3,"PAIRSIM",7) == 0) {  
-//              strncpy(Inv_Prop[1].invID, "0xABCD",6);
+//              strncpy(Inv_Prop[1].invID, "ABCD",4);
 //              Serial.print("Inv_Prop[1].invID = " + String(Inv_Prop[1].invID));
 //              String bestand = "/Inv_Prop1.str"; // /Inv_Prop1.str
 //              writeStruct("/Inv_Prop1.str", 1); // alles opslaan in SPIFFS
@@ -289,7 +302,7 @@ void handle_Serial () {
 #ifdef TEST
       if (strncasecmp(InputBuffer_Serial+3, "TESTINV",7) == 0)  
       {
-        DebugPrintln("command = " + String(InputBuffer_Serial) );  
+        Serial.println("command = " + String(InputBuffer_Serial) );  
       if(testCounter > 1) { 
         testCounter=0; // reset testcounter
         // make all values null

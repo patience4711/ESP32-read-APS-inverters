@@ -45,6 +45,7 @@ document.getElementById("help").style.display = "none";
 <div id='msect'>
   <ul>
   <li><a href='/'>home</a></li>
+  <li><a href='/INFOPAGE'>info</a></li>
   </ul>
 </div>
 <br><br>
@@ -60,8 +61,8 @@ document.getElementById("help").style.display = "none";
   <h4>&nbsp;&nbsp;ECU</h4>
   <section id="sectie">
   <ul style='width: 99%;'>
-  <li><a href='/INFOPAGE'>info</a></li>
-  <li><a href='/LOGPAGE'>system log</a></li>
+   <li><a href='/LOGPAGE'>system log</a></li>
+  <li><a href='/CONSOLE'>console</a></li>
   <li><a href='/INV_CONFIG'>inverters</a></li>
   <li><a href='/BASISCONFIG'>settings</a></li>
   <li><a href='/MQTT'>mosquitto</a></li>

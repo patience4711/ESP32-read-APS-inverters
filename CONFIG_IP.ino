@@ -67,7 +67,7 @@ function submitF() {
 )=====";
 
 void zendPageIPconfig() {
-   DebugPrintln("we are now on zendPageIPconfig");
+   //if( diagNose != 0 )("we are now on zendPageIPconfig");
    //loginAdmin(AsyncWebServerRequest *request);
    toSend = FPSTR(HTML_HEAD);
    toSend += FPSTR(IPCONFIG);  
@@ -75,16 +75,16 @@ void zendPageIPconfig() {
    // see if we have a static, if so we put the select right and read the ip vars
    if ( static_ip[0] == '\0' || static_ip[0] == '0' ) 
    {
-        DebugPrint("static_ip = "); DebugPrintln(String(static_ip));
-        DebugPrintln("no static ip");
+        if( diagNose != 0 ) consoleOut("static_ip = " + String(static_ip));
+        if( diagNose != 0 ) consoleOut("no static ip");
         toSend.replace("option}" , "selected" );
         //if we hide the page there are no data put back, the will be saved as null 
   } 
   else 
   {
       // we have a static ip so 
-        DebugPrint("static_ip = "); DebugPrintln(String(static_ip));
-        DebugPrintln("there is a static ip");   
+        if( diagNose != 0 ) consoleOut("static_ip = " + String(static_ip));
+        //if( diagNose != 0 ) consoleOut("there is a static ip");   
         toSend.replace("option2" , "selected" );
   }
   //always put back the ip data
@@ -94,7 +94,7 @@ void zendPageIPconfig() {
  
   // we construct the regex for static ip
   String GateWay = WiFi.gatewayIP().toString();
-  DebugPrint("gateway in ipconfig = "); DebugPrintln(GateWay);
+  if( diagNose != 0 ) consoleOut("gateway in ipconfig = " + GateWay);
   int punt1 = GateWay.indexOf('.');
   int punt2 = GateWay.indexOf('.', punt1+1);
   int punt3 = GateWay.indexOf('.', punt2+1);
@@ -134,8 +134,8 @@ void handleIPconfig(AsyncWebServerRequest *request) {
   String optie = request->getParam("keuze")->value();
   //String optie = server.arg("keuze");
   if ( optie == "DHCP") {
-      DebugPrint("dhcp set, dropped static_ip, optie = ");
-      DebugPrintln(optie);
+      if( diagNose != 0 ) consoleOut("dhcp set, dropped static_ip, optie = " + optie);
+      //if( diagNose != 0 ) consoleOut(optie);
       static_ip2[0] = '\0';
     }
 
@@ -146,16 +146,14 @@ void handleIPconfig(AsyncWebServerRequest *request) {
     //If not equal, it has changed 
      String test1=String(static_ip);  
      String test2=String(static_ip2);
-     DebugPrint("de teststrings zijn: ");
-     DebugPrintln(test1);
-     DebugPrintln(test2);        
+     if( diagNose != 0 ) consoleOut("de teststrings zijn: " + test1 + " " + test2);        
 
-    DebugPrintln("read the confirm page in toSend");
+    if( diagNose != 0 ) consoleOut("read the confirm page in toSend");
     toSend = FPSTR(CONFIRM_IP);
    
     if (String(static_ip) != String(static_ip2) ) 
     {
-        DebugPrintln("the IP has changed");
+        if( diagNose != 0 ) consoleOut("the IP has changed");
         //static_ip=static_ip2;
         strcpy(static_ip, static_ip2);
 
@@ -164,7 +162,7 @@ void handleIPconfig(AsyncWebServerRequest *request) {
         {
              actionFlag = 10; // make it reboot in the loop
              adres = String(static_ip);
-             DebugPrint("the specified ip = "); DebugPrintln(adres);
+             if( diagNose != 0 ) consoleOut("the specified ip = " + adres);
              zin = F("The entered IP is <strong><a href='http://{adres1}'>http://{adres2}</a></strong>");
              zin += F("<br>Use the new IP adres in your browser or click the link.<br>");
              zin += F("<br>This page will close after a few seconds...");
@@ -187,6 +185,6 @@ void handleIPconfig(AsyncWebServerRequest *request) {
    }
    //Serial.println("set actionFlag to " + String(actionFlag) );
    request->send(200, "text/html", toSend);
-   DebugPrintln("IPconfig saved");
+   if( diagNose != 0 ) consoleOut("IPconfig saved");
    wifiConfigsave();
 }

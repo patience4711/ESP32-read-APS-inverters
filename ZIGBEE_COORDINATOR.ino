@@ -1,5 +1,24 @@
+/* this is a tricky process as it is hard to check if it does what it should.
+ *  if brought up with sprintf constructed commands, it seems we can pair but 
+ *  get no polling answers.
+ *  This is not caused by only the last NO command. It seems that if we feed sendZB() with a 
+ *  char that contains empty space, it goes wrong. 
+ *  To send the relative commands i tried something like:
+ *  for ( int y=0; y < 8; Y++ ) {
+ *    snprintf(command, "A123B456C%sA1A2B3B4C5C6", invID); // or similar
+ *    sendZB(command);
+ *    etc; 
+ *  }
+ *  This works with pairing ( at least we get the invID ) but maybe it wasn't paired at all. 
+ *  Anyway the polling fails constantly, also after rebooting the inverter.   
+ *  command 2700 gives us the answer that the coordinator is up. So that proves nothing.
+ *  I haven't investigate this further, for now only the method used here works
+ */
+
 bool coordinator(bool normal) { // if true we send the extra command for normal operations
-    DebugPrintln("start coordinator");  
+    if(diagNose != 0) consoleOut(F("starting coordinator"));
+    //} else 
+    //if(diagNose == 2) ws.textAll(F("starting coordinator")); 
     coordinator_init();
     if(normal) sendNO();
     // now check if running
@@ -9,14 +28,15 @@ bool coordinator(bool normal) { // if true we send the extra command for normal 
      
     {
         Update_Log("zigbee" , "ZB coordinator started");
-        DebugPrintln("ZB coordinator started");
-        //busyState = 0;
+        if(diagNose != 0) consoleOut(F("ZB coordinator started"));
+        //if(diagNose == 2) ws.textAll(F("ZB coordinator started"));
+      
         ledblink(5,100);
         return true;
       
     } else {
-        Update_Log("zigbee" , "starting ZB coordinator failed");
-        DebugPrintln("starting ZB coordinator failed");
+        Update_Log("zigbee" , "starting ZB failed");
+        if(diagNose != 0) consoleOut(F("starting ZB coordinator failed"));
         return false;  
     }
 }
@@ -50,14 +70,15 @@ void coordinator_init() {
     *  Finished. Heap=26712
     *  
     */
-
-    DebugPrintln("init zb coordinator");
+    Serial.println("cordinator init 1");
+    if( diagNose != 0 ) consoleOut("init zb coordinator");
     zigbeeUp = 11; //initial it is initializing 11, 0=down 1=up
     yield();    
     char ecu_id_reverse[13]; //= {ECU_REVERSE()};
     ECU_REVERSE().toCharArray(ecu_id_reverse, 13);
     char initCmd[254]={0};
-
+    char s_d[254]={0}; // provide a buffer for the call to readZB
+Serial.println("cordinator init 1");
     // commands for setting up coordinater
     char initBaseCommand[][254] = {
       "2605030103", // ok   this is a ZB_WRITE_CONFIGURATION CMD //changed to 01
@@ -79,86 +100,77 @@ void coordinator_init() {
     // command 2 this is 26050108FFFF we add ecu_id reversed
     strncat(initBaseCommand[2], ecu_id_reverse, sizeof(ecu_id_reverse)); 
     delayMicroseconds(250);
-    DebugPrintln("initBaseCmd 2 constructed = " + String(initBaseCommand[2]));  // ok
+    //DebugPrintln("initBaseCmd 2 constructed = " + String(initBaseCommand[2]));  // ok
     
     // ***************************** command 4 ********************************************
     // command 4 this is 26058302 + ecu_id_short 
     strncat(initBaseCommand[4], ECU_ID, 2);
     strncat(initBaseCommand[4], ECU_ID + 2, 2);
     delayMicroseconds(250);
-    DebugPrintln("initBaseCmd 4 constructed = " + String(initBaseCommand[4]));
+    //DebugPrintln("initBaseCmd 4 constructed = " + String(initBaseCommand[4]));
 
     // send the commands from 0 to 7
     for (int y = 0; y < 8; y++) 
     {
       //cmd 0 tm / 9 alles ok
-      strcpy(initCmd, initBaseCommand[y]);
-      DebugPrintln("cmd : " + String(y)); 
-      char comMand[254];
-      //first put the sLen in comMand and than add the command itself
-      sprintf(comMand, "%02X", (strlen(initCmd) / 2 - 2));
-      strcat(comMand, initCmd);
-      // now we have comMand = len + initComd
-      delayMicroseconds(250);
-      //DebugPrintln("comMand after sLen" + String(y) + " = " + String(comMand));
-      // CRC at the end of the command
-      //strcat(comMand,checkSumString(comMand).c_str()) ; // do this in sendZigbee
-      DebugPrintln("comMand inc len ex checkSum = " + String(comMand));
-      
-      delayMicroseconds(250);
-      DebugPrintln("zb send cmd " + String(y));
-  
-      sendZigbee(comMand);
-      ledblink(1,50);
-      //check if anything was received
-      waitSerial2Available();
-      readZigbee();
+      //strcpy(initCmd, initBaseCommand[y]);
+      if(diagNose != 0) consoleOut("cmd : " + String(y)); 
 
-      DebugPrintln("inMessage = " + String(inMessage) + " rc = " + String(readCounter));
+      //Serial.println("comMand ex len ex checkSum = " + String(initBaseCommand[y]));
+      delayMicroseconds(250);
+      if( diagNose != 0 ) consoleOut("zb send cmd " + String(y));
+  
+      sendZB( initBaseCommand[y] );
+      ledblink(1,50);
+
+      //check if anything was received
+      readZB(s_d); // we read but flush the answer
+
+      //DebugPrintln("inMessage = " + String(inMessage) + " rc = " + String(readCounter));
     }
     // now all the commands are send 
     //first clean (zero out) initCmd
     
-    memset(&initCmd, 0, sizeof(initCmd)); //zero out all buffers we could work with "messageToDecode"
-    delayMicroseconds(250);
+    //memset(&initCmd, 0, sizeof(initCmd)); //zero out all buffers we could work with "messageToDecode"
+    //delayMicroseconds(250);
     memset(&initBaseCommand, 0, sizeof(&initBaseCommand)); //zero out all buffers we could work with "messageToDecode"
     delayMicroseconds(250);    
-
 }
+
+
 // **************************************************************************************
 //                the extra command for normal operations
 // **************************************************************************************
 void sendNO() {
-    char noCmd[90] ={0} ;   //  we have to send the 10th command
+    char noCmd[49] ={0} ;   //  this buffer must have the right length
     char ecu_id_reverse[13]; //= {ECU_REVERSE()};
     ECU_REVERSE().toCharArray(ecu_id_reverse, 13);
-  
+    char s_d[254]={0}; // provide a buffer for the call to readZB
+    
     snprintf(noCmd, sizeof(noCmd), "2401FFFF1414060001000F1E%sFBFB1100000D6030FBD3000000000000000004010281FEFE", ecu_id_reverse);
+    //lenth=36+12+1
     //Serial.println("noCmd = " + String(noCmd));    
   
     //add sln at the beginning
-    char comMand[100];
-    sprintf(comMand, "%02X", (strlen(noCmd) / 2 - 2));
-    strcat(comMand, noCmd);
+    //char comMand[100];
+    //sprintf(comMand, "%02X", (strlen(noCmd) / 2 - 2));
+    //strcat(comMand, noCmd);
       
     //add the CRC at the end of the command is done by sendZigbee
-    DebugPrintln("normal ops initCmd exc checksum = " + String(comMand));
-    DebugPrintln("sending N.O. cmd");
-  
-    sendZigbee(comMand);
+    String term = "send normal ops initCmd = " + String(noCmd);
+    if(diagNose != 0) consoleOut(term); 
+    sendZB( noCmd ); 
   
     //check if anything was received
-    waitSerial2Available();
-    readZigbee();
-    if(readCounter != 0) {
-       DebugPrintln("inMessage = " + String(inMessage) + " rc = " + String(readCounter));
-      } else {
-       DebugPrintln("no answer"); 
-    }
-    DebugPrintln("zb initializing ready, now check");
+    //waitSerial2Available();
+    readZB(s_d);//do nothing with the returned value
+    
+    //if(readCounter == 0) Serial.println("no answer");
+
+    if(diagNose != 0) consoleOut(F("zb initializing ready, now check running"));
     //zero out 
-    memset(&comMand, 0, sizeof(comMand)); //zero out
-    delayMicroseconds(250);    
+    //memset(&comMand, 0, sizeof(comMand)); //zero out
+    //delayMicroseconds(250);    
     memset(&noCmd, 0, sizeof(noCmd)); //zero out
     delayMicroseconds(250);
 

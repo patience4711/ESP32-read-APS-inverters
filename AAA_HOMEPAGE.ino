@@ -27,18 +27,21 @@ table, th, td {
 tr {background-color:#ccffcc;}
 td { width:70px; }
 @media only screen and (max-width: 800px) {
-th, td { width:60px; font-size:12px; }
+th, td { width:60px; font-size:11px; }
 tr {height:35px;}
 .btn { padding: 5px 18px; font-size:10px;} 
 }
 </style>
 <script type="text/javascript" src="JAVASCRIPT"></script>
+<script type="text/javascript" src="SECURITY"></script>
 </head>
 
 <body onload='loadScript()'>
 <div id='msect'>
   <ul>
-  <li style='float:right;'><a id='haha' href='/MENU'>menu</a></li>
+  <li><a href='/ABOUT'>info</a></li>
+  <li><a href='/LOGPAGE'>log</a></li>
+  <li id="ml" style='float:right; display:none'><a id='haha' href='/MENU'>menu</a></li>
   </ul>
 </div>
 <div id='msect'>
@@ -58,7 +61,7 @@ tr {height:35px;}
         <div id="4channel" style='display:none;'>
           <center><table>
           <tr style='Background-color:lightblue; font-weight:bold; text-align:center; border:4px solid black;'>
-          <td>INV<td>PANEL0<td>PANEL1<td>PANEL2<td>PANEL3<td>kWh</td></tr>
+          <td>inv.<td>panel 0<td>panel 1<td>panel 2<td>panel 3<td>kWh</td></tr>
           <tr id="r0" style="display:none;"><td id="i0"></td><td id="p00"></td><td id="p01"></td><td id="p02"></td><td id="p03"></td><td id="e0"></td></tr>
           <tr id="r1" style="display:none;"><td id="i1"></td><td id="p10"></td><td id="p11"></td><td id="p12"></td><td id="p13"></td><td id="e1"></td></tr>
           <tr id="r2" style="display:none;"><td id="i2"></td><td id="p20"></td><td id="p21"></td><td id="p22"></td><td id="p23"></td><td id="e2"></td></tr>        
@@ -139,15 +142,17 @@ function getData(invnr) {
       var polled = obj.polled;
       var Type = obj.type;
       
-      var p0 = obj.p0;
-      var p1 = obj.p1;
-      var p2 = obj.p2;
-      var p3 = obj.p3;
+      const pw = [4];
+      pw[0] = obj.p0;
+      pw[1] = obj.p1;
+      pw[2] = obj.p2;
+      pw[3] = obj.p3;
       var st = obj.state;
       var sl = obj.sleep;
       var eN = obj.eN;
       cnt = parseInt(obj.count);
-                 
+      var rem = obj.remote;
+      if(rem == 0) {document.getElementById("ml").style.display = "block";}               
       if(st == "11") {
         document.getElementById("busy").style.display = "block";
       } else {
@@ -173,67 +178,21 @@ function getData(invnr) {
       document.getElementById(cel).innerHTML = "<a href='/details?inv=" + String(invnr) + "'><button class='btn'>" + String(invnr) + "</button></a>";
       celbgc(cel);
 
-      var cel = "p" + String(invnr) + "0";
-      if (p0 != "n/e") {
-       if (polled == "1") {
-        document.getElementById(cel).innerHTML = p0; } 
-        else 
-        {
-        document.getElementById(cel).innerHTML = "n/a";
-        }      
-      } 
-      else 
-      {
-      celbgc(cel);
+ for (let z=0; z < 4 ; z++) {
+        cel = "p" + String(invnr) + z; //e,g, p00
+        if (pw[z] == "n/e") {
+            celbgc(cel);
+          } 
+          else 
+         {
+          document.getElementById(cel).innerHTML = pw[z];
+        }
       }
- 
-      var cel = "p" + String(invnr) + "1";
-      if (p1 != "n/e") {
-      if (polled == "1") {
-        document.getElementById(cel).innerHTML = p1; } 
-        else 
-        {
-        document.getElementById(cel).innerHTML = "n/a";; 
-        }      
-      } 
-      else 
-      {
-      //document.getElementById(cel).style = "background-color:#a3c2c2";
-      celbgc(cel);
-      }
-
-      var cel = "p" + String(invnr) + "2";
-      if (p2 != "n/e") {
-      if (polled == "1") {
-        document.getElementById(cel).innerHTML = p2; } 
-        else 
-        {
-       document.getElementById(cel).innerHTML = "n/a"; 
-        }      
-      } 
-      else 
-      {
-      celbgc(cel);
-      }   
-
-      var cel = "p" + String(invnr) + "3";
-      if (p3 != "n/e") {
-      if (polled == "1") {
-        document.getElementById(cel).innerHTML = p3; } 
-        else 
-        {
-        document.getElementById(cel).innerHTML = "n/a"; 
-        }      
-      } 
-      else 
-      {
-      celbgc(cel);
-      }  
 
       var cel = "e" + String(invnr);
       celbgc(cel);
       if (eN != "n/e") {
-      if(polled == "1") {
+      //if(polled == "1") {
             document.getElementById(cel).innerHTML = eN;
             if(cnt > 1){
               totalEn = totalEn + parseFloat(eN);
@@ -241,9 +200,9 @@ function getData(invnr) {
               document.getElementById("r9").style.display="table-row";
               document.getElementById("e9").innerHTML = totalEn.toFixed(2);
               }
-         } else {
-           document.getElementById(cel).innerHTML = "n/a"; 
-         } 
+        // } else {
+        //   document.getElementById(cel).innerHTML = "n/a"; 
+        // } 
       
       } else {
         document.getElementById(cel).innerHTML = "n/e";
@@ -275,10 +234,3 @@ function getTimes() {
 }
 
 )=====";
-
-
-//
-//void sendHomepage() {
-//    toSend = FPSTR(ECU_HOMEPAGE);
-//    toSend.replace("#ID",String(ECU_ID));
-//  }

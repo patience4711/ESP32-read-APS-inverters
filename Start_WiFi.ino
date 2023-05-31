@@ -7,7 +7,7 @@ void start_wifi() {
  Serial.println("starting wifi ");
  delay(1000);
 //Serial.println("start wifi 3");
-   WiFi.setHostname(getChipId().c_str()); 
+   WiFi.setHostname(getChipId(false).c_str()); 
 
 //Serial.println("start wifi 4");
 

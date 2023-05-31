@@ -2,12 +2,13 @@ void pairOnActionflag() {
 //start with setup the coordinator
 //can we pair when the radio is up for normal operation
    
-   String term = "start pairing inverter sn " + String(Inv_Prop[iKeuze].invSerial);
+   char term[20];
+   sprintf(term, "inverter %d" , Inv_Prop[iKeuze].invSerial);
    Update_Log("pairing", term);
     if( !coordinator(false) ) {
-      term="pairing failed, zb system down";
-      Update_Log("pairing", term);
-      if( diagNose != 0 ) consoleOut(term);
+      //term="pairing failed, zb down";
+      Update_Log("pairing", "failed, zb down");
+      if( diagNose != 0 ) consoleOut("pairing failed, zb down");
        return;
     }
 
@@ -17,7 +18,7 @@ void pairOnActionflag() {
   if( pairing(iKeuze) ) {
     //DebugPrintln("pairing success, saving configfile");
     String term = "success, inverter got id " + String(Inv_Prop[iKeuze].invID);
-    Update_Log("pairing", term);
+    //Update_log("pairing".c_str(), term.c_str());
     if( diagNose != 0 ) consoleOut(term);
     //} else if(diagNose==2){ws.textAll(term);}  
 
@@ -25,7 +26,7 @@ void pairOnActionflag() {
     //if( diagNose != 0 ) consoleOut("pairing failed");
     strncpy(Inv_Prop[iKeuze].invID, "0000", 6);
     String term = "failed, inverter got id " + String(Inv_Prop[iKeuze].invID);
-    Update_Log("pair", term);
+    //Update_log("pair".c_str(), term.c_str());
     if( diagNose != 0 ) consoleOut(term);
     //} else if(diagNose==2){ws.textAll(term);}  
       

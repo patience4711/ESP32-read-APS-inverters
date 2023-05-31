@@ -1,37 +1,26 @@
 // we can send a zigbee message via serial console
-void testMessage() {
+void testMessage(bool console) {
+      char sendCmd[100]={0};
+      char reCeived[254]={0};
+      int len;
+      if(console) len = strlen( InputBuffer_Serial ); else len = strlen( txBuffer );
 
-      char sendCmd[100];
-      char temp[128]={0};
-      int len = strlen(InputBuffer_Serial);
-
-      //put all the bytes of inputBuffer_Serial in sendCmd, starting at pos 7
+      //put all the bytes of inputBuffer_Serial ( or txBuffer) in sendCmd, starting at pos 7
       for(int i=0; i<len; i++) 
       {
-         sendCmd[i] = InputBuffer_Serial[i+7];
+         if(console) { sendCmd[i] = InputBuffer_Serial[i+7];} else sendCmd[i] = txBuffer[i+7];
       }
-      // we preceed with len
-      char comMand[254];
-      // first put sLen in comMand and than add the command itself
-      sprintf(comMand, "%02X", (strlen(sendCmd) / 2 - 2));
-      Serial.print("len = "); Serial.println(String(comMand));
-      strcat(comMand, sendCmd);    
-
-       // CRC at the end
-       //strcpy(temp, checkSumString(comMand).c_str() ) ;        
-       //strcpy(sendCmd, strncat(sendCmd, temp, sizeof(sendCmd) + sizeof(temp)) );
-       //strcat(comMand, temp);
-       //strcat(comMand,checkSumString(comMand).c_str()) ; // do this in sendZigbee
-       DebugPrintln("sendCmd ex crc = FE" + String(comMand));
+       
        //now we send this command
-       sendZigbee(comMand);
+       sendZB(sendCmd);
        // find the answer
-       if ( waitSerial2Available() ) { readZigbee(); } else { readCounter = 0;}
-       DebugPrintln("received : " + String(inMessage));
-       DebugPrintln("answer " + String(inMessage));
+       
+      char s_d[200]={0};  
+      // now read the answer if there is one
+      readZB(s_d);
+      delayMicroseconds(250);
+       
        // cleanup
-       memset(&comMand, 0, sizeof(comMand)); //zero out 
-       delayMicroseconds(250);    
        memset(&sendCmd, 0, sizeof(sendCmd)); //zero out 
        delayMicroseconds(250);
 }

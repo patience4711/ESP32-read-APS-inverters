@@ -1,31 +1,27 @@
 void start_server() {
-DebugPrintln("starting server");
+if( diagNose != 0 ) consoleOut("starting server");
 //server.addHandler(&ws);
-//  server.on("/CONSOLE", HTTP_GET, [](AsyncWebServerRequest *request){
-//    request->send_P(200, "text/html", CONSOLE_HTML);
-//  });
 
-//server.on("/details", HTTP_GET, [](AsyncWebServerRequest *request) {
-//iKeuze = atoi(request->arg("inv").c_str()) ;
-//requestUrl = request->url();
-//sendPageDetails(request);
-////request->send(200, "text/html", toSend);
-//});
+server.on("/CONSOLE", HTTP_GET, [](AsyncWebServerRequest *request){
+  if(checkRemote( request->client()->remoteIP().toString()) ) request->redirect( "/DENIED" );
+    request->send_P(200, "text/html", CONSOLE_HTML);
+  });
 
 server.on("/details", HTTP_GET, [](AsyncWebServerRequest *request) {
 iKeuze = atoi(request->arg("inv").c_str()) ;
 requestUrl = request->url();
-//sendPageDetails(request);
 request->send_P(200, "text/html", DETAILSPAGE);
 });
 
 // Simple Firmware Update
   server.on("/FWUPDATE", HTTP_GET, [](AsyncWebServerRequest *request){
+    if(checkRemote( request->client()->remoteIP().toString()) ) request->redirect( "/DENIED" );
     requestUrl = "/";
     if (!request->authenticate("admin", pswd) ) return request->requestAuthentication();
     request->send_P(200, "text/html", otaIndex); 
     });
   server.on("/handleFwupdate", HTTP_POST, [](AsyncWebServerRequest *request){
+    if(checkRemote( request->client()->remoteIP().toString()) ) request->redirect( "/DENIED" );
     Serial.println("FWUPDATE requested");
     if( !Update.hasError() ) {
     toSend="<br><br><center><h2>UPDATE SUCCESS !!</h2><br><br>";
@@ -53,7 +49,7 @@ request->send_P(200, "text/html", DETAILSPAGE);
       }
     }
     } else {
-      DebugPrintln("filename empty, aborting");
+      if( diagNose != 0 ) consoleOut("filename empty, aborting");
 //     Update.hasError()=true;
     }
     if(!Update.hasError()){
@@ -75,19 +71,13 @@ request->send_P(200, "text/html", DETAILSPAGE);
 // ***********************************************************************************
 server.on("/SW=BACK", HTTP_GET, [](AsyncWebServerRequest *request) {
     loginBoth(request, "both");
-    //loginBoth(request, "both");
-//    zendPageHome();
-//    request->send(200, "text/html", toSend);
-//Serial.println("de requestUrl = " + requestUrl);
-request->redirect( requestUrl );
-//request->send(302, "text/plane", "");
-
+    request->redirect( requestUrl );
 });
 
 server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
     loginBoth(request, "both");
     //sendHomepage();
-    DebugPrintln("send Homepage");
+    //if( diagNose != 0 ) consoleOut(F("send Homepage"));
     request->send_P(200, "text/html", ECU_HOMEPAGE);
 });
 
@@ -108,16 +98,25 @@ server.on("/favicon.ico", HTTP_GET, [](AsyncWebServerRequest *request) {
 });
 
 server.on("/MENU", HTTP_GET, [](AsyncWebServerRequest *request) {
+//Serial.println("requestUrl = " + request->url() ); // can we use this
+if(checkRemote( request->client()->remoteIP().toString()) ) request->redirect( "/DENIED" );
+
 loginBoth(request, "admin");
 toSend = FPSTR(HTML_HEAD);
 toSend += FPSTR(MENUPAGE);
 request->send(200, "text/html", toSend);
 });
-
+server.on("/SECURITY", HTTP_GET, [](AsyncWebServerRequest *request) {
+   request->send_P(200, "text/css", SECURITY);
+});
+server.on("/DENIED", HTTP_GET, [](AsyncWebServerRequest *request) {
+   request->send_P(200, "text/html", REQUEST_DENIED);
+});
 // ***********************************************************************************
 //                                   basisconfig
 // ***********************************************************************************
 server.on("/BASISCONFIG", HTTP_GET, [](AsyncWebServerRequest *request) {
+  if(checkRemote( request->client()->remoteIP().toString()) ) request->redirect( "/DENIED" );
 loginBoth(request, "admin");
 requestUrl = request->url();// remember this to come back after reboot
 zendPageBasis();
@@ -131,86 +130,87 @@ request->redirect( requestUrl );
 });
 
 server.on("/IPCONFIG", HTTP_GET, [](AsyncWebServerRequest *request) {
-loginBoth(request, "admin");
-zendPageIPconfig();
-request->send(200, "text/html", toSend);
+  if(checkRemote( request->client()->remoteIP().toString()) ) request->redirect( "/DENIED" );
+  loginBoth(request, "admin");
+  zendPageIPconfig();
+  request->send(200, "text/html", toSend);
 });
 
 server.on("/IPconfig", HTTP_GET, [](AsyncWebServerRequest *request) {
-handleIPconfig(request);
+  handleIPconfig(request);
 });
 
 server.on("/MQTT", HTTP_GET, [](AsyncWebServerRequest *request) {
-loginBoth(request, "admin");
-requestUrl = request->url();
-zendPageMQTTconfig();
-request->send(200, "text/html", toSend);
+  if(checkRemote( request->client()->remoteIP().toString()) ) request->redirect( "/DENIED" );
+  loginBoth(request, "admin");
+  requestUrl = request->url();
+  zendPageMQTTconfig();
+  request->send(200, "text/html", toSend);
 });
 
 server.on("/MQTTconfig", HTTP_GET, [](AsyncWebServerRequest *request) {
-handleMQTTconfig(request);
-request->redirect( requestUrl );
+  handleMQTTconfig(request);
+  request->redirect( requestUrl );
 });
 
 server.on("/GEOCONFIG", HTTP_GET, [](AsyncWebServerRequest *request) {
-loginBoth(request, "admin");
-requestUrl = request->url();
-zendPageGEOconfig();
-request->send(200, "text/html", toSend);
+  if(checkRemote( request->client()->remoteIP().toString()) ) request->redirect( "/DENIED" );
+  loginBoth(request, "admin");
+  requestUrl = request->url();
+  zendPageGEOconfig();
+  request->send(200, "text/html", toSend);
 });
 
 server.on("/geoconfig", HTTP_GET, [](AsyncWebServerRequest *request) {
   //DebugPrintln(F("geoconfig requested"));
-handleGEOconfig(request);
-request->redirect( requestUrl );
+  handleGEOconfig(request);
+  request->redirect( requestUrl );
 });
 
 server.on("/REBOOT", HTTP_GET, [](AsyncWebServerRequest *request) {
-  //DebugPrintln(F("reboot requested"));
   loginBoth(request, "admin");
   actionFlag = 10;
   confirm(); 
-  //request->send(200, "text/plain", "ok going to reboot, close this page");
   request->send(200, "text/html", toSend);
 });
 
 server.on("/STARTAP", HTTP_GET, [](AsyncWebServerRequest *request) {
-        loginBoth(request, "admin");
-        //DebugPrintln("We gaan de gegevens wissen");
-        String toSend = F("<!DOCTYPE html><html><head><script type='text/javascript'>setTimeout(function(){ window.location.href='/SW=BACK'; }, 5000 ); </script>");
-        toSend += F("</head><body><center><h2>OK the accesspoint is started.</h2>Wait unil the led goes on.<br><br>Then go to the wifi-settings on your pc/phone/tablet and connect to ESP32-ECU");
-        request->send ( 200, "text/html", toSend ); //zend bevestiging
-        actionFlag = 11;
-        //request->redirect("/");
+  if(checkRemote( request->client()->remoteIP().toString()) ) request->redirect( "/DENIED" );
+  loginBoth(request, "admin");
+  String toSend = F("<!DOCTYPE html><html><head><script type='text/javascript'>setTimeout(function(){ window.location.href='/SW=BACK'; }, 5000 ); </script>");
+  toSend += F("</head><body><center><h2>OK the accesspoint is started.</h2>Wait unil the led goes on.<br><br>Then go to the wifi-settings on your pc/phone/tablet and connect to ESP32-ECU");
+  request->send ( 200, "text/html", toSend ); //zend bevestiging
+  actionFlag = 11;
 });
 
-server.on("/INFOPAGE", HTTP_GET, [](AsyncWebServerRequest *request) {
-//Serial.println(F("/INFOPAGE requested"));
+//server.on("/INFOPAGE", HTTP_GET, [](AsyncWebServerRequest *request) {
+////Serial.println(F("/INFOPAGE requested"));
+//loginBoth(request, "both");
+//handleInfo(request);
+//});
+server.on("/ABOUT", HTTP_GET, [](AsyncWebServerRequest *request) {
+Serial.println(F("/INFOPAGE requested"));
 loginBoth(request, "both");
-handleInfo(request);
+handleAbout(request);
 });
-
 server.on("/TEST", HTTP_GET, [](AsyncWebServerRequest *request) {
-loginBoth(request, "admin");
-actionFlag = 44;
-request->send( 200, "text/html", "<center><br><br><h3>checking zigbee.. please wait a minute.<br>Then you can find the result in the log.<br><br><a href=\'/LOGPAGE\'>click here</a></h3>" );
+  loginBoth(request, "admin");
+  actionFlag = 44;
+  request->send( 200, "text/html", "<center><br><br><h3>checking zigbee.. please wait a minute.<br>Then you can find the result in the log.<br><br><a href=\'/LOGPAGE\'>click here</a></h3>" );
 });
 
 server.on("/LOGPAGE", HTTP_GET, [](AsyncWebServerRequest *request) {
-loginBoth(request, "both");
-requestUrl = request->url();
-zendPageLog();
-request->send( 200, "text/html", toSend );
+  loginBoth(request, "both");
+  requestUrl = request->url();
+  handleLogPage(request);
+  //request->send_P(200, "text/html", LOGPAGE, putList);
 });
 
 server.on("/CLEAR_LOG", HTTP_GET, [](AsyncWebServerRequest *request) {
-  loginBoth(request, "admin");
-  //requestUrl = request->url();
-  DebugPrintln(F("clear log requested"));
-  Clear_Log();
-  //toSend = FPSTR(CONFIRM);
-  //request->send(200, "text/html", toSend); //send the html code to the client  
-  request->redirect( requestUrl ); // refreshes the page
+      if(checkRemote( request->client()->remoteIP().toString()) ) request->redirect( "/DENIED" );
+      loginBoth(request, "admin");
+      Clear_Log(request);
+      request->redirect( "/LOGPAGE" ); // refreshes the page
 });
 
 server.on("/MQTT_TEST", HTTP_GET, [](AsyncWebServerRequest *request) {
@@ -234,6 +234,7 @@ request->send( 200, "text/plain", toSend  );
 //                    inverters
 // ******************************************************************
 server.on("/PAIR", HTTP_GET, [](AsyncWebServerRequest *request) {
+  if(checkRemote( request->client()->remoteIP().toString()) ) request->redirect( "/DENIED" );
   loginBoth(request, "admin");
   requestUrl = request->url();
   //DebugPrintln(F("pairing requested"));
@@ -241,9 +242,8 @@ server.on("/PAIR", HTTP_GET, [](AsyncWebServerRequest *request) {
 });
 
 server.on("/INV_DEL", HTTP_GET, [](AsyncWebServerRequest *request) {
-// save the data
-//requestUrl = request->url();
-handleInverterdel(request);
+  if(checkRemote( request->client()->remoteIP().toString()) ) request->redirect( "/DENIED" );
+  handleInverterdel(request);
 });
 
 server.on("/inverterconfig", HTTP_GET, [](AsyncWebServerRequest *request) {
@@ -252,12 +252,10 @@ handleInverterconfig(request);
 });
 
 server.on("/INV_CONFIG", HTTP_GET, [](AsyncWebServerRequest *request) {
-iKeuze=0;
-//Serial.println("test requested, ikeuze = " + String(iKeuze) );
-    //Serial.println("Inv_Prop[iKeuze].invID = " + String(Inv_Prop[iKeuze].invID));
-    inverterForm(); // prepare the page part with the form
-    request->send_P(200, "text/html", INVCONFIG_START, processor);
-    DebugPrintln("sendInverterconfig done");
+  if(checkRemote( request->client()->remoteIP().toString()) ) request->redirect( "/DENIED" );  
+  iKeuze=0;
+  inverterForm(); // prepare the page part with the form
+  request->send_P(200, "text/html", INVCONFIG_START, processor);
 });
 
 server.on("/INV", HTTP_GET, [](AsyncWebServerRequest *request) {
@@ -267,16 +265,14 @@ server.on("/INV", HTTP_GET, [](AsyncWebServerRequest *request) {
     iKeuze = i;
     //DebugPrintln("?INV iKeuze at enter = " + String(iKeuze));
     if( iKeuze == 99 ) {
-      iKeuze = inverterCount; //indicate this is an adition
-      inverterCount += 88;
-     }
-     //DebugPrint("iKeuze is "); //DebugPrintln(iKeuze);
-     //Serial.println("Inv_Prop[iKeuze].invID = " + String(Inv_Prop[iKeuze].invID));
+        iKeuze = inverterCount; //indicate this is an adition
+        inverterCount += 88;
+        }
      String bestand = "/Inv_Prop" + String(iKeuze) + ".str";
      if (!SPIFFS.exists(bestand)) Inv_Prop[iKeuze].invType = 2;
     //nu roepen we zendpageRelevant aan
-    inverterForm(); // prepare the form page
-    request->send_P(200, "text/html", INVCONFIG_START, processor); //send the html code to the client
+     inverterForm(); // prepare the form page
+     request->send_P(200, "text/html", INVCONFIG_START, processor); //send the html code to the client
 });
 
 server.on("/CONFIRM_INV", HTTP_GET, [](AsyncWebServerRequest *request) {
@@ -288,94 +284,100 @@ server.on("/CONFIRM_INV", HTTP_GET, [](AsyncWebServerRequest *request) {
 //***********************************************************************
 
 
-server.on("/get.currentTime", HTTP_GET, [](AsyncWebServerRequest *request) {
-     //ledblink(1, 100);
-     String uur = String(hour());
-     if(hour() < 10) { uur = "0" + String(hour()); } 
-      String minuten = String(minute());
-      if(minute() < 10) { minuten = "0" + String(minute()); }
-     String json = "{";
-     json += "\"uur\":\"" + uur + "\",\"min\":\"" + minuten + "\"}";
-     request->send(200, "text/json", json);
-     json = String();
-});
-
-server.on("/get.Times", HTTP_GET, [](AsyncWebServerRequest *request) {
-     String json = "{";
-     // start polling
-     String ssuur = "0" + String(hour(switchonTime));
-     String ssmin = String(minute(switchonTime));
-     if( minute(switchonTime) < 10 ) ssmin = "0" + ssmin;
-     ssuur += ":" + ssmin;
-     json += "\"srt\":\"" + ssuur + " hr\"";
-     // end polling
-     ssuur = String(hour(switchoffTime));
-     ssmin = String(minute(switchoffTime));
-     if( minute(switchoffTime) < 10 ) ssmin = "0" + ssmin;
-     ssuur += ":" + ssmin;
-     json += ",\"sst\":\"" + ssuur + " hr\"}";
-
-     request->send(200, "text/json", json);
-     json = String();
-});
-
-//server.on("/get.Count", HTTP_GET, [](AsyncWebServerRequest *request) {     
-//// set the array into a json object
-//  String json="{";
-//      json += "\"count\":\"" + String(inverterCount) + "\"";
-//      json += "}";     
+//server.on("/get.currentTime", HTTP_GET, [](AsyncWebServerRequest *request) {
+//     //ledblink(1, 100);
+//     String uur = String(hour());
+//     if(hour() < 10) { uur = "0" + String(hour()); } 
+//      String minuten = String(minute());
+//      if(minute() < 10) { minuten = "0" + String(minute()); }
+//     String json = "{";
+//     json += "\"uur\":\"" + uur + "\",\"min\":\"" + minuten + "\"}";
 //     request->send(200, "text/json", json);
 //     json = String();
 //});
 
+//server.on("/get.Times", HTTP_GET, [](AsyncWebServerRequest *request) {
+//  
+//     String json = "{";
+//     // start polling
+//     String ssuur = "0" + String(hour(switchonTime));
+//     String ssmin = String(minute(switchonTime));
+//     if( minute(switchonTime) < 10 ) ssmin = "0" + ssmin;
+//     ssuur += ":" + ssmin;
+//     json += "\"srt\":\"" + ssuur + " hr\"";
+//     // end polling
+//     ssuur = String(hour(switchoffTime));
+//     ssmin = String(minute(switchoffTime));
+//     if( minute(switchoffTime) < 10 ) ssmin = "0" + ssmin;
+//     ssuur += ":" + ssmin;
+//     json += ",\"sst\":\"" + ssuur + " hr\"}";
+//
+//     request->send(200, "text/json", json);
+//     json = String();
+//});
+
+server.on("/get.Times", HTTP_GET, [](AsyncWebServerRequest *request) {
+  //{"srt":"05:37 hr","sst":"21:32 hr"}
+     char json[40] = {0};
+     char temp[20]={0};
+     // start polling
+     if(minute(switchonTime) < 10 ) {
+       sprintf(temp,"{\"srt\":\"0%d:0%d hr\"", hour(switchonTime), minute(switchonTime) );
+     } else {
+       sprintf(temp,"{\"srt\":\"0%d:%d hr\"", hour(switchonTime), minute(switchonTime) );
+     }
+     strcat(json, temp);
+     if( minute(switchoffTime) < 10 ) {
+        sprintf(temp,",\"sst\":\"%d:0%d hr\"}", hour(switchoffTime), minute(switchoffTime) );
+     } else {
+        sprintf(temp,",\"sst\":\"%d:%d hr\"}", hour(switchoffTime), minute(switchoffTime) );
+     }
+     strcat(json, temp);
+     Serial.println("json length = " + String(strlen(json)));
+     request->send(200, "text/json", json);
+     //json = String();
+});
+
+// this link is called by the detailspage
 server.on("/get.Inverter", HTTP_GET, [](AsyncWebServerRequest *request) { 
 // this is used by the detailspage and for http requests      
 // set the array into a json object
-  String json;
+
 //  int panelCount=4;
   int i;
   if (request->hasArg("inv")) {
      i = (request->arg("inv").toInt()) ;
   } else {
      i = iKeuze;
+  //request->send(200, "text/plain", "no argument provided");
   }
-
+  //Serial.println("i = " + String(i));
   if( i < inverterCount) {
-      json="{";
-      json += "\"inv\":\"" + String(i) + "\"";
-      json += ",\"polled\":\"" + String(polled[i]) + "\"";
-      json += ",\"serial\":\"" + String(Inv_Prop[i].invSerial)  + "\"";      
-      json += ",\"sid\":\""  + String(Inv_Prop[i].invID) + "\""; //freq = a char
-      json += ",\"type\":\"" + String(Inv_Prop[i].invType) + "\"";
+
+char json[350]={0} ;     
+// we need name polled type id serial
+snprintf(json, sizeof(json), "{\"inv\":\"%d\",\"name\":\"%s\",\"polled\":\"%d\",\"type\":\"%d\",\"serial\":\"%s\",\"sid\":\"%s\",\"freq\":%s,\"temp\":%s,\"acv\":%s,\"sq\":%s" , i, Inv_Prop[i].invLocation, polled[i], Inv_Prop[i].invType, Inv_Prop[i].invSerial, Inv_Prop[i].invID, Inv_Data[i].freq, Inv_Data[i].heath, Inv_Data[i].acv, Inv_Data[i].sigQ );
+
       
-      json += ",\"freq\":"  + String(atof(Inv_Data[i].freq)); //freq = a char    
-      json += ",\"temp\":"  + String(atof(Inv_Data[i].heath));
-      json += ",\"acv\":"   + String(atof(Inv_Data[i].acv));
-      json += ",\"sq\":" + String(atof(Inv_Data[i].sigQ));
-      
-// we need to provide values foar all panel so when connected this is n/e
+//// we need to provide values for all panel so when connected this is n/e
+      char pan[4][50]={0};
       for(int z = 0; z < 4; z++ ) 
-      {
+     {
          if(Inv_Prop[i].conPanels[z]) // is this panel connected?
          {
-            json += ",\"dcv" + String(z) + "\":" + String(atof(Inv_Data[i].dcv[z]));
-            json += ",\"dcc" + String(z) + "\":" + String(atof(Inv_Data[i].dcc[z]));
-            json += ",\"pow" + String(z) + "\":" + String(atof(Inv_Data[i].power[z]));
-            json += ",\"en" + String(z) + "\":" + String(en_saved[i][z], 2);  
+              sprintf(pan[z], ",\"dcv%d\":%s,\"dcc%d\":%s,\"pow%d\":%s,\"en%d\":%s" , z , Inv_Data[i].dcv[z], z ,Inv_Data[i].dcc[z],z ,Inv_Data[i].power[z], z, en_saved[i][z]);
          }   else {
-             json += ",\"dcv" + String(z) + "\":\"n/e\"";
-             json += ",\"dcc" + String(z) + "\":\"n/e\"";
-             json += ",\"pow" + String(z) + "\":\"n/e\"";
-             json += ",\"en" + String(z) +  "\":\"n/e\"";
+              sprintf(pan[z], ",\"dcv%d\":\"n/e\",\"dcc%d\":\"n/e\",\"pow%d\":\"n/e\",\"en%d\":\"n/e\"", z ,z ,z ,z);
          }
+         strcat(json, pan[z]);
       }
-      
-      json += ",\"power\":" + String(atof(Inv_Data[i].power[4]));
-      json += ",\"energy\":" + String(Inv_Data[i].en_total, 2);
-      json += "}";     
+//      
+    char tail[40]={0};   
+    sprintf(tail, ",\"power\":%s,\"eN\":%.2f}", Inv_Data[i].power[4], Inv_Data[i].en_total/(float)1000);
+    strcat(json, tail);
 
      request->send(200, "text/json", json);
-     json = String();
+    // json = String();
      } else {
      String term = "unknown inverter " + String(i);
      request->send(200, "text/plain", term);
@@ -385,72 +387,56 @@ server.on("/get.Inverter", HTTP_GET, [](AsyncWebServerRequest *request) {
 // this link provides the inverterdata on the frontpage
 server.on("/get.Power", HTTP_GET, [](AsyncWebServerRequest *request) {     
 // set the array into a json object
-#ifdef TEST
-zigbeeUp = 1;
-#endif
 
-String json;
-int i = atoi(request->arg("inv").c_str()) ;
-// inv prop comes from spiffs so if we could evaluate that it exists
-      json="{";
-      json += "\"nm\":\"" + String(Inv_Prop[i].invLocation) + "\"";
-      json += ",\"polled\":\"" + String(polled[i]) + "\"";    
-      json += ",\"type\":\"" + String(Inv_Prop[i].invType) + "\"";
-      json += ",\"count\":\"" + String(inverterCount) + "\"";
-      
-// first test if the inverter exists
-if(String(Inv_Prop[i].invLocation) != "N/A") {
-      for(int z = 0; z < 4; z++ ) 
-      {
-         if(Inv_Prop[i].conPanels[z]) // is this panel connected?
-         {
-             json += ",\"p" +  String(z) + "\":\"" + Inv_Data[i].power[z] + "\"";  
-         }   else {
-             json += ",\"p" +  String(z) + "\":\"n/e\""; //when no panel
-         }
-      }
-     json += ",\"eN\":\"" + String(Inv_Data[i].en_total/(float)1000, 2) + "\""; 
-//     json += ",\"eN2\":\"" + String((en_saved[i][0] + en_saved[i][1]), 2) + "\"";//energy per panel
-     //json += ",\"state\":\"" + String(zigbeeUp) + "\"";
- } 
-    else
- { // invSerial="000000000000" so we make all values n/e
+      uint8_t remote = 0;
+      if(checkRemote( request->client()->remoteIP().toString()) ) remote = 1; // for the menu link
+      char json[200]={0};
+      int i = atoi(request->arg("inv").c_str()) ;
 
-      for(int z = 0; z < 4; z++ ) 
-      {
-        json += ",\"p" +  String(z) + "\":\"n/e\""; 
-      }
-     json += ",\"eN\":\"n/e\"";
-     
- }
-     json += ",\"state\":\"" + String(zigbeeUp) + "\""; 
- 
-     uint8_t night = 0; 
-     if(!timeRetrieved ) { night=0; } else {
+      uint8_t night = 0; 
+      if(!timeRetrieved ) { night=0; } else {
      //if(now() > switchonTime && now() < switchoffTime )
-     if(dayTime) { night = 0; } else { night = 1; } 
+      if(dayTime) { night = 0; } else { night = 1; } 
+      }
+      snprintf(json, sizeof(json), "{\"nm\":\"%s\",\"polled\":\"%d\",\"type\":\"%d\",\"count\":\"%d\",\"remote\":\"%d\",\"state\":\"%d\",\"sleep\":\"%d\"" ,Inv_Prop[i].invLocation, polled[i], Inv_Prop[i].invType, inverterCount, remote, zigbeeUp, night );
+
+      // now populate the values depending on if the panel exists and if polled
+      char pan[4][50]={0};
+      for(int z = 0; z < 4; z++ ) 
+      {
+         //is the panel connected? if not put n/e
+           if( ! Inv_Prop[i].conPanels[z] ) { sprintf(pan[z], ",\"p%d\":\"n/e\"", z);  }  
+         // so the panel is connected, is the inverter polled?
+         else if (polled[i]) 
+         {
+             //polled, we put a value
+               sprintf( pan[z], ",\"p%d\":\"%s\"", z, Inv_Data[i].power[z] );
+         }   else {
+            // not polled, we put n/a
+               sprintf(pan[z], ",\"p%d\":\"n/a\"", z);
+         }
+      // add this to json
+      strcat(json, pan[z]);
+      }
+     char tail[20]={0};
+     if (polled[i]) {
+       sprintf(tail, ",\"eN\":\"%.2f\"}", Inv_Data[i].en_total/(float)1000);
+       strcat(json, tail);
+     } else {
+       strcat(json, ",\"eN\":\"n/a\"}");
      }
-     json += ",\"sleep\":\"" + String(night) + "\"";
-     json += "}";     
-    
-    //Serial.println("get.Power reaction = " + json);
      request->send(200, "text/json", json);
-     json = String();
- 
 });
 
 
 
 server.on("/get.Paired", HTTP_GET, [](AsyncWebServerRequest *request) {     
 // set the array into a json object
-String json="{";
-     //Serial.println("iKeuze = " + String(iKeuze));
-     //Serial.println("json Inv_Prop[" + String(iKeuze) + "].invID = " + String(Inv_Prop[iKeuze].invID));      
-      json += "\"invID\":\"" + String(Inv_Prop[iKeuze].invID) + "\"";
-      json += "}";
-     //Serial.println("get.Paired reaction = " + json);
-     request->send(200, "text/json", json);
-     json = String();
+  String json="{";
+  json += "\"invID\":\"" + String(Inv_Prop[iKeuze].invID) + "\"";
+  json += "}";
+  request->send(200, "text/json", json);
+  json = String();
 });
 
 // if everything failed we come here

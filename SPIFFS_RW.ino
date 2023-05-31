@@ -4,26 +4,26 @@
 void SPIFFS_read() {
   //DebugPrintln("mounting FS...");
  if (SPIFFS.begin(true)) {
-    DebugPrintln("mounted file system");
+    Serial.println("mounted file system");
 
        if( file_open_for_read("/wificonfig.json") ) {
-                DebugPrintln("read wificonfig\n");
+                Serial.println("read wificonfig\n");
           } else {
-             DebugPrintln("wificonfig.json not opened\n");
+             Serial.println("wificonfig.json not opened\n");
           }
        
        if( file_open_for_read("/basisconfig.json") ) {     
-             DebugPrintln("read basisconfig\n");
+             Serial.println("read basisconfig\n");
           } else {
-          DebugPrintln("basisconfig.json not opened\n");
+          Serial.println("basisconfig.json not opened\n");
         } 
        if( file_open_for_read("/mqttconfig.json") ) {     
-             DebugPrintln("mqttconfig read");
+             Serial.println("mqttconfig read");
           } else {
-          DebugPrintln("mqttconfig.json not opened");
+          Serial.println("mqttconfig.json not opened");
         }         
   } else {
-        DebugPrintln("failed to mount FS");
+        Serial.println("failed to mount FS");
    }
  // einde spiffs lezen 5 bestanden
 
@@ -68,7 +68,7 @@ bool leesStruct(String whichfile) {
 //                      de gegevens opslaan in SPIFFS                         *  
 // ****************************************************************************
 void wifiConfigsave() {
-   DebugPrintln("saving config");
+   Serial.println("saving config");
 
     DynamicJsonDocument doc(1024);
     JsonObject json = doc.to<JsonObject>();   
@@ -81,10 +81,10 @@ void wifiConfigsave() {
     
     json["timezone"] = timezone;
     json["zomerTijd"] = zomerTijd;
-
+    json["securityLevel"] = securityLevel;
     File configFile = SPIFFS.open("/wificonfig.json", "w");
     if (!configFile) {
-      DebugPrintln("open file for writing failed!");
+      Serial.println("open file for writing failed!");
     }
     //DebugPrintln("wificonfig.json written");
     #ifdef DEBUG 
@@ -98,7 +98,7 @@ void wifiConfigsave() {
 
 
 void basisConfigsave() {
-    DebugPrintln("saving basis config");
+    Serial.println("saving basis config");
     DynamicJsonDocument doc(1024);
     JsonObject json = doc.to<JsonObject>();
     json["ECU_ID"] = ECU_ID;
@@ -112,7 +112,7 @@ void basisConfigsave() {
     if (!configFile) {
       //DebugPrintln("open file for writing failed");
     }
-    DebugPrintln("inverterconfig.json written");
+    Serial.println("inverterconfig.json written");
     #ifdef DEBUG 
     serializeJson(json, Serial);
     Serial.println(F(""));     
@@ -139,7 +139,7 @@ void mqttConfigsave() {
     if (!configFile) {
       //DebugPrintln("open file for writing failed");
     }
-    DebugPrintln("mqttconfig.json written");
+    Serial.println("mqttconfig.json written");
     #ifdef DEBUG
     serializeJson(json, Serial);
     Serial.println(F("")); 
@@ -183,6 +183,7 @@ bool file_open_for_read(String bestand) {
                       if(jsonStr.indexOf("lati") > 0){lati = doc["lati"].as<float>();}                      
                       if(jsonStr.indexOf("timezone") > 0){ strcpy(timezone, doc["timezone"]);}
                       if(jsonStr.indexOf("zomerTijd") > 0){zomerTijd = doc["zomerTijd"].as<bool>();}
+                      if(jsonStr.indexOf("securityLevel") > 0){securityLevel = doc["securityLevel"].as<int>();}
             }
 
             if (bestand == "/basisconfig.json") {

@@ -129,7 +129,7 @@ void handleMQTTconfig(AsyncWebServerRequest *request) {
 //  toSend = FPSTR(CONFIRM);
 //  toSend.replace("SW=BACK", "MQTT");
 //  request->send(200, "text/html", toSend); //send the html code to the client
-  DebugPrintln("saved mqttconfig");
+  if( diagNose != 0 ) consoleOut("saved mqttconfig");
   mqttConfigsave();  // 
   actionFlag=24; // reconnect with these settings
 }

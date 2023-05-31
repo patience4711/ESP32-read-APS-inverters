@@ -3,50 +3,52 @@
 // ******************************************************************
 int decodePollAnswer(int which)
 {
-DebugPrintln("decodePollAnswer which = " + String(which) );
-// we need the fullincomingMessge and the inverterSerial
-  char messageToDecode[CC2530_MAX_SERIAL_BUFFER_SIZE] = {0};
+    char messageToDecode[CC2530_MAX_SERIAL_BUFFER_SIZE] = {0};
+  
+    char s_d[CC2530_MAX_SERIAL_BUFFER_SIZE] = {0};
+    uint8_t Message_begin_offset = 0;    
+  
+    int t_old = 0;
+   
+    float en_old[4] = {0}; // energy old
+    float energy_old_total = 0;
+    int t_extr  = 0;
+    int ts = 0;
+    bool resetFlag = false;
+    float total_pwr = 0;
+  
+    //retrieve the poll answer
+    strcpy(messageToDecode, readZB(s_d));
 
-  char s_d[254] = {0};
-  uint8_t Message_begin_offset = 0;    
+    if (readCounter == 0) {
+        if( diagNose != 0 ) consoleOut(F("no answer on poll request"));  
 
-  int t_old = 0;
+        return 50; //no answer
+      }
+
+    if( diagNose != 0 ) consoleOut("decodePollAnswer inverter " + String(which) );
  
-  float en_old[4] = {0}; // energy old
-  float energy_old_total = 0;
-  int t_extr  = 0;
-  int ts = 0;
-  bool resetFlag = false;
-  float total_pwr = 0;
-if(!*inMessage) return 50; // if empty we return with erroCode 50
-
-    strncpy(messageToDecode, inMessage, strlen(inMessage));
-    //delayMicroseconds(250); //give memset a little bit of time to empty all the buffers
-    
-    // we dont need this char anymore so make it empty
-    memset( &inMessage, '\0', sizeof(inMessage) ); //zero out the 
-    delayMicroseconds(250);
-    
     char *tail;
     int fault=0;
+
     if(strstr(messageToDecode,  "FE01640100") == NULL) // answer to AF_DATA_REQUEST 00=success
     {
-     if(diagNose) DebugPrintln("AF_DATA_REQUEST failed");
+     if( diagNose != 0 ) consoleOut( "AF_DATA_REQUEST failed" );
      fault = 10;    
     } else
     if (strstr(messageToDecode, "FE03448000") == NULL) //  AF_DATA_CONFIRM the 00 byte = success
     {
-      if(diagNose) DebugPrintln("no AF_DATA_CONFIRM");
+      if( diagNose != 0 ) consoleOut("no AF_DATA_CONFIRM");
       fault = 11;
     } else
     if (strstr(messageToDecode, "FE0345C4") == NULL) //  ZDO_SRC_RTG_IND
     {
-      if(diagNose) DebugPrintln("no route receipt");
+      //if(diagNose == 1) Serial.println("no route receipt");
       //return 12; // this command seems facultative
     } else 
     if (strstr(messageToDecode, "4481") == NULL)
     {
-      if(diagNose) DebugPrintln("no  AF_INCOMING_MSG");
+      if( diagNose != 0 ) consoleOut("no  AF_INCOMING_MSG");
       fault=13;
     }
     if(fault > 9 ) {
@@ -55,9 +57,9 @@ if(!*inMessage) return 50; // if empty we return with erroCode 50
       return fault;
     }
    
-    if (strlen(messageToDecode) < 223) // this message is not valid inverter data
+    if (strlen(messageToDecode) < 223) // this message is not long enough to be valid inverter data
     {
-       if(diagNose) DebugPrintln("ignoring, received " + String(messageToDecode) );
+       if( diagNose != 0 ) consoleOut("ignoring, received " + String(messageToDecode) );
        return 15;
     }    
         
@@ -69,7 +71,7 @@ if(!*inMessage) return 50; // if empty we return with erroCode 50
 
     //sigQ = roundoff( (float) (extractValue(14, 2, 1, 0, tail) * 100 / 254 ), 1);
     dtostrf((float)(extractValue(14, 2, 1, 0, tail) * 100 / 255 ), 0, 1, Inv_Data[which].sigQ);
-    DebugPrintln( "extracted sigQ = " + String(Inv_Data[which].sigQ) );
+    if( diagNose != 0 ) consoleOut( "extracted sigQ = " + String(Inv_Data[which].sigQ) );
     //    dtostrf((float)(extractValue(68, 4, 1, 0, s_d) / 3.8 ), 0, 1, Inv_Data[which].acv);
     //    DebugPrintln( "extracted ACV = " + String(Inv_Data[which].acv) );
 // a YC600 message
@@ -103,56 +105,54 @@ if(!*inMessage) return 50; // if empty we return with erroCode 50
 // new string
 // 703000021300fbfb5cbbbb2000fc0001ffff000000000000000006e506ee015901da036e13882bbb01480026 ff ff 05 25 | 08 43 | 00 3a 40 b2 | 00 35 38 52 | 00 ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3896fefe
         // attention s_d starts with the serial at offset 30 !!                             44            48temp  50   EN2       54     EN1
-        //NEW VERSION of s_d generation with search string
-        memset(&s_d[0], 0, sizeof(s_d)); //zero out all buffers we could work with "messageToDecode"
-        delayMicroseconds(250);            //give memset a little bit of time to empty all the buffers
+
+        memset(&s_d[0], 0, sizeof(s_d)); //zero out 
+        delayMicroseconds(250);            //give memset a little bit of time 
         strncpy(s_d, tail + 30, strlen(tail));
-        delayMicroseconds(250); //give memset a little bit of time to empty all the buffers
+        delayMicroseconds(250); //give memset a little bit of time
 
-   // #ifdef TEST
-   //    DebugPrintln("s_d =  " + String(s_d)); // show the tail
-   // #endif
-
-      if( Inv_Prop[which].invType == 2 ) { // is this a DS3
-        DebugPrintln( "decoding a DS3 inverter");
+      if( Inv_Prop[which].invType == 2 ) 
+      { // is this a DS3
+        if( diagNose != 0 ) consoleOut( "decoding a DS3 inverter");
         // ACV offset 34
         dtostrf((float)(extractValue(68, 4, 1, 0, s_d) / 3.8 ), 0, 1, Inv_Data[which].acv);
-        DebugPrintln( "extracted ACV = " + String(Inv_Data[which].acv) );
+        if( diagNose != 0 ) consoleOut( "extracted ACV = " + String(Inv_Data[which].acv) );
         
         // FREQ offset 36
         dtostrf((float)(extractValue(72, 4, 1, 0, s_d)/100 ), 0, 1, Inv_Data[which].freq);
-        DebugPrintln( "extracted FREQ = " + String(Inv_Data[which].freq) );
+        if( diagNose != 0 ) consoleOut( "extracted FREQ = " + String(Inv_Data[which].freq) );
         
         // HEATH offset 48
         dtostrf((extractValue(96, 4, 1, 0, s_d)*0.0198 - 23.84), 0, 1, Inv_Data[which].heath);         
-        DebugPrintln( "extracted HEATH = " + String(Inv_Data[which].heath) );
+        if( diagNose != 0 ) consoleOut( "extracted HEATH = " + String(Inv_Data[which].heath) );
         
         // ******************  dc voltage   *****************************************
-         //voltage ch1 offset 28
+         // voltage ch1 offset 28
          dtostrf( extractValue( 52, 4, 1, 0, s_d ) * (float)1 / (float)48, 0, 1, Inv_Data[which].dcv[0]);
-         //voltage ch2 offset 26
+         // voltage ch2 offset 26
          dtostrf( extractValue( 56, 4, 1, 0, s_d ) * (float)1 / (float)48, 0, 1, Inv_Data[which].dcv[1]);
          // ******************  current   *****************************************
-         //current ch1 offset 30
-        //dtostrf( extractValue(60, 4, 1, 0, s_d ) * 1.25 / 100, 0, 1, Inv_Data[which].dcc[0]);
-        dtostrf( extractValue(60, 4, 1, 0, s_d ) * 0.0125, 0, 1, Inv_Data[which].dcc[0]);
-         //current ch1 offset 34
-        dtostrf( extractValue(64, 4, 1, 0, s_d ) * 0.0125, 0, 1, Inv_Data[which].dcc[1]);
+         // current ch1 offset 30
+         dtostrf( extractValue(60, 4, 1, 0, s_d ) * 0.0125, 0, 1, Inv_Data[which].dcc[0]);
+         // current ch1 offset 34
+         dtostrf( extractValue(64, 4, 1, 0, s_d ) * 0.0125, 0, 1, Inv_Data[which].dcc[1]);
       
       } else {
-         #ifdef TEST
+
          if(Inv_Prop[which].invType == 0) {
-         DebugPrintln( "decoding a YC600 inverter"); } else { DebugPrintln( "decoding a QS1 inverter");}
-         #endif
+         if( diagNose != 0 ) consoleOut( "decoding a YC600 inverter"); 
+         } else { 
+          if( diagNose != 0 ) consoleOut( "decoding a QS1 inverter");
+         }
 
          
         //yc600 or QS1
-//      frequency ac voltage and temperature
-        //Inv_Data[which].acv = String((float)((extractValue(56, 4, 1, 0, s_d) * ((float)1 / (float)1.3277)) / 4), 1);
+        // frequency ac voltage and temperature
+        // ACV offset 28
         dtostrf((float)((extractValue(56, 4, 1, 0, s_d) * ((float)1 / (float)1.3277)) / 4), 0, 1, Inv_Data[which].acv);
-
+        // FREQ offset 12
         dtostrf((float)50000000 / extractValue(24, 6, 1, 0, s_d), 0, 1, Inv_Data[which].freq);
-         
+        // HEATH offset 10
         dtostrf(extractValue(20, 4, 0.2752F, -258.7F, s_d), 0, 1, Inv_Data[which].heath); 
 
         // ******************  dc voltage   *****************************************
@@ -173,9 +173,9 @@ if(!*inMessage) return 50; // if empty we return with erroCode 50
         //********************************************************************************************
         if(Inv_Prop[which].invType == 1) //SQ1 inverter
         {
-          #ifdef TEST
-          DebugPrintln( "extracting dc values for panels 2 and 3");
-          #endif
+
+          if( diagNose != 0 ) consoleOut( "extracting dc values for panels 2 and 3");
+
           //these are the values of channel 2 and 3 of the sq1 according to electrosun911
           //offset 21 -> byte for voltage ch3
           dtostrf( (extractValue( 42, 2, (float)16, 0, s_d ) + extractValue(40, 1, 1, 0, s_d)) * (float)82.5 / (float)4096, 0, 1, Inv_Data[which].dcv[2]);          
@@ -206,10 +206,8 @@ We keep stacking the increases so we have also en_inc_total
 // **********************************************************************
 //               calculation of the power per panel
 // **********************************************************************
-    DebugPrintln("* * * * polled inverter " + String(which) + " * * * *");
-    #ifdef TEST
-    DebugPrintln("testCounter = " + String(testCounter));
-    #endif
+    if( diagNose != 0 ) consoleOut("* * * * polled inverter " + String(which) + " * * * *");
+
     // 1st the time period 
     // at the start of this we have a value of the t_new[which] of the former poll
     // if this is 0 there was no former poll 
@@ -238,7 +236,7 @@ We keep stacking the increases so we have also en_inc_total
     //whatever happened we remember t_ext as the new time value
     t_saved[which] = t_extr;
 
-    if(diagNose) delay(100); DebugPrintln("extracted time = " + String(t_extr) + "  the timespan = " + String(ts));
+    if( diagNose != 0 ) consoleOut("extracted time = " + String(t_extr) + "  the timespan = " + String(ts));
 
     // now for each channel 
     int increment = 10; // offset to the next energy value
@@ -257,15 +255,15 @@ We keep stacking the increases so we have also en_inc_total
     for(int x = 0; x < 4; x++ ) 
     {   
          if(Inv_Prop[which].conPanels[x]) { // is this panel connected ? otherwise skip
-         #ifndef TEST 
-         if(diagNose) {delay(100); DebugPrintln(" * * * decoding panel " + String(x) + " * * * ");}           
-         #endif
+
+         if(diagNose != 0) consoleOut(" * * * decoding panel " + String(x) + " * * * ");           
+
             // first store the last value of energy_new temporary in energy_old
             // after the calulation we dont need it anymore
             en_old[x] = en_saved[which][x]; // en_new (per inverter per panel needs to be global
-#ifdef TEST            
-            if(diagNose) {delay(100); DebugPrintln(" * decoding panel " + String(x) + " * en_old " + String(en_old[x]) );}
-#endif
+            
+            if( diagNose != 0 )consoleOut(" * decoding panel " + String(x) + " * en_old " + String(en_old[x]) );
+
             // now we extract a new energy_new[which][x] 
             en_extr = extractValue(offst+x*increment, btc, 1, 0, s_d); // offset 74 todays module energy channel 0
 
@@ -276,9 +274,9 @@ We keep stacking the increases so we have also en_inc_total
               en_saved[which][x] = (en_extr * 8.311F / (float)3600); //[Wh]
             }
 
-#ifdef TEST            
-            if(diagNose) {delay(100); DebugPrintln("en_extr " + String(en_extr) + "  en_saved " + String(en_saved[which][x]) );}
-#endif            
+           
+            if( diagNose != 0 ) consoleOut("en_extr " + String(en_extr) + "  en_saved " + String(en_saved[which][x]) );
+           
 
             // calculate the energy increase with or without reset and totalize it
             if(resetFlag){
@@ -301,15 +299,15 @@ We keep stacking the increases so we have also en_inc_total
             total_pwr += power;
             
             yield();
-            if(diagNose) 
+            if(diagNose != 0) 
             {
-                if(resetFlag) { delay(100); DebugPrintln("1st poll after inverter (re)start"); }
-                delay(100);
-                DebugPrintln("en_incr " + String(en_incr) + "  power " + String(power) );
+                consoleOut("1st poll after inverter (re)start"); 
+                //delay(100);
+                consoleOut("en_incr " + String(en_incr) + "  power " + String(power) );
             }     
 
         } else {
-          if(diagNose) {delay(100); DebugPrintln("no panel " + String(x));}
+            if( diagNose != 0 ) consoleOut("no panel connected " + String(x));
         }
     }           
      // now we extracted all values per panel and added the increased energy
@@ -317,15 +315,13 @@ We keep stacking the increases so we have also en_inc_total
     Inv_Data[which].en_total += en_incr_total; // stack the increase
     dtostrf( total_pwr, 0, 1, Inv_Data[which].power[4]); // write the total value in the struct   
 
-#ifdef TEST
      yield();
-     if(diagNose){
-     delay(100);
-     DebugPrintln("total energy increase: " + String(en_incr_total) + "\n");
-     delay(100);
-     DebugPrintln("total energy stacked in Inv_Data[which].en_total: " + String(Inv_Data[which].en_total) + "\n");
+     if(diagNose != 0){
+        //delay(100);
+       consoleOut("total energy increase: " + String(en_incr_total) + "\n");
+        //delay(100);
+       consoleOut("total energy stacked in Inv_Data[which].en_total: " + String(Inv_Data[which].en_total) + "\n");
      }
-#endif
     return 0;
 }       
 
@@ -338,17 +334,20 @@ We keep stacking the increases so we have also en_inc_total
 // *******************************************************************************************************************
 float extractValue(uint8_t startPosition, uint8_t valueLength, float valueSlope, float valueOffset, char toDecode[CC2530_MAX_SERIAL_BUFFER_SIZE])
 {
-//DebugPrintln("re declare tempMsgBuffer");
-char tempMsgBuffer[64] = {0}; // was 254
-yield();
-    
-    memset(&tempMsgBuffer[0], 0, sizeof(tempMsgBuffer)); //zero out all buffers we could work with "messageToDecode"
-    delayMicroseconds(250);                              //give memset a little bit of time to empty all the buffers
-    strncpy(tempMsgBuffer, toDecode + startPosition, valueLength);
-    delayMicroseconds(250); //give memset a little bit of time to empty all the buffers
-
+// experimenting with this function: removed the memset's and delays an changed the return formaula
+    char tempMsgBuffer[64] = {0}; // was 254
     yield();
-    return (valueSlope * (float)StrToHex(tempMsgBuffer)) + valueOffset;
+    
+    // memset(&tempMsgBuffer[0], 0, sizeof(tempMsgBuffer)); //zero out 
+    // delayMicroseconds(250);                              //give memset a little bit of time 
+    strncpy(tempMsgBuffer, toDecode + startPosition, valueLength);
+    // delayMicroseconds(250); //give memset a little bit of time to empty all the buffers
+    
+    // now we have the part of the string "startposition - number of bytes"
+    // we calculate the value it is representing with strtol and correct it with valueSlope and offset
+    yield();
+    //return (valueSlope * (float)StrToHex(tempMsgBuffer)) + valueOffset;
+    return (valueSlope * (float)strtol(tempMsgBuffer, 0, 16)) + valueOffset;
 }
 
 // ************************************************************************************
@@ -356,15 +355,17 @@ yield();
 // ************************************************************************************
 void mqttPoll(int which) {
 
-if(Mqtt_Format == 0) return;  
-bool reTain = false;
-String Mqtt_send = Mqtt_outTopic;
-if(Mqtt_outTopic.endsWith("/")) {
-
+  if(Mqtt_Format == 0) return;  
+  String Mqtt_send = Mqtt_outTopic;
+  if(Mqtt_outTopic.endsWith("/")) {
   Mqtt_send += String(Inv_Prop[which].invIdx);
   }
+  char pan[50]={0};
+  char tail[40]={0};
+  char toMQTT[300]={0};
+  bool reTain = false;
 
-String toMQTT = "{\"inv_serial\":\"" + String(Inv_Prop[which].invSerial) + "\"";
+//String toMQTT = "{\"inv_serial\":\"" + String(Inv_Prop[which].invSerial) + "\"";
 
 // the json to domoticz must be something like {"idx" : 7, "nvalue" : 0,"svalue" : "90;2975.00"}
 // does it work with the serial on the json?
@@ -374,64 +375,63 @@ String toMQTT = "{\"inv_serial\":\"" + String(Inv_Prop[which].invSerial) + "\"";
 // "nvalue" : 0,
 // "svalue" : "90;2975.00"  
 String sValue="\"svalue\":\"";   
-   switch( Mqtt_Format)  {
+   switch( Mqtt_Format)  { 
     case 1: 
-       // en_total is the stacked energy increase
-       //String sValue="\"svalue\":\""; // "svalue":"
-       sValue += String(Inv_Data[which].power[4]) + ";" + String(Inv_Data[which].en_total, 2) ; //total of the 2 or 4
-       toMQTT += ",\"idx\":" + String(Inv_Prop[which].invIdx) + ",\"nvalue\":0," + sValue + "\"}";
-       DebugPrintln("we publish to domoticz, mess is : " + toMQTT);
+       snprintf(toMQTT, sizeof(toMQTT), "{\"idx\":%d,\"nvalue\":0,\"svalue\":\"%s;%.2f\"}" , Inv_Prop[which].invIdx , Inv_Data[which].power[4], Inv_Data[which].en_total);
        break;
-       
+       // length 46
+
      case 2: // for not domoticz we have a different mqtt string how does this look?
-       toMQTT += ",\"temp\":\"" + String(Inv_Data[which].heath) + "\",\"p0\":\"" + String(Inv_Data[which].power[0]) + "\",\"p1\":\"" + String(Inv_Data[which].power[1]) + "\"";
-       if( Inv_Prop[which].invType == 1 ) {
-       toMQTT += ",\"p2\":\"" + String(Inv_Data[which].power[2]) + "\",\"p3\":\"" + String(Inv_Data[which].power[3])  +  "\"";
-       }
-       toMQTT += ",\"energy\":\"" + String(Inv_Data[which].en_total, 1) + "\"";
-       DebugPrintln("we do not publish to domoticz, mess is : " + toMQTT);    
-       toMQTT += "}";
+       snprintf(toMQTT, sizeof(toMQTT), "{\"temp\":\"%s\",\"p0\":\"%s\",\"p1\":\"%s\",\"p2\":\"%s\",\"p3\":\"%s\",\"energy\":\"%.2f\"}" ,Inv_Data[which].heath, Inv_Data[which].power[0],Inv_Data[which].power[1], Inv_Data[which].power[2], Inv_Data[which].power[3], Inv_Data[which].en_total);
        break;  
        
      case 3:
-       toMQTT += ",\"acv\":" + String(Inv_Data[which].acv) + ",\"freq\":" + String(Inv_Data[which].freq) + ",\"temp\":" + String(Inv_Data[which].heath);
-       if( Inv_Prop[which].invType == 1 ) {
-       toMQTT += ",\"dcv\":["+String(Inv_Data[which].dcv[0])+","+String(Inv_Data[which].dcv[1])+","+String(Inv_Data[which].dcv[2])+","+String(Inv_Data[which].dcv[3])+ "]";
-       toMQTT += ",\"dcc\":["+String(Inv_Data[which].dcc[0])+","+String(Inv_Data[which].dcc[1])+","+String(Inv_Data[which].dcc[2])+","+String(Inv_Data[which].dcc[3])+"]";
-       toMQTT += ",\"pwr\":["+String(Inv_Data[which].power[0])+","+String(Inv_Data[which].power[1])+","+String(Inv_Data[which].power[2])+","+String(Inv_Data[which].power[3])+"]";
-       toMQTT += ",\"en\":["+String(en_saved[which][0])+","+String(en_saved[which][1])+","+String(en_saved[which][2])+","+String(en_saved[which][3])+"]}";
-       //toMQTT += ",\"totalen\":" + String(Inv_Data[which].en_total, 2) +"}";
-             } else {
-       toMQTT += ",\"dcv\":["+String(Inv_Data[which].dcv[0])+","+String(Inv_Data[which].dcv[1])+"]";
-       toMQTT += ",\"dcc\":["+String(Inv_Data[which].dcc[0])+","+String(Inv_Data[which].dcc[1])+"]";
-       toMQTT += ",\"pwr\":["+String(Inv_Data[which].power[0])+","+String(Inv_Data[which].power[1])+"]";
-       toMQTT += ",\"en\":["+String(en_saved[which][0])+","+String(en_saved[which][1])+"]}";
-       //toMQTT += ",\"totalen\":" + String(Inv_Data[which].en_total, 2) +"}";
-       reTain=true;
-         }
-        break;
-
-     case 4:
-       toMQTT += ",\"acv\":" + String(Inv_Data[which].acv) + ",\"freq\":" + String(Inv_Data[which].freq) + ",\"temp\":" + String(Inv_Data[which].heath);
-       
-       toMQTT += ",\"ch0\":[" + String(Inv_Data[which].dcv[0]) + "," + String(Inv_Data[which].dcc[0]) + "," + String(Inv_Data[which].power[0]) + "," + String(en_saved[which][0]) + "]";
-       toMQTT += ",\"ch1\":[" + String(Inv_Data[which].dcv[1]) + "," + String(Inv_Data[which].dcc[1]) + "," + String(Inv_Data[which].power[1]) + "," + String(en_saved[which][1]) + "]";
-        if( Inv_Prop[which].invType == 1 ) { // add ch2 and ch3
-       toMQTT += ",\"ch2\":[" + String(Inv_Data[which].dcv[2]) + "," + String(Inv_Data[which].dcc[2]) + "," + String(Inv_Data[which].power[2]) + "," + String(en_saved[which][2]) + "]";
-       toMQTT += ",\"ch3\":[" + String(Inv_Data[which].dcv[3]) + "," + String(Inv_Data[which].dcc[3]) + "," + String(Inv_Data[which].power[3]) + "," + String(en_saved[which][3]) + "]";
+        snprintf(toMQTT, sizeof(toMQTT), "{\"freq\":%s,\"temp\":%s,\"acv\":%s" , Inv_Data[which].freq, Inv_Data[which].heath, Inv_Data[which].acv);
+        //char pan[50]={0};
+        if( Inv_Prop[which].invType == 1 ) { // qs1
+            sprintf(pan, ",\"dcv\":[%s,%s,%s,%s]", Inv_Data[which].dcv[0], Inv_Data[which].dcv[1],Inv_Data[which].dcv[2],Inv_Data[which].dcv[3]);
+            strcat(toMQTT, pan);
+            sprintf(pan, ",\"dcc\":[%s,%s,%s,%s]", Inv_Data[which].dcc[0], Inv_Data[which].dcc[1],Inv_Data[which].dcc[2],Inv_Data[which].dcc[3]);
+            strcat(toMQTT, pan);
+            sprintf(pan, ",\"pwr\":[%s,%s,%s,%s]", Inv_Data[which].power[0], Inv_Data[which].power[1],Inv_Data[which].power[2],Inv_Data[which].power[3]);
+            strcat(toMQTT, pan);
+            sprintf(pan, ",\"en\":[%.2f,%.2f,%.2f,%.2f]}", en_saved[which][0], en_saved[which][1], en_saved[which][2], en_saved[which][3]);
+            strcat(toMQTT, pan);
+        } else {
+            sprintf(pan, ",\"dcv\":[%s,%s]", Inv_Data[which].dcv[0], Inv_Data[which].dcv[1]);
+            strcat(toMQTT, pan);
+            sprintf(pan, ",\"dcc\":[%s,%s]", Inv_Data[which].dcc[0], Inv_Data[which].dcc[1]);
+            strcat(toMQTT, pan);
+            sprintf(pan, ",\"pwr\":[%s,%s]", Inv_Data[which].power[0], Inv_Data[which].power[1]);
+            strcat(toMQTT, pan);
+            sprintf(pan, ",\"en\":[%.2f,%.2f]}", en_saved[which][0], en_saved[which][1]);          
+            strcat(toMQTT, pan);
         }
-       toMQTT += ",\"totals\":[" + String(Inv_Data[which].power[4]) + "," + String(Inv_Data[which].en_total, 2) + "]}";
-       reTain=true;
+        reTain=true;
+        break;
+//
+    case 4:
+
+        snprintf(toMQTT, sizeof(toMQTT), "{\"freq\":%s,\"temp\":%s,\"acv\":%s" , Inv_Data[which].freq, Inv_Data[which].heath, Inv_Data[which].acv);      
+        sprintf(pan, ",\"ch0\":[%s,%s,%s,%.2f]", Inv_Data[which].dcv[0], Inv_Data[which].dcc[0], Inv_Data[which].power[0], en_saved[which][0]);  
+        strcat(toMQTT, pan);
+        sprintf(pan, ",\"ch1\":[%s,%s,%s,%.2f]", Inv_Data[which].dcv[1], Inv_Data[which].dcc[1], Inv_Data[which].power[1], en_saved[which][1]);  
+        strcat(toMQTT, pan);
+
+        if( Inv_Prop[which].invType == 1 ) { // add ch2 and ch3
+            sprintf(pan, ",\"ch2\":[%s,%s,%s,%.2f]", Inv_Data[which].dcv[2], Inv_Data[which].dcc[2], Inv_Data[which].power[2], en_saved[which][2]);  
+            strcat(toMQTT, pan);
+            sprintf(pan, ",\"ch3\":[%s,%s,%s,%.2f]", Inv_Data[which].dcv[3], Inv_Data[which].dcc[3], Inv_Data[which].power[3], en_saved[which][3]);  
+            strcat(toMQTT, pan);
+        }
+        sprintf(tail, ",\"totals\":[%s,%.2f]} retain=true", Inv_Data[which].power[4], Inv_Data[which].en_total);
+        strcat(toMQTT, tail);
+        reTain=true;
+        break;
     }
  
-
-   DebugPrintln("mqtt mess :"); DebugPrintln(toMQTT);
-   #ifdef TEST
-     DebugPrintln("sending mqtt to " + Mqtt_send );
-     DebugPrintln("message:  " + toMQTT );
-   #endif
    
-   MQTT_Client.publish ( Mqtt_send.c_str(), toMQTT.c_str(), reTain );
+   MQTT_Client.publish ( Mqtt_send.c_str(), toMQTT, reTain );
  }
 
 // not domoticz: {"inv_serial":"123456789012","temp":"12,3","p0":"123",p1":"123",p2":"123",p3":"123","energy":"345"}
