@@ -10,7 +10,7 @@ bool mqttConnect() {   // MQTT connection (documented way from AutoConnect : htt
     }
     if( diagNose != 0 )("mqtt try to connect to " + String(Mqtt_Broker));
     //DebugPrintln("connecting to mqtt");
-    if (Mqtt_Port == "" ) Mqtt_Port = "1883";   // just in case ....
+    if (Mqtt_Port[0] == '\0' ) strcpy(Mqtt_Port, "1883");   // just in case ....
     uint8_t retry = 3;
 
     // We generate a unique name for this device to avoid mqtt problems 
@@ -19,14 +19,14 @@ bool mqttConnect() {   // MQTT connection (documented way from AutoConnect : htt
     
     while (!MQTT_Client.connected()) {
 
-      if (MQTT_Client.connect(clientId.c_str() , Mqtt_Username.c_str(), Mqtt_Password.c_str())) 
+      if (MQTT_Client.connect(clientId.c_str() , Mqtt_Username, Mqtt_Password)) 
       {
           if( diagNose != 0 ) consoleOut("MQTT connection Established with ID : " + clientId);
-          //DebugPrintln(clientId);
+
           //connected, so we and subscribe to inTopic
          
-          MQTT_Client.subscribe ( Mqtt_inTopic.c_str() ) ;   // 
-          if( diagNose != 0 ) consoleOut("\nMQTT subscribed on topic " + Mqtt_inTopic);
+          MQTT_Client.subscribe ( Mqtt_inTopic ) ;   // 
+          if( diagNose != 0 ) consoleOut("\nMQTT subscribed on topic " + String(Mqtt_inTopic));
           Update_Log("mqtt", "connected");
           return true;
       } 

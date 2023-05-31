@@ -333,20 +333,14 @@ We keep stacking the increases so we have also en_inc_total
 //                             extract values
 // *******************************************************************************************************************
 float extractValue(uint8_t startPosition, uint8_t valueLength, float valueSlope, float valueOffset, char toDecode[CC2530_MAX_SERIAL_BUFFER_SIZE])
-{
-// experimenting with this function: removed the memset's and delays an changed the return formaula
+    {
     char tempMsgBuffer[64] = {0}; // was 254
     yield();
     
-    // memset(&tempMsgBuffer[0], 0, sizeof(tempMsgBuffer)); //zero out 
-    // delayMicroseconds(250);                              //give memset a little bit of time 
     strncpy(tempMsgBuffer, toDecode + startPosition, valueLength);
-    // delayMicroseconds(250); //give memset a little bit of time to empty all the buffers
-    
     // now we have the part of the string "startposition - number of bytes"
     // we calculate the value it is representing with strtol and correct it with valueSlope and offset
     yield();
-    //return (valueSlope * (float)StrToHex(tempMsgBuffer)) + valueOffset;
     return (valueSlope * (float)strtol(tempMsgBuffer, 0, 16)) + valueOffset;
 }
 
@@ -355,10 +349,11 @@ float extractValue(uint8_t startPosition, uint8_t valueLength, float valueSlope,
 // ************************************************************************************
 void mqttPoll(int which) {
 
-  if(Mqtt_Format == 0) return;  
-  String Mqtt_send = Mqtt_outTopic;
-  if(Mqtt_outTopic.endsWith("/")) {
-  Mqtt_send += String(Inv_Prop[which].invIdx);
+  if(Mqtt_Format == 0) return;
+  char Mqtt_send[26]={0};  
+  strcpy(Mqtt_send, Mqtt_outTopic);
+  if( Mqtt_send[strlen(Mqtt_send)-1] == '/' ) {
+    strcat(Mqtt_send, String(Inv_Prop[which].invIdx).c_str());
   }
   char pan[50]={0};
   char tail[40]={0};
@@ -431,7 +426,7 @@ String sValue="\"svalue\":\"";
     }
  
    
-   MQTT_Client.publish ( Mqtt_send.c_str(), toMQTT, reTain );
+   MQTT_Client.publish ( Mqtt_send, toMQTT, reTain );
  }
 
 // not domoticz: {"inv_serial":"123456789012","temp":"12,3","p0":"123",p1":"123",p2":"123",p3":"123","energy":"345"}

@@ -215,17 +215,15 @@ server.on("/CLEAR_LOG", HTTP_GET, [](AsyncWebServerRequest *request) {
 
 server.on("/MQTT_TEST", HTTP_GET, [](AsyncWebServerRequest *request) {
 loginBoth(request, "admin");
-
-String Mqtt_send = Mqtt_outTopic;
-if(Mqtt_outTopic.endsWith("/")) {
-//String suffix = String(Inv_Prop[which].invIdx);
-  //Mqtt_send += suffix;
-  Mqtt_send += String(Inv_Prop[0].invIdx);
+char Mqtt_send[26] = {0};
+strcpy( Mqtt_send , Mqtt_outTopic);
+if(Mqtt_send[strlen(Mqtt_send -1)] == '/') {
+  strcat(Mqtt_send, String(Inv_Prop[0].invIdx).c_str());
 }
 
-String toMQTT = "{\"test\":\"" + Mqtt_send + "\"}";
+String toMQTT = "{\"test\":\"" + String(Mqtt_send) + "\"}";
 //DebugPrintln("MQTT_Client.publish the message : " + toMQTT);
-MQTT_Client.publish ( Mqtt_send.c_str(), toMQTT.c_str(), true );
+MQTT_Client.publish ( Mqtt_send, toMQTT.c_str(), true );
 toSend = "sent mqtt message : " + toMQTT;
 request->send( 200, "text/plain", toSend  );
 });

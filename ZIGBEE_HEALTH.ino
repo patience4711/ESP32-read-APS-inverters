@@ -4,9 +4,10 @@
 
 void healthCheck() {
 if ( MQTT_Client.connected() ) {
-        String Mqtt_send = Mqtt_outTopic;
-        if(Mqtt_outTopic.endsWith("/")) {
-          Mqtt_send += "heap";
+        char Mqtt_send[26];
+        strcpy( Mqtt_send, Mqtt_outTopic);
+        if(Mqtt_send[strlen(Mqtt_send)-1] == '/') {
+          strcat(Mqtt_send, "heap");
         }  
         // we send an mqtt message about free stack an free heap
         // the json to domoticz must be something like {"idx" : 7, "nvalue" : 0,"svalue" : "90;2975.00"}
@@ -14,7 +15,7 @@ if ( MQTT_Client.connected() ) {
         sprintf( toMQTT, "{\"idx\":%d,\"nvalue\":0,\"svalue\":\"%ld\"}", domIdx, esp_get_free_heap_size() );
 
         if( diagNose != 0 ) consoleOut("Healtcheck mqtt heap, mess is : " + String(toMQTT) );
-        MQTT_Client.publish ( Mqtt_send.c_str(), toMQTT, false);   
+        MQTT_Client.publish ( Mqtt_send, toMQTT, false);   
   }      
  
         if(!timeRetrieved) getTijd();

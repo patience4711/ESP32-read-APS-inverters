@@ -5,7 +5,8 @@ const char ABOUT [] PROGMEM = R"=====(
 <link rel="icon" type="image/x-icon" href="/favicon.ico" />
 <title>ESP32-ECU</title>
 <style>
-table, th, td {border: 1px solid blue; width:font-size:12px;} 
+table, th, td {border: 1px solid blue; width:font-size:12px;}
+th, td { padding-left: 10px; } 
 body {margin:10px 10px 0px 20px; font-family:'lato',Verdana,Sans-serif;font-size:12px;}
 </style>
 <script type="text/javascript" src="SECURITY"></script>
@@ -27,7 +28,7 @@ strcpy_P(page, ABOUT);
   int dagen = urens/24;
  
   strcat(page, "<br><br><br><br><table><tr><TH colspan='2'> SYSTEM INFORMATION</th></tr>" );
-  strcat(page, "<tr><td>firmware version<td>ESP32-ECU-v0_3d</tr>");
+  strcat(page, "<tr><td>firmware version<td>ESP32-ECU-v0_4</tr>");
   if ( timeRetrieved ) strcat(page,"<tr><td>time retrieved<td>yes</tr>"); else strcat(page,"<tr><td>time retrieved<td>n</tr>");
   sprintf(temp, "<tr><td>systemtime<td> %d:%d " , hour(), minute());
   switch (dst) {
@@ -96,7 +97,7 @@ strcpy_P(page, ABOUT);
      strcat(page, temp);
     // check if connected
     if ( MQTT_Client.connected() ) { //: add a dot
-       sprintf(temp, "<tr><td>mqtt connected<td>%s</td>", Mqtt_Broker.c_str());
+       sprintf(temp, "<tr><td>mqtt connected<td>%s</td>", Mqtt_Broker );
        } else {
        sprintf(temp, "<tr><td>mqtt status<td>not connected</td>");
        }

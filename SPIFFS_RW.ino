@@ -74,8 +74,6 @@ void wifiConfigsave() {
     JsonObject json = doc.to<JsonObject>();   
     json["ip"] = static_ip;
     json["pswd"] = pswd;
-    //json["lengte"] = lengte;
-    //json["breedte"] = breedte;
     json["longi"] = longi;
     json["lati"] = lati;
     
@@ -197,15 +195,13 @@ bool file_open_for_read(String bestand) {
               }            
 
             if (bestand == "/mqttconfig.json"){
-                     //if(jsonStr.indexOf("Mqtt_Enabled") > 0)  { Mqtt_Enabled =  doc["Mqtt_Enabled"].as<bool>();}   
-                     if(jsonStr.indexOf("Mqtt_Broker") > 0)   { Mqtt_Broker =   doc["Mqtt_Broker"].as<String>();}
-                     if(jsonStr.indexOf("Mqtt_Port") > 0)     { Mqtt_Port =   doc["Mqtt_Port"].as<String>();}  
-                     if(jsonStr.indexOf("Mqtt_inTopic") > 0)  { Mqtt_inTopic =  doc["Mqtt_inTopic"].as<String>();}         
-                     if(jsonStr.indexOf("Mqtt_outTopic") > 0) { Mqtt_outTopic = doc["Mqtt_outTopic"].as<String>();}         
-                     if(jsonStr.indexOf("Mqtt_Username") > 0) { Mqtt_Username = doc["Mqtt_Username"].as<String>();}
-                     if(jsonStr.indexOf("Mqtt_Password") > 0) { Mqtt_Password = doc["Mqtt_Password"].as<String>();}
-                     if(jsonStr.indexOf("Mqtt_Format") > 0) { Mqtt_Format = doc["Mqtt_Format"].as<int>();}
-            
+                     if(jsonStr.indexOf("Mqtt_Broker")   >  0) { strcpy(Mqtt_Broker,   doc["Mqtt_Broker"]);}
+                     if(jsonStr.indexOf("Mqtt_Port")     >  0) { strcpy(Mqtt_Port,     doc["Mqtt_Port"]);}  
+                     if(jsonStr.indexOf("Mqtt_inTopic")  >  0) { strcpy(Mqtt_inTopic,  doc["Mqtt_inTopic"]);}         
+                     if(jsonStr.indexOf("Mqtt_outTopic") >  0) { strcpy(Mqtt_outTopic, doc["Mqtt_outTopic"]);}         
+                     if(jsonStr.indexOf("Mqtt_Username") >  0) { strcpy(Mqtt_Username, doc["Mqtt_Username"]);}
+                     if(jsonStr.indexOf("Mqtt_Password") >  0) { strcpy(Mqtt_Password, doc["Mqtt_Password"]);}
+                     if(jsonStr.indexOf("Mqtt_Format")   >  0) { Mqtt_Format =         doc["Mqtt_Format"].as<int>();}
             }
              return true;
 } 

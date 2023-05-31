@@ -72,13 +72,13 @@ toSend += FPSTR(MQTTCONFIG);
   //altijd de mqtt gegevens terugzetten
  
 //if (Mqtt_Enabled) { toSend.replace("#check", "checked");}
-toSend.replace("{mqttAdres}", Mqtt_Broker);
-toSend.replace("{mqttPort}", Mqtt_Port);
-toSend.replace("{mqttinTopic}", Mqtt_inTopic);
-toSend.replace("{mqttoutTopic}", Mqtt_outTopic);
-toSend.replace("{mqtu}", Mqtt_Username );
-toSend.replace("{mqtp}", Mqtt_Password );
-//toSend.replace("{idx1}", String(Mqtt_Idx));
+toSend.replace("{mqttAdres}", String(Mqtt_Broker));
+toSend.replace("{mqttPort}", String(Mqtt_Port));
+toSend.replace("{mqttinTopic}", String(Mqtt_inTopic));
+toSend.replace("{mqttoutTopic}", String(Mqtt_outTopic));
+toSend.replace("{mqtu}", String(Mqtt_Username) );
+toSend.replace("{mqtp}", String(Mqtt_Password) );
+
 switch (Mqtt_Format) {
  case 0:
     toSend.replace("fm_0", "selected");
@@ -101,34 +101,15 @@ switch (Mqtt_Format) {
 void handleMQTTconfig(AsyncWebServerRequest *request) {
 
   //collect serverarguments
-  Mqtt_Broker = request->arg("mqtAdres");
-  //DebugPrint("Mqtt_Broker na strcpy = "); //DebugPrintln(Mqtt_Broker); // oke
+  strcpy( Mqtt_Broker  , request->getParam("mqtAdres")   ->value().c_str() );
+  strcpy( Mqtt_Port    , request->getParam("mqtPort")    ->value().c_str() );
+  strcpy( Mqtt_inTopic , request->getParam("mqtinTopic") ->value().c_str() );
+  strcpy( Mqtt_outTopic, request->getParam("mqtoutTopic")->value().c_str() );
+  strcpy( Mqtt_Username, request->getParam("mqtUser")    ->value().c_str() );
+  strcpy( Mqtt_Password, request->getParam("mqtPas")     ->value().c_str() );
 
-  Mqtt_Port = request->arg("mqtPort");
-  //DebugPrint("mqttPort = "); //DebugPrintln(Mqtt_Port); // ok
+  Mqtt_Format = request->arg("fm").toInt(); //values are 0 1 2
 
-  Mqtt_inTopic = request->arg("mqtinTopic");
-  //DebugPrint("mqtt_inTopic na strcpy = "); //DebugPrintln(String(Mqtt_inTopic)); // oke
-
-  Mqtt_outTopic = request->arg("mqtoutTopic");
-  //DebugPrint("mqtt_outTopic na strcpy = "); //DebugPrintln(String(Mqtt_outTopic)); // oke
-  
-  Mqtt_Username = request->arg("mqtUser");
-  //DebugPrint("Mqtt_Username na strcpy = "); //DebugPrintln(Mqtt_Username); // oke
-
-  Mqtt_Password = request->arg("mqtPas");
-  //DebugPrint("Mqtt_Username na strcpy = "); //DebugPrintln(Mqtt_Password); // oke
-
-  Mqtt_Format = request->arg("fm").toInt(); //values are 0 1 2//Mqtt_Idx = request->arg("mqidx1").toInt(); 
-
-// de selectbox
-//   char tempChar[1] = "";
-//   String dag = request->arg("mqtEn");  // mqselect
-//   if ( dag == "on") { Mqtt_Enabled = true; } else { Mqtt_Enabled = false; }
-
-//  toSend = FPSTR(CONFIRM);
-//  toSend.replace("SW=BACK", "MQTT");
-//  request->send(200, "text/html", toSend); //send the html code to the client
   if( diagNose != 0 ) consoleOut("saved mqttconfig");
   mqttConfigsave();  // 
   actionFlag=24; // reconnect with these settings
