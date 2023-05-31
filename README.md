@@ -14,7 +14,7 @@ The system is meant for reading APS Systems inverters. The program can pair and 
 Please see the <a href='https://github.com/patience4711/ESP32-read-APS-inverters/wiki'>WIKI</a> for information on building it, the working, etc. 
 
 ## downloads
-may 11 2023: There is a new version [ESP32-ECU_v0_3d](https://github.com/patience4711/ESP32-read-APS-inverters/blob/main/ESP32_ECU_v0_3d.zip) available. Please see changelog.<br> Important: If you want to upgrade from an older verson: Please read [here](https://github.com/patience4711/ESP32-read-APS-inverters/issues/4#issuecomment-1539977508) first.
+may 31 2023: There is a new version [ESP32-ECU_v0_4](https://github.com/patience4711/ESP32-read-APS-inverters/blob/main/ESP32_ECU_v0_4.zip) available. Please see changelog.<br> Important: If you want to upgrade from an older verson: Please read [here](https://github.com/patience4711/ESP32-read-APS-inverters/issues/4#issuecomment-1539977508) first.
 <br><br>
 The frontpage:<br>
 ![frontpage](https://user-images.githubusercontent.com/12282915/229239150-05f6d29d-7620-4363-94fc-787b09d11fad.jpg)
@@ -57,11 +57,11 @@ Once you flashed the binary and powered up you'l notice the blue led is on. <br>
 Visit the wiki of the ESP8266 project for more [details](https://github.com/patience4711/read-APSystems-YC600-QS1-DS3/wiki)
 
 ## firmware update ##
-This works slightly different. When the fil is uploaded you have to refert back to the menupage and reboot. (or press the reset button or power cycle)
+This works slightly different. When the file is uploaded you have to refert back to the menupage and reboot. (or press the reset button or power cycle)
 
 ## changelog ##
-version ESP32-ECU_V0_3d:
-* Banned all string operations
+version ESP32-ECU_V0_4:
+* Banned all string operations in main processes
 * Some webpages improved.
 
 version ESP32-ECU_V0_3b:
