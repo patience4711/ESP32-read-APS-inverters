@@ -1,12 +1,12 @@
 # ESP32 read APS inverters
 This project is derived from the project [ESP-ECU](https://github.com/patience4711/read-APSystems-YC600-QS1-DS3). The reason to try this on a more powerfull platform is that the ESP8266 was running on the top of its capabilities,
-especially when more than 5 inverters were connected. Due to the massive webpages, it wasn't always completely stable. Although this has improved a lot... Hopefully the ESP32 has more juice to handle all the requests. Comparison in free heap between esp and esp32 show that this is more than 7x higher for the esp32.<br>
-Moreover, the ESP32 has a 2nd UART that is used for the zigbee communication. Now we have the 1st UART available for debugging on the serial monitor via usb.
+especially when more than 5 inverters were connected. Comparison in free heap between esp and esp32 show that this is more than 7x higher for the esp32.<br>
+The ESP32 has big advantage over the ESP8266, the presence of a second uart. We can use one uart for the zigbee moduele and we have the other UART available for debugging on the serial monitor via usb. This way it is easyer to debug. I can use this project to test things out that could lead to improvements for the ESP8266 project.
 
 See it in action on [YouTube](https://youtu.be/WKFVQ6d8KhQ)
 
 ## status ##
-I tested the system with a zigbee module connected. The coordinator is brought up without problems. Pairing an inverter worked at one shot. The data of my inverter are nicely displayed and mqtt-ed. So it is working fine.
+The system has been tested in practice with a DS3 inverter and it works fine. 
 
 ## purpose ##
 The system is meant for reading APS Systems inverters. The program can pair and poll YC600 QS1 and DS3 inverters, up to 9 pieces. The read values are displayed on a web page and sent via mosquitto in a Json format.
