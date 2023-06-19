@@ -28,7 +28,7 @@ The frontpage:<br>
 - Easy add, delete and pair inverters
 - automatic polling or on demand via mqtt or http
 - data can be requested via http and mosquitto
-- There are 4 different mqtt json formats
+- There are 5 different mqtt json formats
 - Fast asyc webserver
 - a serial- and a web console to send commands and debugging
 - Smart timekeeping
