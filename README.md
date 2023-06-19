@@ -33,12 +33,13 @@ The frontpage:<br>
 - a serial- and a web console to send commands and debugging
 - Smart timekeeping
 - A lot of system info on the webpage
+- Easy firmware update "Over The Air"
 
 ## the hardware
 It is nothing more than an esp32 device and a prepared cc2530, cc2531 zigbee module. And a powersupply.
 The zigbeemodule should be flashed with a firmware that is developped by kadsol : [CC25xx_firmware](https://github.com/Koenkk/zigbee2mqtt/files/10193677/discord-09-12-2022.zip). The firmware is also available [here](https://github.com/patience4711/read-APSystems-YC600-QS1-DS3/blob/main/cc25xx_firmware.zip). Much more info as to the development of this software can be found here https://github.com/Koenkk/zigbee2mqtt/issues/4221.
 
-For info on how to build and use it, please see the <a href='https://github.com/patience4711/read-APSystems-YC600-QS1-DS3/wiki'>WIKI</a>
+For info on how to build and use it, please see the [wiki](https://github.com/patience4711/ESP32-read-APS-inverters/wiki)
 
 ## how does it work
 APS works with their own zigbee implementation. The ESP-ECU sends zigbee commands (wireless) to the inverters and analyzes the answers, extracting the values. 
@@ -47,17 +48,6 @@ The ESP-ECU starts a coordinator (an entity that can start a zigbee network). Th
 The interesting values are send via mqtt and displayed on the main page.
 <br><br> example of a sensor in Domoticz:<br>
 ![graph2](https://user-images.githubusercontent.com/12282915/139062602-71e92216-9703-4fc4-acc6-fabf544c4ffd.jpg)
-
-## get started ##
-The wiring of the zigbeemodule to the esp32:<br>
-P02  --->  TX2 (pin 17)<br>
-P03  --->  RX2 (pin 16)<br>
-rst  --->  pin D5<br>
-vcc  --->  3.3V<br>
-gnd  --->  gnd<br>
-Once you flashed the binary and powered up you'l notice the blue led is on. <br> This means you should connect it to your wifi.
-Visit the wiki [wiki](https://github.com/patience4711/read-APSystems-YC600-QS1-DS3/wiki)
-Here you'l find all details on build and use of the ESP32-ECU
 
 ## changelog ##
 version ESP32-ECU_V0_5:
