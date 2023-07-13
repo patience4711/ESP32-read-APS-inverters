@@ -14,7 +14,7 @@ The system is meant for reading APS Systems inverters. The program can pair and 
 Please see the <a href='https://github.com/patience4711/ESP32-read-APS-inverters/wiki'>WIKI</a> for information on building it, the working, etc. 
 
 ## downloads
-June 21 2023: There is a new version [ESP32-ECU_v0_5](https://github.com/patience4711/ESP32-read-APS-inverters/blob/main/ESP32-ECU_v0-5.bin)
+July 13 2023: There is a new version [ESP32-ECU_v0_7](https://github.com/patience4711/ESP32-read-APS-inverters/blob/main/ESP32-ECU_v0-7.bin)
 
 May 21 2023: There is a new version [ESP32-ECU_v0_4](https://github.com/patience4711/ESP32-read-APS-inverters/blob/main/ESP32_ECU_v0_4.zip) available. Please see changelog.<br> Important: If you want to upgrade from an older verson: Please read [here](https://github.com/patience4711/ESP32-read-APS-inverters/issues/4#issuecomment-1539977508) first.
 <br><br>
@@ -45,11 +45,17 @@ For info on how to build and use it, please see the [wiki](https://github.com/pa
 APS works with their own zigbee implementation. The ESP-ECU sends zigbee commands (wireless) to the inverters and analyzes the answers, extracting the values. 
 The ESP communicates with the zigbee module through the alternative serial port (wired).
 The ESP-ECU starts a coordinator (an entity that can start a zigbee network). The coordinator binds the inverters and sends the poll requests to them.
-The interesting values are send via mqtt and displayed on the main page.
+The interesting values are send via mqtt and displayed on the main page. The ecu sends a message that there is new data and the webpage reacts by requesting
+the new data.
 <br><br> example of a sensor in Domoticz:<br>
 ![graph2](https://user-images.githubusercontent.com/12282915/139062602-71e92216-9703-4fc4-acc6-fabf544c4ffd.jpg)
 
 ## changelog ##
+version ESP32-ECU_V0_7:
+* more efficient communication browser/server (events driven)
+* minimized all webpages and javascripts
+* improved menu and browsing ot the ecu site
+  
 version ESP32-ECU_V0_5:
 * more efficient use of the memory
 * Use of arduinoJson
