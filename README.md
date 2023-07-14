@@ -6,10 +6,10 @@ The ESP32 has big advantage over the ESP8266, the presence of a second uart. We 
 See it in action on [YouTube](https://youtu.be/WKFVQ6d8KhQ)
 
 ## status ##
-The system has been tested in practice with a DS3 inverter and it works fine. 
+The system has been tested in practice with a YC600, QS1 and DS3 inverters and it works fine. 
 
 ## purpose ##
-The system is meant for reading APS Systems inverters. The program can pair and poll YC600 QS1 and DS3 inverters, up to 9 pieces. The read values are displayed on a web page and sent via mosquitto in a Json format.
+The system is intended for reading APS Systems inverters. The program can pair and poll YC600 QS1 and DS3 inverters, up to 9 pieces. The read values are displayed on a web page and sent via mosquitto in a Json format.
 
 Please see the <a href='https://github.com/patience4711/ESP32-read-APS-inverters/wiki'>WIKI</a> for information on building it, the working, etc. 
 
