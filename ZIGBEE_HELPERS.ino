@@ -141,47 +141,55 @@ String ECU_REVERSE() {
 // ******************************************************************************
 //                   reboot an inverter
 // *******************************************************************************
-void rebootInv(int which) {
+// ******************************************************************************
+//                   reboot an inverter
+// *******************************************************************************
+void inverterReboot(int which) {
     char ecu_id_reverse[13];  
     ECU_REVERSE().toCharArray(ecu_id_reverse, 13);
+    if(zigbeeUp != 1) {
+       ws.textAll("skip inverter reboot, zigbee down");
+       return; 
+    }
+
+//swap_to_usb ();
+//    Serial.println("sending the reboot message");
+    
     //char inv_id[7];
     //strncpy(inv_id, Inv_Prop[which].invID, strlen(Inv_Prop[which].invID));
-    //char resetCmd[80];
+    char rebootCmd[57]={0};
     char s_d[200]={0};
-    char rebootCmd[57];
-
-    char command[][50] = {
-      "2401",
-      "1414060001000F13",
-      "FBFB06C1000000000000A6FEFE",
-      };
-    //length = 46 + 4 + 12 + 1= 53
-
-    //construct the command
-    strncpy( rebootCmd, command[0], sizeof(command[0]) );
-    strncat( rebootCmd, Inv_Prop[which].invID, 4 ); // add inv_id
-    strncat( rebootCmd, command[1], sizeof(command[1]) );
-    strncat( rebootCmd, ecu_id_reverse, sizeof(ecu_id_reverse) );
-    strncat( rebootCmd, command[2], sizeof(command[2]) );
-    //String term = "the rebootCmd = " + String(rebootCmd);    
- // should be 2401 3A10 1414060001000F13 80971B01B3D7 FBFB06C1000000000000A6FEFE   
-
-    consoleOut("the rebootCmd = " + String(rebootCmd)); 
-    //} else
-    //if(diagNose == 2) ws.textAll("the rebootCmd = " + String(rebootCmd));
     
-    //should be 2401 103A 1414060001000F13 80 97 1B 01 A3 D6 FBFB06C1000000000000A6FEFE
-    //          2401 A310 1414060001000F13 80 97 1B 01 A3 D6 FBFB06C1000000000000A6FEFE
-    //          2401 3A10 1414060001000F13 80 97 1B 01 B3 D7 FBFB06C1000000000000A6FEFE
+      char command[][50] = {
+        "2401",
+        "1414060001000F13",
+        "FBFB06C1000000000000A6FEFE",
+        };
+//Serial.println("constructing command");
+      strncpy( rebootCmd, command[0], sizeof(command[0]) );
+      strncat( rebootCmd, Inv_Prop[which].invID, 4 ); // ad the 2nd byte of inv_id
+      strncat( rebootCmd, command[1], sizeof(command[1]) );
+      strncat( rebootCmd, ecu_id_reverse, sizeof(ecu_id_reverse) );
+      strncat( rebootCmd, command[2], sizeof(command[2]) );
+//Serial.println("command: " + String(rebootCmd));
+      ws.textAll("the rebootCmd = " + String(rebootCmd));
 
-    
-    // put in the CRC at the end of the command in sendZigbee
+       //2401 BBAA 1414060001000F13 80971B01A3D6 FBFB06C1000000000000A6FEFE
+      //should be 2401 103A 1414060001000F13 80 97 1B 01 A3 D6 FBFB06C1000000000000A6FEFE
+      // got      1414060001000F1380971B01A3D6FBFB06C1000000000000A6FEFE
+      //          2401 BBAA 1414060001000F13 80971B01A3D6 1414060001000F13
+      //  2401 3A10 1414060001000F13 80971B01B3D6 FBFB06C1000000000000A6FEFE
+      // put sln at the beginning and CRC at the end done by sendZigbee()
+//swap_to_zb();    
 
-    sendZB( rebootCmd );
-    
-    delay(2000);
-    readZB(s_d);
+      sendZB(rebootCmd);
+      delay(1000);
+      //char s_d[150]={0};
+      readZB(s_d);
 
+//      if(readCounter == 0) {
+//      } 
+//      ws.textAll("received : " + String(inMess) );
 }
 
 // ******************************************************************************
@@ -190,7 +198,7 @@ void rebootInv(int which) {
 void resetValues(bool energy, bool mustSend) {
       for(int z=0; z<inverterCount; z++) 
       { 
-         for(int y=0; y<5; y++ ) strcpy(Inv_Data[z].power[y], "0.0"); // make powervalues null
+         for(int y=0; y<5; y++ ) Inv_Data[z].power[y] = 0.0; // make powervalues null
          //DebugPrintln("reset power values");
          if(energy) 
          {
