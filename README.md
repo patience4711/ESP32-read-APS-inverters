@@ -14,7 +14,7 @@ The system is intended for reading APS Systems inverters. The program can pair a
 Please see the <a href='https://github.com/patience4711/ESP32-read-APS-inverters/wiki'>WIKI</a> for information on building it, the working, etc. 
 
 ## downloads
-Nov 08 2023: There is a new version [ESP32-ECU_v0_8](https://github.com/patience4711/ESP32-read-APS-inverters/blob/main/ESP32-ECU_v0-8.bin) Please see changelog.
+May 27 2024: There is a new version [ESP32-ECU_v0_9](https://github.com/patience4711/ESP32-read-APS-inverters/blob/main/ESP32-ECU_v0-9.bin) Please see changelog.
 
 <br><br>
 The frontpage:<br>
