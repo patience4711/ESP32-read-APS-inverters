@@ -50,7 +50,11 @@ the new data.
 ![graph2](https://user-images.githubusercontent.com/12282915/139062602-71e92216-9703-4fc4-acc6-fabf544c4ffd.jpg)
 
 ## changelog ##
-version ESP32-ECU_V0_7:
+version ESP32-ECU_V0_9:
+* fixed a bug in the html of the inverterspage
+* introduced an improved debugging method
+
+version ESP32-ECU_V0_8:
 * fixed a bug related to the working of the button
   
 version ESP32-ECU_V0_7:
