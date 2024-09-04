@@ -4,31 +4,29 @@ void pairOnActionflag() {
    
    char term[20];
    sprintf(term, "inverter %d" , Inv_Prop[iKeuze].invSerial);
-   Update_Log("pairing", term);
+   Update_Log(4, term);
     if( !coordinator(false) ) {
       //term="pairing failed, zb down";
-      Update_Log("pairing", "failed, zb down");
-      if( diagNose != 0 ) consoleOut("pairing failed, zb down");
+      Update_Log(4, "failed");
+      consoleOut("pairing failed, zb down");
        return;
     }
 
-  if( diagNose != 0 ) consoleOut("trying pair inv " + String(iKeuze));
+   consoleOut("trying pair inv " + String(iKeuze));
   // now that we know that the radio is up, we don't need to test this in the pairing routine
 
   if( pairing(iKeuze) ) {
     //DebugPrintln("pairing success, saving configfile");
     String term = "success, inverter got id " + String(Inv_Prop[iKeuze].invID);
-    //Update_log("pairing".c_str(), term.c_str());
-    if( diagNose != 0 ) consoleOut(term);
+    Update_Log(2, "success");
+    consoleOut(term);
     //} else if(diagNose==2){ws.textAll(term);}  
 
   } else {
-    //if( diagNose != 0 ) consoleOut("pairing failed");
     strncpy(Inv_Prop[iKeuze].invID, "0000", 6);
     String term = "failed, inverter got id " + String(Inv_Prop[iKeuze].invID);
-    //Update_log("pair".c_str(), term.c_str());
-    if( diagNose != 0 ) consoleOut(term);
-    //} else if(diagNose==2){ws.textAll(term);}  
+    Update_Log(4, "failed");
+    consoleOut(term);
       
   }
     String bestand = "/Inv_Prop" + String(iKeuze) + ".str"; // /Inv_Prop0.str
@@ -85,7 +83,7 @@ bool pairing(int which) {
     delayMicroseconds(250);
     // send 
     term = "pair command " + String(y) +  " = " + String(pairCmd);
-    if( diagNose != 0 ) consoleOut(term); 
+    consoleOut(term); 
     //else if(diagNose == 2) ws.textAll(term);
 
     sendZB(pairCmd);
@@ -122,10 +120,10 @@ bool decodePairMessage(int which)
 
     strcpy(messageToDecode, readZB(s_d));        
     //Serial.println("messageToDecode = " + String(messageToDecode));
-     if (diagNose != 0 ) consoleOut("decoding : " + String(messageToDecode));
+     consoleOut("decoding : " + String(messageToDecode));
     if (readCounter == 0 || strlen(messageToDecode) < 6 ) // invalid message
     {
-      if( diagNose != 0 ) consoleOut("no usable code, returning..");
+      consoleOut("no usable code, returning..");
     messageToDecode[0]='\0';
     return false;
     }
@@ -133,14 +131,14 @@ bool decodePairMessage(int which)
     if (strlen(messageToDecode) > 222 || readCounter < 60 || strlen(messageToDecode) < 6)
     {
       //term = "no pairing code, returning...";
-      if( diagNose!=0 ) consoleOut(F("no valid pairing code, returning..."));
+      consoleOut(F("no valid pairing code, returning..."));
       messageToDecode[0]='\0';
       return false;   
     }
 // the message is shorter but not too short so continueing    
 
  if (!strstr(messageToDecode, Inv_Prop[which].invSerial)) {
-    if( diagNose != 0 ) consoleOut("not found serialnr, returning");
+    consoleOut("not found serialnr, returning");
     //if(diagNose==1) Serial.println(term); else if(diagNose==2) ws.textAll(term);
     messageToDecode[0]='\0';
     return false;
@@ -149,7 +147,7 @@ bool decodePairMessage(int which)
   if ( strstr(messageToDecode, Inv_Prop[which].invSerial) ) { 
   result = split(messageToDecode, Inv_Prop[which].invSerial);
   }
-  if( diagNose != 0 ) consoleOut("result after 1st splitting = " + String(result));
+  consoleOut("result after 1st splitting = " + String(result));
 
   // now we keep splitting as long as result contains the serial nr
     while ( strstr(result, Inv_Prop[which].invSerial) ) 
@@ -165,7 +163,7 @@ bool decodePairMessage(int which)
     strncpy(Inv_Prop[which].invID, result, 4); // take the 1st 4 bytes
 
     term = "found invID = " + String(Inv_Prop[which].invID);
-    if( diagNose != 0 ) consoleOut(term);
+    consoleOut(term);
     // why is this? Can it get this value?
     if ( String(Inv_Prop[which].invID) == "0000" ) {
        return false;    

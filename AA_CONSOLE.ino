@@ -6,7 +6,7 @@ const char CONSOLE_HTML[] PROGMEM = R"=====(
 <title>ESP-ECU</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<link rel="stylesheet" type="text/css" href="/STYLESHEET_HOME">
+<link rel="stylesheet" type="text/css" href="/STYLESHEET">
 <script>
 function helpfunctie() {
 document.getElementById("help").style.display = "block";
@@ -42,7 +42,7 @@ document.getElementById("help").style.display = "none";
   <b>10;HEALTH: </b> healthcheck zigbee hw/system<br><br>
   <b>10;POLL=x: </b> poll inverter #x<br><br>
   <b>10;INIT_N: </b> start the zigbee coordinator<br><br>
-  <b>10;DIAG: </b> more Debug messages in console<br><br>
+  <b>10;DIAG: </b> change debug, 0=disable, 1=console, 2=serial<br><br>
   <b>10;EDIT=0-AABB: </b> mark an inverter as paired<br><br>
   <b>10;ERASE: </b> delete all inverter files<br><br>
   <b>10;FILES: </b> show filesystem<br><br>
@@ -51,14 +51,12 @@ document.getElementById("help").style.display = "none";
   </div>
 
 <div id='msect'>
-<ul>
-<li id='fright'><a href='/MENU' onclick='confirmExit()' class='close'>&times;</span></a>
-<li><a href='#' onclick='helpfunctie()'>help</a>
-<li><a><input type="text" placeholder="type here" id="tiep"></a>
-</ul>
+<div id='menu'>
+<a href='/MENU' onclick='confirmExit()' class='close'>&times;</span></a>
+<a href='#' onclick='helpfunctie()'>help</a>
+<a><input type="text" placeholder="type here" id="tiep"></a>
 </div>  
 <br>  
-<div id='msect'>
   <div class='divstijl' style='height:84vh; border:1px solid; padding-left:10px;'>
   <table id='tekstveld'></table>
   </div>
@@ -148,7 +146,7 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
 
   if (info->final && info->index == 0 && info->len == len && info->opcode == WS_TEXT) 
   {
-      diagNose = 2; // direct the output to ws
+      //diagNose = 2; // direct the output to ws
       data[len] = 0;
 
      
@@ -173,7 +171,6 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
               ws.textAll("poll inverter " + String(kz));
               iKeuze=kz;
               actionFlag=47;
-              diagNose=true; //
               return;
           } else 
            
@@ -198,16 +195,14 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
            if (strncasecmp(txBuffer+3,"HEALTH",6) == 0) {  
               ws.textAll("check zb system");
               actionFlag=44; // perform the healthcheck
-              diagNose=true;
               return;             
           } else          
 
    
- // ************  rtest mosquitto *******************************          
+ // ************  test mosquitto *******************************          
            if (strncasecmp(txBuffer+3,"TESTMQTT",8) == 0) {  
               ws.textAll("test mosquitto");
               actionFlag=49; // perform the healthcheck
-              diagNose=true;
               return;             
           } else 
 
@@ -228,8 +223,6 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
               return;
           } else
 
-
-
            if (strncasecmp(txBuffer+3,"FILES",5) == 0) {  
               //we do this in the loop
               ws.textAll("listing files..\n");
@@ -244,8 +237,7 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
               ws.textAll("going to send a teststring, len=" + String(len));
               //we do this in the loop
               actionFlag = 45;
-              diagNose=true;
-               return;             
+              return;             
           } else 
 
            if (strncasecmp(txBuffer+3,"ERASE",5) == 0) {  
@@ -276,14 +268,14 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
               if (SPIFFS.exists(bestand)) 
               {
                   ws.textAll("going to delete file " + bestand); 
-                  if(!bestand.indexOf("Inv_Prop") == -1 ) 
-                  {
                       SPIFFS.remove(bestand);
                       ws.textAll("file " + bestand + " removed!"); 
-                  } else {
-                      ws.textAll("inverterfile not removed, use 10;erase!"); 
-                  }
-              
+                      if(bestand.indexOf("/Inv_Prop") != -1) {
+                      consoleOut("we deleted an inverterfile");  
+                      inverterCount -= 1;
+                      basisConfigsave();  // save inverterCount
+                      remove_gaps();
+                     }
               } else 
               { 
                  ws.textAll("no such file");
@@ -293,12 +285,20 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
 
       if (strncasecmp(txBuffer+3, "DIAG",4) == 0) // normal operation
       {
-         if(diagNose) {
-          diagNose = false;
-         } else {
-          diagNose= true;
-         } 
-          ws.textAll("set diagnose to " + String(diagNose) );  
+         switch(diagNose) {
+         case 0: 
+            diagNose = 1; 
+            break;
+         case 1:
+            diagNose = 2; 
+            break;            
+         case 2:
+            diagNose = 0; 
+            break; 
+         }
+         ws.textAll("set diagnose to " + String(diagNose) );
+         write_eeprom();
+         return;   
 // ****************************************************************
       } else      
       

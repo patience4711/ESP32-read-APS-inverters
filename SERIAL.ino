@@ -40,7 +40,16 @@ void handle_Serial () {
               return;
           } else 
 
-          if (strncasecmp(InputBuffer_Serial+3,"INV_REBOOT",10) == 0) {
+
+      if (strncasecmp(InputBuffer_Serial+3, "DIAG",4) == 0) // normal operation
+      {
+         if (diagNose) == 1) diagNose = 0; else diagNose = 1;
+         ws.textAll("set diagnose to " + String(diagNose) );
+         write_eeprom();
+         return;            
+      } else          
+                    
+      if (strncasecmp(InputBuffer_Serial+3,"INV_REBOOT",10) == 0) {
             scroll(2);
               scroll(4);
               Serial.println(F("\nYou can reboot an inverter when it stopped working."));

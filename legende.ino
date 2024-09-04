@@ -51,4 +51,11 @@ Configuration ID: 0x0003; Size: 1 byte; Default value: 0
 
 65: Sent=FE0D 240014050F0001010002000015000020
 65: Received=FE 01 64 00 00 65
+
+The latest idea is to send messages to the webpage that can cause it to refresh or laod data
+this works, so when do we reload? 
+if something changes in the zigbee health. This happens after a boot so after the initial healthcheck and
+when there was an attempt to (re)start the coordinator to reflect the status in the frontpage
 */
+
+// compiled with board version 1.0.6

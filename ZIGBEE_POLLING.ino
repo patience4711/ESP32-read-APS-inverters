@@ -2,7 +2,7 @@ void polling(int which) {
     polled[which]=false; //nothing is displayed on webpage
     if(zigbeeUp != 1) 
     {
-      if(diagNose != 0) consoleOut(F("skipping poll, coordinator down!")); //
+      consoleOut(F("skipping poll, coordinator down!")); //
       return;
     }
    
@@ -13,7 +13,7 @@ void polling(int which) {
     snprintf(pollCommand, sizeof(pollCommand), "2401%s1414060001000F13%sFBFB06BB000000000000C1FEFE", Inv_Prop[which].invID, ecu_id_reverse);
     delayMicroseconds(250);
     // put in the CRC at the end of the command done in sendZigbee
-    if(diagNose != 0) consoleOut("pollCommand ex checksum:" + String(pollCommand));
+    consoleOut("pollCommand ex checksum:" + String(pollCommand));
     //} else
     //if(diagNose == 2) ws.textAll ("pollCommand ex checksum:" + String(pollCommand));
 
@@ -30,6 +30,6 @@ void polling(int which) {
                  yield();
                  break;
         default:
-              if( diagNose != 0 ) consoleOut("polling failed with errorcode " + String(errorCode)); 
+              consoleOut("polling failed with errorcode " + String(errorCode)); 
     }
 }

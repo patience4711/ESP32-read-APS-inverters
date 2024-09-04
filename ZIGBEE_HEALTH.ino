@@ -3,29 +3,48 @@
 //**************************************************************************
 
 void healthCheck() {
-if ( MQTT_Client.connected() ) {
-        char Mqtt_send[26];
-        strcpy( Mqtt_send, Mqtt_outTopic);
-        if(Mqtt_send[strlen(Mqtt_send)-1] == '/') {
-          strcat(Mqtt_send, "heap");
-        }  
-        // we send an mqtt message about free stack an free heap
-        // the json to domoticz must be something like {"idx" : 7, "nvalue" : 0,"svalue" : "90;2975.00"}
-        char toMQTT[50]={0};
-        sprintf( toMQTT, "{\"idx\":%d,\"nvalue\":0,\"svalue\":\"%ld\"}", domIdx, esp_get_free_heap_size() );
+    #ifdef TEST
+    return;
+    #endif
+    if(Mqtt_Format != 0 && Mqtt_Format != 5 && Mqtt_stateIDX != 0) {
+       if (mqttConnect() ) {
+            char Mqtt_send[26];
+            strcpy( Mqtt_send, Mqtt_outTopic) ;
+            if( Mqtt_send[strlen(Mqtt_send)-1] == '/' ) {
+                 strcat(Mqtt_send, "heap");
+            }
+      
+        char toMQTT[50]={0}; // when i make this bigger a crash occures
+        
+        sprintf( toMQTT, "{\"idx\":%d,\"svalue\":\"%ld\",\"heap\":%ld}", Mqtt_stateIDX, esp_get_free_heap_size(), esp_get_free_heap_size() );  
+        //must be like {"idx":901,"svalue":"22968", "heap":22968}
+    
+        consoleOut("mqtt publish heap, mess is : " + String(toMQTT) );
+        MQTT_Client.publish ( Mqtt_send, toMQTT, false);  
+        
+        memset(&toMQTT, 0, sizeof(&toMQTT)); //zero out 
+        delayMicroseconds(250);
+       }  
+    }
 
-        if( diagNose != 0 ) consoleOut("Healtcheck mqtt heap, mess is : " + String(toMQTT) );
-        MQTT_Client.publish ( Mqtt_send, toMQTT, false);   
-  }      
  
-        if(!timeRetrieved) getTijd();
+        if(!timeRetrieved) { 
+          getTijd();
+          eventSend(1);
+        }
         
         // reset the errorcode so that polling errors remain
         if(errorCode >= 3000) errorCode -= 3000;
         if(errorCode >= 200) errorCode -= 200;
         if(errorCode >= 100) errorCode -= 100;
         
-        ZigbeePing();
+        // if there are no inverters, we don't start the coordinator
+        if( inverterCount < 1 ) {
+          if (diagNose) consoleOut(F("skipping, no inverters"));
+          //Update_log( 2, "no inverter");
+          zigbeeUp = 0;
+          return;
+        }
         
         switch(checkCoordinator() ) // send the 2700 command 
            {
@@ -38,12 +57,14 @@ if ( MQTT_Client.connected() ) {
                   //zigbeeUp = 0;
                   //String term = "zb down";
                   //Update_log("zigbee", "zb down" );
-                  if(diagNose != 0) consoleOut("zb down");
+                   consoleOut("zb down");
                   resetCounter += 1;
                   resetValues(false, false); // reset all values, no mqtt
                   // try to start the coordinator
                   Serial.println("hc starting coordinator");
-                  if (coordinator(true) ) zigbeeUp = 1; else zigbeeUp = 0; 
+                  if (coordinator(true) ) zigbeeUp = 1; else zigbeeUp = 0;
+                  //events.send( "reload", "message");
+                  eventSend(1);
             }      
     
 }
@@ -116,31 +137,56 @@ int checkCoordinator() {
 }
 
 
-void ZigbeePing() {
-    // if the ping command failed then we have to restart the coordinator
-    //Update_Log("zigbee", "check serial loopback");
-    // these commands already have the length 00 and checksum 20 resp 26
-    char pingCmd[5]={"2101"}; // ping
-    char s_d[200] = {0}; 
-    if(diagNose !=0 ) consoleOut(F("send zb ping"));
+//void ZigbeePing() {
+//    // if the ping command failed then we have to restart the coordinator
+//    //Update_Log("zigbee", "check serial loopback");
+//    // these commands already have the length 00 and checksum 20 resp 26
+//    char pingCmd[5]={"2101"}; // ping
+//    char s_d[200] = {0}; 
+//    if(diagNose !=0 ) consoleOut(F("send zb ping"));
+//
+//    sendZB( pingCmd ); // answer should be FE02 6101 79 07 1C
+////    if ( waitSerial2Available() ) { readZigbee(); } else { readCounter = 0;} // when nothing available we don't read
+////    DebugPrintln("inMessage = " + String(inMessage) + " rc = " + String(readCounter));
+//    char reCeived[254]={0};  
+//    strcpy(reCeived, readZB(s_d));
+//    
+//    
+//    if (strstr(reCeived, "FE026101" ) == NULL) 
+//    {
+//        consoleOut(F("no ping answer"));
+//    } else {
+//        consoleOut(F("ping ok"));
+//    }
+//    // we ignore the answer
+//}
 
-    sendZB( pingCmd ); // answer should be FE02 6101 79 07 1C
-//    if ( waitSerial2Available() ) { readZigbee(); } else { readCounter = 0;} // when nothing available we don't read
-//    DebugPrintln("inMessage = " + String(inMessage) + " rc = " + String(readCounter));
-    char reCeived[254]={0};  
-    strcpy(reCeived, readZB(s_d));
-    
-    
-    if (strstr(reCeived, "FE026101" ) == NULL) 
-    {
-       if(diagNose != 0) consoleOut(F("no ping answer"));
-    } else {
-       if(diagNose != 0) consoleOut(F("ping ok"));
-    }
-    // we ignore the answer
-}
-
-
+//bool ZigbeeLoopBack() {
+//    // if the ping command failed then we have to restart the coordinator
+//    //Update_Log("zigbee", "check serial loopback");
+//    // these commands already have the length 00 and checksum 20 resp 26
+//    char loopCmd[11]={"2710AABBCC"}; // ping
+//    char s_d[200] = {0}; 
+//    if(diagNose !=0 ) consoleOut(F("send zb loopback"));
+//
+//    sendZB( loopCmd ); // answer should be FE02 6101 79 07 1C
+////    if ( waitSerial2Available() ) { readZigbee(); } else { readCounter = 0;} // when nothing available we don't read
+////    DebugPrintln("inMessage = " + String(inMessage) + " rc = " + String(readCounter));
+//
+//    char reCeived[254]={0};  
+//    strcpy(reCeived, readZB(s_d));
+//    
+//    if(readCounter > 10) return false;
+//    
+//    if (strstr(reCeived, "AABBCC" ) == NULL) 
+//    {
+//        consoleOut(F("no loopback answer"));
+//       return false;
+//    } else {
+//        consoleOut(F("loopback ok"));
+//       return true;
+//    }
+//}
 // *************************************************************************
 //                          hard reset the cc25xx
 // *************************************************************************
@@ -150,8 +196,8 @@ void ZBhardReset()
     delay(500);
     digitalWrite(ZB_RESET, HIGH);
     //char term[20] = {"ZBmodule hard reset"} ;
-    Update_Log("zigbee", "ZB module hard reset");
-    if(diagNose != 0) consoleOut("ZB module hard reset");
+    Update_Log(2, "hard reset");
+     consoleOut("ZB module hard reset");
     delay(2000); //wait for the cc2530 to reboot
     }
 
@@ -159,7 +205,8 @@ void ZBhardReset()
 // function to 
 void consoleOut(String toLog) {
  
-  if(diagNose == 1 ) 
+  if( diagNose == 0 ) return; 
+  if (diagNose == 2 )
   {
     Serial.println(toLog);
   } else {

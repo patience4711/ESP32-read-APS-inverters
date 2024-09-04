@@ -1,25 +1,17 @@
 const char INVCONFIG_START[] PROGMEM = R"=====(
 <!DOCTYPE html><html><head><meta charset='utf-8'>
-<title>ESP32-ECU</title>
+<title>ESP-ECU</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="icon" type="image/x-icon" href="/favicon.ico" />
 <link rel="stylesheet" type="text/css" href="/STYLESHEET">
 <script type='text/javascript'>
 
-function helpfunctie() {
-document.getElementById("help").style.display = "block";
-}
-function sl() {  
-document.getElementById("help").style.display = "none";
-}
 function showSubmit() {
-document.getElementById("sub").style.display = "block";
+document.getElementById("sub").style.display = "inline-block";
 }
+
 function submitFunction(a) {
-document.getElementById("bo").innerHTML="<br>wait...<br>saving<br>this<br>inverter"; 
-document.getElementById("bo").style.display="block"; 
 document.getElementById('formulier').submit();
-setTimeout(function(){window.location.href=a;}, 3000 ); 
 }
 </script>
 <style>
@@ -38,66 +30,43 @@ div.overlay {
   line-height: 300px;
 }
 </style>
+<script>
+function cl() {
+window.location.href='/MENU';
+}
+</script>
 </head>
 <body onload='%LOADBAG%'>
 
-<div id='msect'>
-  <div id="help">
-  <span class='close' onclick='sl();'>&times;</span><h3>INVERTER SETTINGS HELP</h3>
-  <b>you can add max 9 inverters.</b><br><br>
-  <b>name</b><br>
-  Enter a meaningfull name or the position of the inverter.
-  <br><br><b>inverter serialnr:</b><br>
-  You can find the serialnr stickered on the inverter.
-  <br><br><b>panels:</b><br>
-  Check which panels are connected.
-  <br><br><b>pair:</b><br>
-  link your inverter to this ECU in order to make the zigbee communication possible.<br>
-  When paired you will see the obtained inverter ID in the status field.
-  You can find more information in the log or information page. 
-  <br><br>
-  </div>
+<div id='msect'><div id='bo'><div>
+<div id='menu' style='height:96px' >
+<a href='/MENU' class='close'>&times;</span>
+<a href='/INV?welke=0' style='display:%none'0%>inv. 0</a>
+<a href='/INV?welke=1' style='display:%none'1%>inv. 1</a>
+<a href='/INV?welke=2' style='display:%none'2%>inv. 2</a>
+<a href='/INV?welke=3' style='display:%none'3%>inv. 3</a>
+<a href='/INV?welke=4' style='display:%none'4%>inv. 4</a>
+<a href='/INV?welke=5' style='display:%none'5%>inv. 5</a>
+<a href='/INV?welke=6' style='display:%none'6%>inv. 6</a>
+<a href='/INV?welke=7' style='display:%none'7%>inv. 7</a>
+<a href='/INV?welke=8' style='display:%none'8%>inv. 8</a>
+<a href='/INV?welke=99' style='color:#66ff33; display:%none'99%>add</a>
 </div>
-
-<center>
-
-<div id='msect'>
-<ul>
-<li><a href='/MENU'>done</a></li>
-<li><a href='/INV?welke=0' style='display:%none'0%>inv. 0</a></li>
-<li><a href='/INV?welke=1' style='display:%none'1%>inv. 1</a></li>
-<li><a href='/INV?welke=2' style='display:%none'2%>inv. 2</a></li>
-<li><a href='/INV?welke=3' style='display:%none'3%>inv. 3</a></li>
-<li><a href='/INV?welke=4' style='display:%none'4%>inv. 4</a></li>
-<li><a href='/INV?welke=5' style='display:%none'5%>inv. 5</a></li>
-<li><a href='/INV?welke=6' style='display:%none'6%>inv. 6</a></li>
-<li><a href='/INV?welke=7' style='display:%none'7%>inv. 7</a></li>
-<li><a href='/INV?welke=8' style='display:%none'8%>inv. 8</a></li>
-<li><a href='/INV?welke=99' style='display:%none'99%>add</a></li>
-</ul>
-</div>
-
-<div id='msect'>
-<div id='bo'></div>
-  <center><div class='divstijl' style='height:64vh;'>
+<center><div class='divstijl' style='height:64vh;'><center>
 <form id='formulier' method='get' action='inverterconfig' oninput='showSubmit()' onsubmit="return confirm('sure to save this inverter?')">
-  
     %<FORMPAGE>%
     <br>
   </div>
-</div>
-<div id='msect'>
+  </center>
   <form id='formular' method='get' action='/INV_DEL'></form>
-  <ul>
-  <div id='pairknop' style='display:%none'p% >
-    <li ><a class='groen' href='/PAIR' onclick="return confirm('Are you sure you want to pair this inverter?')">pair</a></li>
-    <li><a href='#' onclick='delFunction("/SW=BACK")'>delete</a></li>
-  </div>
-    <li><a href='#' onclick='helpfunctie()'>help</a></li>
-  
-    <li id='sub'><a href='#' onclick='submitFunction("/SW=BACK")'>save</a></li>
-  
-</div>  
+  <div id='menu'>
+    <div id='pairknop' style='display:%none'p% >
+    <a class='groen' href='/PAIR'  onclick="return confirm('Are you sure you want to pair this inverter?')">pair</a>
+    <a href='#' onclick='delFunction("/SW=BACK")'>delete</a>
+    </div> 
+    <a href='#' onclick='helpfunctie()'>help</a>
+    <a href="#" id="sub" style='background:green; display: none' onclick='submitFunction("/sw=BACK")'>save</a><br>
+</div>
 </ul>
 <br>
   
@@ -132,7 +101,7 @@ div.overlay {
     4&nbsp;<input type='checkbox' name='pan4' #4check></tr></td>
     </span>
 
-</table></form>
+</table></form></div>
 )=====";
 
 // **********************************************************************************
@@ -144,10 +113,12 @@ function showFunction() {
   //alert("showFunction");
   document.getElementById("invspan").style.display = "inline";
 }
+
 function hideFunction() {
   //alert("showFunction");
   document.getElementById("invspan").style.display = "none";
 }
+
 function myFunction(){
  if(document.getElementById("sel").value == 1 ) { 
     showFunction();
@@ -158,10 +129,7 @@ function myFunction(){
 
 function delFunction(a) {
   if(confirm("are you sure to delete this inverter ?")) {  
-  document.getElementById("bo").innerHTML="<br>wait...<br>processing<br>your<br>request"; 
-  document.getElementById("bo").style.display="block";
   document.getElementById('formular').submit();   
-  setTimeout(function(){window.location.href=a;}, 3000 ); 
   }
 }
 
@@ -177,57 +145,42 @@ void handleInverterconfig(AsyncWebServerRequest *request)
 { 
   // form action = handleInverterconfig
   // we only collect the data for this specific inverter
-  // read the serverargs and copy the values into the variables
-
-//   if( diagNose != 0 ) consoleOut("we are in handleInverterconfig");    
-//   if( diagNose != 0 ) consoleOut("inverterCount initial = " + String(inverterCount));
-//   if( diagNose != 0 ) consoleOut("iKeuze = " + String(iKeuze));  
-   // collect the serverarguments
+  // collect the serverarguments
    strcpy(Inv_Prop[iKeuze].invLocation, request->arg("il").c_str());
    strcpy(Inv_Prop[iKeuze].invSerial, request->arg("iv").c_str());
    Inv_Prop[iKeuze].invType = request->arg("invt").toInt(); //values are 0 1 2  
    Inv_Prop[iKeuze].invIdx = request->arg("mqidx").toInt(); //values are 0 1  
 // the selectboxes
    char tempChar[1] = "";
-   String dag = request->arg("pan1");  // mqselect
-   if ( dag == "on") { Inv_Prop[iKeuze].conPanels[0] = true;} else { Inv_Prop[iKeuze].conPanels[0] = false; }   
-   dag = request->arg("pan2");  // mqselect
-   if ( dag == "on") { Inv_Prop[iKeuze].conPanels[1] = true;} else { Inv_Prop[iKeuze].conPanels[1] = false; }
+   if(request->hasParam("pan1")) { Inv_Prop[iKeuze].conPanels[0] = true;} else { Inv_Prop[iKeuze].conPanels[0] = false;}  // mqselect
+   if(request->hasParam("pan2")) { Inv_Prop[iKeuze].conPanels[1] = true;} else { Inv_Prop[iKeuze].conPanels[1] = false; }
 
    Inv_Prop[iKeuze].conPanels[2] = false;
    Inv_Prop[iKeuze].conPanels[3] = false;
    //we only collect this when type = 1
    if(Inv_Prop[iKeuze].invType == 1) {
-   dag = request->arg("pan3");  // mqselect
-   if ( dag == "on") { Inv_Prop[iKeuze].conPanels[2] = true;}    
-   dag = request->arg("pan4");  // mqselect
-   if ( dag == "on") { Inv_Prop[iKeuze].conPanels[3] = true;}    
+   if(request->hasParam("pan3")) { Inv_Prop[iKeuze].conPanels[2] = true;}    
+   if(request->hasParam("pan4")) { Inv_Prop[iKeuze].conPanels[3] = true;}    
    }
    //DebugPrintln("checked panels are : " + String(Inv_Prop[iKeuze].conPanels[0])+ String(Inv_Prop[iKeuze].conPanels[2])+ String(Inv_Prop[iKeuze].conPanels[2])+ String(Inv_Prop[iKeuze].conPanels[3]));
    //is this a addition?
    String bestand = "/Inv_Prop" + String(iKeuze) + ".str"; // /Inv_Prop0.str
-   if( diagNose != 0 ) consoleOut("going to write " + bestand ); 
+   consoleOut("going to write " + bestand ); 
    //initial their both 0
    writeStruct(bestand, iKeuze); // alles opslaan in SPIFFS
    if(iKeuze == inverterCount) 
    {
     inverterCount += 1;
-    if( diagNose != 0 ) consoleOut("we appended, inverterCount now : " + String(inverterCount)); 
+    consoleOut("we appended, inverterCount now : " + String(inverterCount)); 
     }
    
    basisConfigsave();  // save inverterCount
-   #ifdef DEBUG
-   if( diagNose != 0 ) consoleOut("\ninverterCount after edit (saved) = " + String(inverterCount));  
-   if( diagNose != 0 ) consoleOut("list of the files we have after edit");
-   printInverters();
-   #endif
-       
-//      #ifdef DEBUG    
-//      Serial.println("files after the ops");
-//      printInverters();            
-//      #endif
 
-    actionFlag=10; // triggers the reboot
+   consoleOut("\ninverterCount after edit (saved) = " + String(inverterCount));  
+   consoleOut("list of the files we have after edit");
+   printInverters();
+   confirm();
+   request->send(200, "text/html", toSend);
 }
 
 //*******************************************************************************************
@@ -239,41 +192,38 @@ void handleInverterdel(AsyncWebServerRequest *request)
   // we only collect the data for this specific inverter
   // read the serverargs and copy the values into the variables
 
-  // if( diagNose != 0 ) consoleOut("we are in handleInverterdel");    
-  // if( diagNose != 0 ) consoleOut("inverterCount initial = " + String(inverterCount));
-  // if( diagNose != 0 ) consoleOut("iKeuze = " + String(iKeuze));  
-
    String bestand = "/Inv_Prop" + String(iKeuze) + ".str"; // /Inv_Prop0.str
-   if( diagNose != 0 ) consoleOut("remove file " + bestand ); 
+   consoleOut("remove file " + bestand ); 
  
    if(SPIFFS.exists(bestand) ) SPIFFS.remove(bestand);
    
-   if( diagNose != 0 ) consoleOut("list of the files we have after removed one");
+   consoleOut("list of the files we have after removed one");
    printInverters();
    inverterCount -= 1;
    basisConfigsave();  // save inverterCount   
 //   // now we may have a gap in the file order
 //   // check if we have one and remove it
-      remove_gaps();
+   remove_gaps();
       //Serial.println(F("list of the files after remove gaps"));
     
     printInverters(); 
     
-    if( diagNose != 0 ) consoleOut("inverterCount after removal = " + String(inverterCount));
+    consoleOut("inverterCount after removal = " + String(inverterCount));
 
-      actionFlag = 10;
+    confirm();
+    request->send(200, "text/html", toSend);
 }
 
 void printInverters() { 
       if(diagNose == 0 ) return;     
-      if( diagNose != 0 ) consoleOut(F(" ****** excisting inverter files ******"));
+      consoleOut(F(" ****** excisting inverter files ******"));
       for (int x=0; x < inverterCount+1; x++) 
       {
       String bestand = "/Inv_Prop" + String(x) + ".str";
       
       if(SPIFFS.exists(bestand)) 
           {
-              if( diagNose != 0 ) consoleOut("filename: " + bestand);
+              consoleOut("filename: " + bestand);
               printStruct(bestand);
           }
          
@@ -300,28 +250,57 @@ String bestand_1;
 String bestand_2;
 bool found = false;  
 
-  for(int i=0; i < 10; i++ ) 
-  {
-      bestand_1 = "/Inv_Prop" + String(i) + ".str";
-      bestand_2 = "/Inv_Prop" + String(i+1) + ".str";
-      //Serial.println("bestand_1 = " + bestand_1);
-      //Serial.println("bestand_2 = " + bestand_2);
-      if(!SPIFFS.exists(bestand_1) && SPIFFS.exists(bestand_2)) 
-      {
-      //Serial.println(bestand_1 + " not exist and " + bestand_2 + " exists"); 
-        found = true;
-        SPIFFS.rename(bestand_2, bestand_1); // file 2 becomes file 1
-      //Serial.println("renamed " + bestand_1);
-        printInverters();    
+// say we have Inv_Prop0, Inv_Prop1, Inv_Prop3, Inv_Prop4, Inv_Prop5
+// this are 5 files 
+// there can only a gap of 1 inverter(can only remove 1 at a time) 
+// if we know the inverterCount we can search for a gap and put the last file in it
+// so if we are missing Inv_Prop1, we know that we have Inv_prop5  
+  
+  inverterCount = readInverterfiles(); // this should be 5 in the case above
+  for(int i=0; i < inverterCount; i++ ) { // 0 1 2 3 4
+  bestand_1 = "/Inv_Prop" + String(i) + ".str";
+  // if this file not exixts we know that there must be a file "?inv_Prop inverterCount.str
+  if( !SPIFFS.exists(bestand_1) ) {
+      consoleOut("found a gap" + bestand_1);  
+      bestand_2 = "/Inv_Prop" + String(inverterCount) + ".str"; // the last file
+      if( !SPIFFS.exists(bestand_2) ) consoleOut("error, " + bestand_2 + " not exists");  
+   // if we rename the last file to the gap, it keeps the old content
+   // so we just cope the struct and write that to spiffd
+      consoleOut("copy the last struct " + bestand_2 + " to " + bestand_1);
+      
+      structCopy(i, inverterCount);
+      writeStruct(bestand_1, i); // write the copied struct
+      SPIFFS.remove(bestand_2);
+      //SPIFFS.rename(bestand_2, bestand_1); // file 2 becomes file 1
+      return;  
       }
   }
-  // we remove the last file
-  if (found) 
-    {
-    bestand_1 = "/Inv_Prop" + String(inverterCount) + ".str"; 
-    if(!SPIFFS.exists(bestand_1) ) SPIFFS.remove(bestand_1);
-    }
-}
+  consoleOut("no gaps found");
+} 
+
+   
+//  for(int i=0; i < 10; i++ ) 
+//  {
+//      bestand_1 = "/Inv_Prop" + String(i) + ".str";
+//      bestand_2 = "/Inv_Prop" + String(i+1) + ".str";
+//      //Serial.println("bestand_1 = " + bestand_1);
+//      //Serial.println("bestand_2 = " + bestand_2);
+//      if(!SPIFFS.exists(bestand_1) && SPIFFS.exists(bestand_2)) 
+//      {
+//      //Serial.println(bestand_1 + " not exist and " + bestand_2 + " exists"); 
+//        found = true;
+//        SPIFFS.rename(bestand_2, bestand_1); // file 2 becomes file 1
+//      //Serial.println("renamed " + bestand_1);
+//        printInverters();    
+//      }
+//  }
+//  // we remove the last file
+//  if (found) 
+//    {
+//    bestand_1 = "/Inv_Prop" + String(inverterCount) + ".str"; 
+//    if(!SPIFFS.exists(bestand_1) ) SPIFFS.remove(bestand_1);
+//    }
+//}
 // ********************************************************************
 //                     processor
 // *********************************************************************
@@ -330,7 +309,7 @@ String processor(const String& var)
 //
   if(var == "LOADBAG") 
   {
-    Serial.println(F("found LOADBAG"));
+    consoleOut(F("found LOADBAG"));
     if(Inv_Prop[iKeuze].invType == 1) 
       {
       return F("showFunction()"); 
@@ -338,46 +317,40 @@ String processor(const String& var)
       return F("hideFunction()");  
       }
   }
-// make the menu items visable
-
+// make the menu items visible --> works
   for(int x=0; x<9; x++) { // for every button we have to set the visibility
      String placeholder = "none'" + String(x);
      //Serial.println("placeholder = " + placeholder);
        if(var == "none'" + String(x) ) { 
-        if (x < inverterCount) { return F("block'"); } else { return F("none'"); }
+        if (x < inverterCount) { return F("inline-block'"); } else { return F("none'"); }
        }
   }
 //   
    if(inverterCount < 9) {
-    Serial.println(F("show add button"));
-    if(var == "none'99") return F("block'"); // show the add button
+    // show the add button 
+    if(var == "none'99") return F("inline-block'");   
+   } else {
+    if(var == "none'99") return F("none'");
    }
   
-  if(var == "<FORMPAGE>") 
-  {
-  return(toSend);  
+  if(var == "<FORMPAGE>"){
+    consoleOut(F("found FORMPAGE"));
+    return(toSend);  
   }
 
-if(var == "none'p") {
+  if(var == "none'p") {
     String bestand = "/Inv_Prop" + String(iKeuze) + ".str";
-    if(SPIFFS.exists(bestand)) 
-    {
-    // we make the pair and delete button visible
-      return "block'";
-    } else {
-      return "none'";
-    }
-}
+    if(SPIFFS.exists(bestand)) return "inline-block'"; else return "none'";
+  }
 
 return String(); //return empty when no match
 }
 
 
-// we construct the form
+// construct the form and write in a file toSend
 void inverterForm() {
-    //Serial.println("bool nix = " + String(nix));
-int verklikker = 0;
-    if (inverterCount >= 88 )
+    int verklikker = 0;
+    if (inverterCount >= 88 ) // if we add this = 99
     { 
         verklikker = 88;
         inverterCount -= verklikker; // restore the original inverterCount
@@ -385,9 +358,9 @@ int verklikker = 0;
     inverterCount += verklikker; // add 88 again
     // now we have 3 situations
     // inverterCount == 0, show the page currently no inverters
-    // iKeuze < invertercount, we have an exixting inverter
-    // iKeuze = invertercount, we add a new inverter
-    // we clicked the add button then invertercount is at least 88
+    // iKeuze < invertercount, we have an existing inverter
+    // iKeuze == invertercount, we are adding a new inverter
+    // if we clicked the add button then invertercount is at least 88
     if( inverterCount != 0 ) {
    
     // **********************************************************************
@@ -399,7 +372,7 @@ int verklikker = 0;
         String bestand = "/Inv_Prop" + String(iKeuze) + ".str";
         if(SPIFFS.exists(bestand)) 
        {
-        if( diagNose != 0 ) consoleOut("File exists" + bestand);
+        consoleOut("File exists " + bestand);
         //the file exists so we can display the values 
         toSend.replace("{nr}" , String(iKeuze)); // vervang inverter nummer not available
         toSend.replace("000000", String(Inv_Prop[iKeuze].invSerial)); // handled by the script
@@ -433,7 +406,7 @@ int verklikker = 0;
 
         } else {
         // the file does not exist so we show an empty page
-        if( diagNose != 0 ) consoleOut("File does not exist");
+        consoleOut("File does not exist");
         toSend.replace("invtype_2", "selected");
         toSend.replace("000000", "");
         toSend.replace("{location}", "");
@@ -444,4 +417,26 @@ int verklikker = 0;
      toSend = "<br><br><br><h3>currently no inverters</h3>"; 
     }
 // now we have toSend ready to include in the inverterpage
+}
+
+void structCopy(int a, int b) {
+
+//  char invLocation[13] = "N/A";
+//  char invSerial[13]   = "000000000000";
+//  char invID[5]        = "0000";
+//  int  invType         = 0;
+//  int  invIdx          = 0;
+//  bool conPanels[4]    = {true,true,true,true}; 
+
+   //copy all the values of struct 1 to struct 2  
+   strcpy(Inv_Prop[a].invLocation, Inv_Prop[b].invLocation);
+   strcpy(Inv_Prop[a].invSerial,   Inv_Prop[b].invSerial);
+   strcpy(Inv_Prop[a].invID,   Inv_Prop[b].invID);
+   Inv_Prop[a].invType      = Inv_Prop[b].invType;
+   Inv_Prop[a].invIdx       = Inv_Prop[b].invIdx;
+   Inv_Prop[a].conPanels[0] = Inv_Prop[b].conPanels[0];
+   Inv_Prop[a].conPanels[1] = Inv_Prop[b].conPanels[1];
+   Inv_Prop[a].conPanels[2] = Inv_Prop[b].conPanels[2];
+   Inv_Prop[a].conPanels[3] = Inv_Prop[b].conPanels[3];
+   // now write file a and remove file b
 }

@@ -10,7 +10,7 @@ char * readZB( char inMess[] ) {
     if( !waitSerial2Available() ) {
         inMess[0]='\0';
         term = " readZB nothing to read";
-        if(diagNose != 0) consoleOut(F(" readZB nothing to read"));
+        consoleOut(F(" readZB nothing to read"));
         return inMess;
     }
     
@@ -44,7 +44,7 @@ char * readZB( char inMess[] ) {
            strcpy(inMess, &inMess[2]);
         }   
 
-        if(diagNose != 0) consoleOut("readZB " + String(inMess) + "  rc=" + String(readCounter) + "\n");  
+        consoleOut("readZB " + String(inMess) + "  rc=" + String(readCounter) + "\n");  
         
            //if(diagNose == 1) Serial.println(term); else if(diagNose == 2) ws.textAll(term);
         //}
@@ -84,7 +84,7 @@ void sendZB( char printString[] )
             
     }
     
-    if (diagNose != 0) consoleOut("  sendZB FE" + String(bufferSend));
+    consoleOut("  sendZB FE" + String(bufferSend));
      
     //else if (diagNose == 2) ws.textAll("sendZB FE" + String(bufferSend));
 }

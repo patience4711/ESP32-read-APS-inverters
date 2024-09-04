@@ -1,45 +1,44 @@
-bool mqttConnect() {   // MQTT connection (documented way from AutoConnect : https://github.com/Hieromon/AutoConnect/tree/master/examples/mqttRSSI_NA)
-
-// we are here because w'r not connected. Signal with the LED
-    ledblink(2,70);    
-    if ( Mqtt_Broker[0] == '\0' || Mqtt_Broker[0] == '0'  ) 
-    {
-      Mqtt_Format = 0; // we don't try again
-      //DebugPrintln("no broker, cancel");
-      return false;
+bool mqttConnect() {   // 
+/* this function checks if we are connected to the broker, if not connect anyway */  
+    if( MQTT_Client.connected() ) {
+    consoleOut("mqtt was connected");
+    return true;
     }
-    if( diagNose != 0 )("mqtt try to connect to " + String(Mqtt_Broker));
-    //DebugPrintln("connecting to mqtt");
+    // we are here because w'r not connected. Signal with the LED
+    ledblink(2,70);
+
     if (Mqtt_Port[0] == '\0' ) strcpy(Mqtt_Port, "1883");   // just in case ....
     uint8_t retry = 3;
-
-    // We generate a unique name for this device to avoid mqtt problems 
-    // in case if you have multiple RFlink-ESP devices
-    String clientId = getChipId(false);
     
+    //char Mqtt_inTopic[11]={"ESP-ECU/in"};
+
     while (!MQTT_Client.connected()) {
 
-      if (MQTT_Client.connect(clientId.c_str() , Mqtt_Username, Mqtt_Password)) 
+      if ( MQTT_Client.connect( Mqtt_Clientid, Mqtt_Username, Mqtt_Password) )
       {
-          if( diagNose != 0 ) consoleOut("MQTT connection Established with ID : " + clientId);
+         //connected, so subscribe to inTopic (not for thingspeak)
+        if(Mqtt_Format != 5 ) {
+        if(  MQTT_Client.subscribe ( "ESP32-ECU/in" ) ) {
+        //if(  MQTT_Client.subscribe ( Mqtt_inTopic ) ) { 
+               //if(diagNose) ws.textAll("subscribed to " + String(Mqtt_inTopic ));
+               consoleOut("subscribed to ESP32-ECU/in");
+           }
+        }
+         consoleOut(F("mqtt connected"));
+         Update_Log(3, "connected");
+      
+       return true;
 
-          //connected, so we and subscribe to inTopic
-         
-          MQTT_Client.subscribe ( Mqtt_inTopic ) ;   // 
-          if( diagNose != 0 ) consoleOut("\nMQTT subscribed on topic " + String(Mqtt_inTopic));
-          Update_Log("mqtt", "connected");
-          return true;
-      } 
-      delay(500);
-      if (!--retry) {
-          //String term = "connection failed state: " + String(MQTT_Client.state());
-          Update_Log("mqtt", "connection failed");
-          if( diagNose != 0 ) consoleOut("MQTT connection failed"); 
-          break;
-       }
+    } else {
+        //String term = "connection failed state: " + String(MQTT_Client.state());
+        Update_Log(3, "failed");
+        if (!--retry) break; // stop when tried 3 times
+        delay(500);
+    }
   }
-  // if we are here, connection failed after 3 attempts
-  // Mqtt_Enabled = false; // we don't try again
+  // if we are here , no connection was made.
+
+  consoleOut(F("mqtt connection failed"));
   return false;
 }
 
@@ -49,25 +48,22 @@ bool mqttConnect() {   // MQTT connection (documented way from AutoConnect : htt
 
 void MQTT_Receive_Callback(char *topic, byte *payload, unsigned int length)
 {
-    //Serial.println("MQTT_message arrived in " + String(Mqtt_inTopic) );
-    //Serial.println("length of the message = " + String(length));
-    //String SerialRFcmd = "";
    
-    String Payload = "";     // convert the payload to a String...
-    for (int i = 0; i < length; i++)
-    {
-        Payload += (char)payload[i]; // convert to char, nodig???
-    }
+//    String Payload = "";     // convert the payload to a String...
+//    for (int i = 0; i < length; i++)
+//    {
+//        Payload += (char)payload[i]; // convert to char, needed???
+//    }
     
-    if( diagNose != 0 ) consoleOut("mqtt received " + Payload);
+   // ws.textAll("mqtt received " + Payload);
 
     StaticJsonDocument<1024> doc;       // We use json library to parse the payload                         
    //  The function deserializeJson() parses a JSON input and puts the result in a JsonDocument.
-    DeserializationError error = deserializeJson(doc, Payload); // Deserialize the JSON document
-
+   // DeserializationError error = deserializeJson(doc, Payload); // Deserialize the JSON document
+    DeserializationError error = deserializeJson(doc, payload); // Deserialize the JSON document
     if (error)            // Test if parsing succeeds.
     {
-        if( diagNose != 0 ) consoleOut("mqtt no valid json ");
+       consoleOut("mqtt no valid json ");
         return;
     } 
     
@@ -76,16 +72,18 @@ void MQTT_Receive_Callback(char *topic, byte *payload, unsigned int length)
 
     if( doc.containsKey("poll") )
     {
+        int inv = doc["poll"].as<int>(); 
+        consoleOut( "got message {\"poll\":" + String(inv) + "}" );
+
         if(!Polling)
         {
-            int inv = doc["poll"].as<int>();  
-            //DebugPrintln( "found {\"poll\" " + String(inv) + "}\"" );
+             
+            //ws.textAll( "found {\"poll\" " + String(inv) + "}\"" );
             
             iKeuze = inv;
             if(iKeuze == 99) {
-              if( diagNose != 0 ) consoleOut( "found {\"poll\" " + String(inv) + "}\"" );
-              actionFlag = 48; // takes care for the polling of all inverters
-              return;  
+                actionFlag = 48; // takes care for the polling of all inverters
+                return;  
             }
 
             if ( iKeuze < inverterCount ) 
@@ -93,13 +91,13 @@ void MQTT_Receive_Callback(char *topic, byte *payload, unsigned int length)
               actionFlag = 47; // takes care for the polling
               return;
             } else {
-               if( diagNose != 0 ) consoleOut("mqtt error no inv " + String(iKeuze));
+               consoleOut("mqtt error no inv " + String(iKeuze));
               return;         
             }
         }
         else
         {
-          if( diagNose != 0 ) consoleOut("polling = automatic, skipping");
+          consoleOut("polling = automatic, skipping");
         }
     }
 }

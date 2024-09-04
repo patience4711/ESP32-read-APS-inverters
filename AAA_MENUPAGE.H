@@ -1,89 +1,42 @@
 const char MENUPAGE[] PROGMEM = R"=====(
-<style> li a { width: 130px; } 
-@media only screen and (max-width: 800px) {
-  li a {
-    font-size:16px;
-    padding: 14px 26px 10px 12px;
-    width: 90px;
-  }
-}
+<!DOCTYPE html><html><head><meta charset='utf-8'>
+<title>ESP32-ECU</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" type="image/x-icon" href="/favicon.ico" />
+<link rel="stylesheet" type="text/css" href="/STYLESHEET_HOME">
 
+<style>
+#menu a:link, #menu2 a:link, #menu a:visited, #menu2 a:visited { width: 98px;}
+}
 </style>
-<body>
-<script type='text/javascript'>
-function showSubmit() {
-document.getElementById("submitknop").style.display = "block";
-function helpfunctie() {
-document.getElementById("help").style.display = "block";
-}
-function sl() {  
-document.getElementById("help").style.display = "none";
-}
-}
-</script>
+<script type="text/javascript" src="SECURITY"></script>
+</head><body>
 <div id='msect'>
-  <div id='help'>
-  <span class='close' onclick='sl();'>&times;</span><h3>ECU HELP</h3>
-  <b>CC2530 to ESP wiring</b><br>
-  cc2530 -> nodemcu <br>
-  p2   ->  d8<br>
-  p3   ->  d7<br>
-  rst  -> d5<br>
-  vcc  -> 3.3V<br> 
-  gnd  -> g
-  <br><br>
-  <b>cc2530 firmware</b><br>
-  The cc2530 should be flashed with a firmware named "CC2530ZNP-with-SBL.hex".<br>
-  You can do this with "ccloader" (google).<br><br>
-  <b>night mode</b><br>
-  Betweeen sunset and sunrise, there is no reaction from inverters.<br>
-  You should not perform pairing or polling tasks then!<br><br>
-  <b>troubleshooting</b><br>
-  If the zigbee system failes, check the hardware/wiring and reboot.<br><br>
-  </div>
-</div
-<div id='msect'>
-  <ul>
-  <li><a href='/'>home</a></li>
-  <li><a href='/INFOPAGE'>info</a></li>
-  </ul>
+<div id='menu'>
+  <a href='/LOGPAGE'>journal</a>
+  <a href="/" class='close' >&times;</a>  
 </div>
 <br><br>
-<div id='msect'>
-  <kop>ESP32-ECU MENU</kop>
-</div>
+<kop>ESP32 ECU MENU</kop><br><br>
+<div class='divstijl'><center><br>
+<div id="menu2">
+  <table><tr>
+  <td style="width:100px"><a href='/ABOUT'>system info</a>
+  </td><td style="width:60px"></td>
+  <td style="width:100px"><a href='/GEOCONFIG'>time config</a></td></tr>
 
+  <tr><td><a href='/INV_CONFIG'>inverters</a></td><td></td>
+  <td><a href='/IPCONFIG'>ip config</a></td></tr>
+  
+  <tr><td><a href='/CONSOLE'>console</a></td><td></td>
+  <td><a href='/FWUPDATE'>fw update</a></td></tr>
+  
+  <tr><td><a href='/BASISCONFIG'>settings</a></td><td></td>
+  <td><a onclick="return confirm('are you sure?')" href='/REBOOT'>reboot</a></td></tr> 
 
-
-<div id='msect'>
-
-  <div style='width: 30vw;'>
-  <h4>&nbsp;&nbsp;ECU</h4>
-  <section id="sectie">
-  <ul style='width: 99%;'>
-   <li><a href='/LOGPAGE'>system log</a></li>
-  <li><a href='/CONSOLE'>console</a></li>
-  <li><a href='/INV_CONFIG'>inverters</a></li>
-  <li><a href='/BASISCONFIG'>settings</a></li>
-  <li><a href='/MQTT'>mosquitto</a></li>
-  </section>
-  </ul><br>
-  </div>
-  <div style="width:20vw"></div>
-  <div style='width: 30vw;'>
-       <section id="sectie">
-  <h4>&nbsp;&nbsp;SYSTEM</h4>
-  <ul style='width:99%;'>
-
-  <li><a href='/GEOCONFIG'>time config</a></li>  
-  <li><a href='/IPCONFIG'>ip config</a></li>
-  <li><a href='/FWUPDATE'>fw update</a></li>
-  <li><a onclick="return confirm('are you sure?')" href='/REBOOT'>reboot</a></li>
-  <li><a onclick="return confirm('are you sure?')" href='/STARTAP'>start AP</a></li>
-  </section>
-  </ul><br>
-  </div>
- 
-</div>
+   <tr><td><a href='/MQTT'>mosquitto</a></td><td></td>
+  <td><a onclick="return confirm('are you sure?')" href='/STARTAP'>start AP</a></td></tr> 
+  </table>
+</div></div></div>
 </body></html>
   )=====";

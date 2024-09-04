@@ -3,14 +3,14 @@ void testMessage(bool console) {
       char sendCmd[100]={0};
       char reCeived[254]={0};
       int len;
-      if(console) len = strlen( InputBuffer_Serial ); else len = strlen( txBuffer );
+      if(console) len = strlen( txBuffer );  else len = strlen( InputBuffer_Serial );
 
       //put all the bytes of inputBuffer_Serial ( or txBuffer) in sendCmd, starting at pos 7
       for(int i=0; i<len; i++) 
       {
-         if(console) { sendCmd[i] = InputBuffer_Serial[i+7];} else sendCmd[i] = txBuffer[i+7];
+         if(console) sendCmd[i] = txBuffer[i+7]; else sendCmd[i] = InputBuffer_Serial[i+7];
       }
-       
+      consoleOut("the command = " + String(sendCmd)); 
        //now we send this command
        sendZB(sendCmd);
        // find the answer

@@ -46,20 +46,20 @@ void writeStruct( String whichfile, int nummer) {
 }
 
 bool leesStruct(String whichfile) {
-      //input = /Inv_Prop0.str
+      Serial.println("leesStruct whichfile = " + whichfile);
+      if (!SPIFFS.exists(whichfile)) {
+         Serial.print(F("Failed to open for read")); Serial.println(whichfile);
+         return false;           
+      } 
+      // the file exists so we can open it for read
       File configFile = SPIFFS.open(whichfile, "r");
       int ivn = whichfile.substring(9,10).toInt();
 
       Serial.print(F( "leesStruct ivn = ")); Serial.println(String(ivn) );  
-        if (!configFile)
-           {
-              Serial.print(F("Failed to open for read")); Serial.println(whichfile);
-              return false;           
-           } 
-              Serial.print(F("reading ")); Serial.println(whichfile);
-              configFile.read( (unsigned char *)&Inv_Prop[ivn], sizeof(Inv_Prop[ivn]) );
-              configFile.close();
-              return true;
+      Serial.print(F("reading ")); Serial.println(whichfile);
+      configFile.read( (unsigned char *)&Inv_Prop[ivn], sizeof(Inv_Prop[ivn]) );
+      configFile.close();
+      return true;
  }
 
 
@@ -77,7 +77,7 @@ void wifiConfigsave() {
     json["longi"] = longi;
     json["lati"] = lati;
     
-    json["timezone"] = timezone;
+    json["gmtOffset"] = gmtOffset;
     json["zomerTijd"] = zomerTijd;
     json["securityLevel"] = securityLevel;
     File configFile = SPIFFS.open("/wificonfig.json", "w");
@@ -101,11 +101,9 @@ void basisConfigsave() {
     JsonObject json = doc.to<JsonObject>();
     json["ECU_ID"] = ECU_ID;
     json["userPwd"] = userPwd;
-//    json["pollRes"] = pollRes;
     json["inverterCount"] = inverterCount;
     json["Polling"] = Polling;
     json["pollOffset"] = pollOffset;
-//    json["calli"] = calliBration;
     File configFile = SPIFFS.open("/basisconfig.json", "w");
     if (!configFile) {
       //DebugPrintln("open file for writing failed");
@@ -127,7 +125,8 @@ void mqttConfigsave() {
 //    json["Mqtt_Enabled"] = Mqtt_Enabled;
     json["Mqtt_Broker"] = Mqtt_Broker;
     json["Mqtt_Port"] = Mqtt_Port;    
-    json["Mqtt_inTopic"] = Mqtt_inTopic;
+    json["Mqtt_stateIDX"]       = Mqtt_stateIDX;  
+    //json["Mqtt_inTopic"] = Mqtt_inTopic;
     json["Mqtt_outTopic"] = Mqtt_outTopic;
     json["Mqtt_Username"] = Mqtt_Username;
     json["Mqtt_Password"] = Mqtt_Password;
@@ -163,9 +162,7 @@ bool file_open_for_read(String bestand) {
            configFile.readBytes(buf.get(), size);
            DynamicJsonDocument doc(1024);
            auto error = deserializeJson(doc, buf.get());
-           #ifdef DEBUG 
            serializeJson(doc, Serial); Serial.println(F(""));
-           #endif
              if (error) return false;
               //DebugPrintln("parsed json");
               String jsonStr = ""; // we printen het json object naar een string
@@ -179,7 +176,7 @@ bool file_open_for_read(String bestand) {
 //                      if(jsonStr.indexOf("breedte") > 0){ strcpy(breedte, doc["breedte"]);}
                       if(jsonStr.indexOf("longi") > 0){longi = doc["longi"].as<float>();}
                       if(jsonStr.indexOf("lati") > 0){lati = doc["lati"].as<float>();}                      
-                      if(jsonStr.indexOf("timezone") > 0){ strcpy(timezone, doc["timezone"]);}
+                      if(jsonStr.indexOf("gmtOffset") > 0){ strcpy(gmtOffset, doc["gmtOffset"]);}
                       if(jsonStr.indexOf("zomerTijd") > 0){zomerTijd = doc["zomerTijd"].as<bool>();}
                       if(jsonStr.indexOf("securityLevel") > 0){securityLevel = doc["securityLevel"].as<int>();}
             }
@@ -189,7 +186,7 @@ bool file_open_for_read(String bestand) {
                     if(jsonStr.indexOf("userPwd") > 0) { strcpy (userPwd, doc["userPwd"] );}
   //                  if(jsonStr.indexOf("pollRes") > 0) {pollRes = doc["pollRes"].as<int>();}
                     if(jsonStr.indexOf("pollOffset") > 0) {pollOffset = doc["pollOffset"].as<int>();}
-                    if(jsonStr.indexOf("inverterCount") > 0) {inverterCount = doc["inverterCount"].as<int>();}
+                    //if(jsonStr.indexOf("inverterCount") > 0) {inverterCount = doc["inverterCount"].as<int>();}
                     if(jsonStr.indexOf("Polling") > 0) {Polling = doc["Polling"].as<bool>();}
                    // if(jsonStr.indexOf("calli") > 0) {calliBration = doc["calli"].as<float>();}
               }            
@@ -197,11 +194,12 @@ bool file_open_for_read(String bestand) {
             if (bestand == "/mqttconfig.json"){
                      if(jsonStr.indexOf("Mqtt_Broker")   >  0) { strcpy(Mqtt_Broker,   doc["Mqtt_Broker"]);}
                      if(jsonStr.indexOf("Mqtt_Port")     >  0) { strcpy(Mqtt_Port,     doc["Mqtt_Port"]);}  
-                     if(jsonStr.indexOf("Mqtt_inTopic")  >  0) { strcpy(Mqtt_inTopic,  doc["Mqtt_inTopic"]);}         
+      //               if(jsonStr.indexOf("Mqtt_inTopic")  >  0) { strcpy(Mqtt_inTopic,  doc["Mqtt_inTopic"]);}         
                      if(jsonStr.indexOf("Mqtt_outTopic") >  0) { strcpy(Mqtt_outTopic, doc["Mqtt_outTopic"]);}         
                      if(jsonStr.indexOf("Mqtt_Username") >  0) { strcpy(Mqtt_Username, doc["Mqtt_Username"]);}
                      if(jsonStr.indexOf("Mqtt_Password") >  0) { strcpy(Mqtt_Password, doc["Mqtt_Password"]);}
                      if(jsonStr.indexOf("Mqtt_Format")   >  0) { Mqtt_Format =         doc["Mqtt_Format"].as<int>();}
+                      if(jsonStr.indexOf("Mqtt_stateIDX")   >  0) { Mqtt_stateIDX =         doc["Mqtt_stateIDX"].as<int>();}       
             }
              return true;
 } 

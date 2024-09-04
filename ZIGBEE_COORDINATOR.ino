@@ -16,7 +16,7 @@
  */
 
 bool coordinator(bool normal) { // if true we send the extra command for normal operations
-    if(diagNose != 0) consoleOut(F("starting coordinator"));
+    consoleOut(F("starting coordinator"));
     //} else 
     //if(diagNose == 2) ws.textAll(F("starting coordinator")); 
     coordinator_init();
@@ -27,16 +27,16 @@ bool coordinator(bool normal) { // if true we send the extra command for normal 
     if ( checkCoordinator() == 0 ) // can be 0 1 or 2
      
     {
-        Update_Log("zigbee" , "ZB coordinator started");
-        if(diagNose != 0) consoleOut(F("ZB coordinator started"));
+        Update_Log(2, "started");
+        consoleOut(F("ZB coordinator started"));
         //if(diagNose == 2) ws.textAll(F("ZB coordinator started"));
       
         ledblink(5,100);
         return true;
       
     } else {
-        Update_Log("zigbee" , "starting ZB failed");
-        if(diagNose != 0) consoleOut(F("starting ZB coordinator failed"));
+        Update_Log( 2 , "failed");
+        consoleOut(F("starting ZB coordinator failed"));
         return false;  
     }
 }
@@ -114,7 +114,7 @@ Serial.println("cordinator init 1");
     {
       //cmd 0 tm / 9 alles ok
       //strcpy(initCmd, initBaseCommand[y]);
-      if(diagNose != 0) consoleOut("cmd : " + String(y)); 
+      consoleOut("cmd : " + String(y)); 
 
       //Serial.println("comMand ex len ex checkSum = " + String(initBaseCommand[y]));
       delayMicroseconds(250);
@@ -158,7 +158,7 @@ void sendNO() {
       
     //add the CRC at the end of the command is done by sendZigbee
     String term = "send normal ops initCmd = " + String(noCmd);
-    if(diagNose != 0) consoleOut(term); 
+    consoleOut(term); 
     sendZB( noCmd ); 
   
     //check if anything was received
@@ -167,7 +167,7 @@ void sendNO() {
     
     //if(readCounter == 0) Serial.println("no answer");
 
-    if(diagNose != 0) consoleOut(F("zb initializing ready, now check running"));
+     consoleOut(F("zb initializing ready, now check running"));
     //zero out 
     //memset(&comMand, 0, sizeof(comMand)); //zero out
     //delayMicroseconds(250);    

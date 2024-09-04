@@ -24,7 +24,7 @@ void getTijd() {
     return;
   } else {
    
-    epochTime += atoi(timezone) * 60;
+    epochTime += atoi(gmtOffset) * 60;
     setTime(epochTime); // dit moeten we doen omdat anders zomertijd() niet werkt
     //Serial.print("epoch gecorrigeerd voor timezone = "); Serial.println(epochTime);
     if ( zomerTijd == true ) {
@@ -36,7 +36,7 @@ void getTijd() {
       }
     }
     timeRetrieved=true;  
-    Update_Log("system", "time retrieved");
+    Update_Log(1, "got time");
     }
     //DebugPrint(" Unix time epoch = ");
     //DebugPrintln(epochTime);

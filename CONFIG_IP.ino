@@ -15,24 +15,15 @@ function submitF() {
 }
 </script>
 <div id='msect'>
-  <div id='help'>
-  <span class='close' onclick='sl();'>&times;</span><h3>IP ADDRESS HELP</h3>
-  <b>STATIC IP:</b><br>You can configure a static ip. 
-  Usually redundant, the dhcp ip is usually already fixed.
-  <br><br>
-  <b>DHCP IP:</b><br> the router determines the IP address.<br><br>
-  <b>IP address:</b><br>
-  Should be derived from the router's IP address. If ip router is 192.168.2.1, <br>a correct static ip is <br>192.168.2.<span style='color:red;'>2 t/m 254</span>
-  <br><br>
-  If you set a DHCP IP address, a valid IP must be entered, or leave this field empty.<br>
-  <br><br>
-  </div>
+<div id="menu">
+<a href="#" id="sub" style='background:green; display: none' onclick='submitF()'>save</a>
+<a href="#" class='close' onclick='cl();'>&times;</a>
+</div>
 </div>
 
+<div id='msect'><kop>IP ADDRESS SETTINGS</kop></div>
+
 <div id='msect'>
-  <kop>IP ADDRESS SETTINGS</kop>
-</div>
-<div id='main-sect'>
 <div class='divstijl' style='height:62vh;'><br><center>
 <form id='fM' method='get' action='IPconfig' oninput='showSubmit();'>
 <table><tr><td style='width:145px;'>IP configuration<td style='width:190px;'>
@@ -55,13 +46,6 @@ function submitF() {
 <p>NOTE: a fixed IP has to be correct, or empty.</p></center>
 </div>
 </div>
-<div id='msect'>
-  <br><ul>
-  <li id="sub"><a href="#" onclick='submitF()'>save</a></li>
-  <li><a href='#' onclick='helpfunctie()'>help</a>
-  <li><a href='/MENU'>done</a></li>
-  </ul>
-  <br></div>
 </div>
 </body></html>
 )=====";
@@ -75,16 +59,15 @@ void zendPageIPconfig() {
    // see if we have a static, if so we put the select right and read the ip vars
    if ( static_ip[0] == '\0' || static_ip[0] == '0' ) 
    {
-        if( diagNose != 0 ) consoleOut("static_ip = " + String(static_ip));
-        if( diagNose != 0 ) consoleOut("no static ip");
+        consoleOut("static_ip = " + String(static_ip));
+        consoleOut("no static ip");
         toSend.replace("option}" , "selected" );
         //if we hide the page there are no data put back, the will be saved as null 
   } 
   else 
   {
       // we have a static ip so 
-        if( diagNose != 0 ) consoleOut("static_ip = " + String(static_ip));
-        //if( diagNose != 0 ) consoleOut("there is a static ip");   
+        consoleOut("static_ip = " + String(static_ip));
         toSend.replace("option2" , "selected" );
   }
   //always put back the ip data
@@ -94,13 +77,13 @@ void zendPageIPconfig() {
  
   // we construct the regex for static ip
   String GateWay = WiFi.gatewayIP().toString();
-  if( diagNose != 0 ) consoleOut("gateway in ipconfig = " + GateWay);
+  consoleOut("gateway in ipconfig = " + GateWay);
   int punt1 = GateWay.indexOf('.');
   int punt2 = GateWay.indexOf('.', punt1+1);
   int punt3 = GateWay.indexOf('.', punt2+1);
   String deel_a=GateWay.substring(0, punt3+1);
   //Serial.print("part_a = "); Serial.println(deel_a);
-  //st3l de regex samen als afgeleid van gateway 
+  //st3l the regex together as derived from gateway 
   String patroon="(";
   patroon += deel_a;
   patroon += ")([0-9]{1,2}|1[0-9]{2}|2[0-4][0-9]|25[0-5])";
@@ -134,8 +117,7 @@ void handleIPconfig(AsyncWebServerRequest *request) {
   String optie = request->getParam("keuze")->value();
   //String optie = server.arg("keuze");
   if ( optie == "DHCP") {
-      if( diagNose != 0 ) consoleOut("dhcp set, dropped static_ip, optie = " + optie);
-      //if( diagNose != 0 ) consoleOut(optie);
+      consoleOut("dhcp set, dropped static_ip, optie = " + optie);
       static_ip2[0] = '\0';
     }
 
@@ -146,14 +128,14 @@ void handleIPconfig(AsyncWebServerRequest *request) {
     //If not equal, it has changed 
      String test1=String(static_ip);  
      String test2=String(static_ip2);
-     if( diagNose != 0 ) consoleOut("de teststrings zijn: " + test1 + " " + test2);        
+     consoleOut("de teststrings zijn: " + test1 + " " + test2);        
 
-    if( diagNose != 0 ) consoleOut("read the confirm page in toSend");
+    consoleOut("read the confirm page in toSend");
     toSend = FPSTR(CONFIRM_IP);
    
     if (String(static_ip) != String(static_ip2) ) 
     {
-        if( diagNose != 0 ) consoleOut("the IP has changed");
+        consoleOut("the IP has changed");
         //static_ip=static_ip2;
         strcpy(static_ip, static_ip2);
 
@@ -185,6 +167,6 @@ void handleIPconfig(AsyncWebServerRequest *request) {
    }
    //Serial.println("set actionFlag to " + String(actionFlag) );
    request->send(200, "text/html", toSend);
-   if( diagNose != 0 ) consoleOut("IPconfig saved");
+   consoleOut("IPconfig saved");
    wifiConfigsave();
 }

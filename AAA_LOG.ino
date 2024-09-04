@@ -1,22 +1,18 @@
 //<script type="text/javascript" src="SECURITY"></script>
 
-//<table><tr><td style='width:240px;'>Last refresh : !@@!<td>
-
-//<button onClick='window.location.reload();' style='width: 100px' value='0'>Refresh</button></table><br>
-
-const char LOGPAGE[] PROGMEM = R"=====(
+const char LOGPAGE [] PROGMEM = R"=====(
 <!DOCTYPE html><html><head><meta charset='utf-8'>
 <title>ESP32-ECU</title>
-<meta http-equiv="refresh" content="112">
+<meta http-equiv="refresh" content="60">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="icon" type="image/x-icon" href="/favicon.ico"/>
+
 <link rel="stylesheet" type="text/css" href="/STYLESHEET">
 <style>
 #lijst {
   font-family: "Trebuchet MS", Arial, Helvetica, sans-serif;
   border-collapse: collapse;
   width: 380px;
-  font-size:16px;
+  font-size:14px;
   border: 1px solid;
   text-align: left;
 }
@@ -37,150 +33,116 @@ border: 1px solid;
   background-color: #4CAF50;
   color: white;
 }
-.th1 { width:30%; }
-.th2 { width:20%; }
-.th3 { width:50%; }
-
-
+.th1 { width:30%%; }
+.th2 { width:20%%; }
+.th3 { width:50%%; }
 tr {height:20px;}
-
 
 @media only screen and (max-width: 600px) {
 #lijst{ font-size:12px; width: 320px;}
- tr {width:94vw;}
-.th1 { width:25%; }
-.th2 { width:15%; }
-
+tr {width:94vw;}
+.th1 { width:25%%; }
+.th2 { width:15%%; }
 }
-
 </style>
 <script type="text/javascript" src="SECURITY"></script>
+<script>function cl() {window.location.href='/MENU';}</script>
 </head>
-<body>
-<center>
-<ul>
-<li><a href='/'>close</a></li>
-<li><a href='/ABOUT'>info</a></li>
-<li><a onclick="return confirm('are you sure?')" href='/CLEAR_LOG'>clear</a></li>
-</ul>
-<br><kop>ESP32-ECU LOG</kop>
+<body><center>
+<div id='msect'>
+<div id='menu'><a href="/MENU" class='close'>&times;</a></div>
+
+<kop>ESP-ECU JOURNAL</kop>
+
 <div class='divstijl'><center>
-<table><button onClick='window.location.reload();' style='width: 100px' value='0'>Refresh</button></table>
-<table id='lijst'><tr><th class='th1'>Time</th><th class='th2'>Type</th><th class='th3'>Command</th></tr> 
-  
+<br>
+<table id='lijst'><tr><th class='th1'>Time</th><th class='th2'>Type</th><th class='th3'>Description</th></tr>
+%rows%
+</table></center></div></body></html>
 )=====";
-//</tr><tr><td>date </td><td>system</td><td>192.168.0.aaa.sss.ddd </td></tr>
 
-void handleLogPage( AsyncWebServerRequest *request ) {
-Serial.println("zendPageLog ");
-// String uur = String(hour());
-// if(hour() < 10) { 
-//        uur = "0" + String(hour());
-// } 
-//  String minuten = String(minute());
-//  if(minute() < 10) { 
-//       minuten = "0" + String(minute());
-// }
-
-//String cont = "";
-//cont += uur + " : " + minuten + " hr.";
-
-  char page[3072] = {0};
-  char temp[100]={0};
-  strcpy_P(page, LOGPAGE);
-  //strcat(page, "<table id='lijst'><tr><th class='th1'>Time</th><th class='th2'>Type</th><th class='th3'>Command</th></tr>"); 
-  
-  uint32_t lengte= strlen(page );
-  uint32_t added = 0;
-  Serial.println("initial length = " + String(lengte )); // 1319
-//toSEND.replace("!@@!", cont);
-
-//DebugPrintln(" zendlogpage :build eventlist");  
-  byte Log_Count = 0;
-  Log_MaxReached ? Log_Count = Log_MaxEvents : Log_Count = logNr;  // determine if the max number of event is reached
-  Serial.println("log_Count = " + String(Log_Count ));
-  Serial.println("printlog current event = " + String(logNr));
-  int j = logNr;
-  
-  String content = "";
-  for ( int i = 1; i <= Log_Count; i++ ) {
- //Serial.println("een regel van de lijst, nummer i = "); //Serial.println(i);    
-  j--; //  we get the index of the last record in the array
- //Serial.println("een regel van de lijst, nummer j = "); //Serial.println(j);
-  if (j ==-1) j = Log_MaxEvents - 1; // if we are under the first index of the array ,we go to the last
-  ////////////////// One table line ///////////////////
-  //sprintf(temp,"<tr><td>%s</td><td>%s</td><td>%s</td>", Log_date[logNr], Log_list[j].Log_kind, Log_list[j].Log_message);
-  sprintf(temp,"<tr><td>%s</td><td>%s</td><td>%s</td>", Log_date[j], Log_kind[j], Log_message[j] );
-  strcat(page, temp);
-  added = strlen(page) - lengte;
-  Serial.println("length added = " + String(added ));
-  lengte= strlen(page );
-  ////////////////// One table line ///////////////////
-  }
-  //Serial.print(content);
-  
-  // end of page
-  strcat(page, "</table></center></div></div></body></html>"); 
-  Serial.println("length = " + String(strlen(page )));
-  request->send(200, "text/html", page); 
-}
-
- void Update_Log(char what[], char message[]) {
+// ************************************************************************************
+//                      U P D A T E    L O G
+// ************************************************************************************
+ void Update_Log(int what, char message[14]) {
   char nu[14];
-        //DebugPrintln("updating the log");
-        Serial.println("what = " + String(what));
-        if(String(what) != "clear") {  
+  // when the log is full we start overwriting with the first row 
         sprintf(nu,"%d-%d:%d:%d ", day(), hour(), minute(), second());
-        } else { 
-          nu[0] = '\0';
-          what[0] = '\0';}
-        //Serial.println("nu = " + String(nu)); 
-        strcpy( Log_date[logNr], nu );
-        //Serial.println("Log_date[logNr] = " + String(Log_date[logNr]) );
-        strcpy( Log_kind[logNr], what );
-        //Serial.println("Log_kind[logNr] = " + String(Log_kind[logNr]) );
-        strcpy( Log_message[logNr], message );
-        //Serial.println("Log_message[logNr] = " + String(Log_message[logNr]) );
-        //strcpy( Log_list[logNr].Log_kind, what );
-        //strcpy( Log_list[logNr].Log_message, message );
+        
+        strcpy( Log_Events[logNr].date, nu );
+                              
+        Log_Events[logNr].kind = what;
+        
+        strcpy( Log_Events[logNr].message, message );
+
         logNr++;
-          Serial.println("log current event = " + String(logNr));
+
         if (logNr >= Log_MaxEvents)
         {
             logNr = 0;//start again
             Log_MaxReached = true;
         }
-          Serial.println("log updated");
-}
-
-void Clear_Log(AsyncWebServerRequest *request) {
-
-    if(!checkRemote( request->client()->remoteIP().toString()) ) {
-        if(logNr != 0) {
-        for (int i=0; i <= Log_MaxEvents; i++) {
-           Log_date[20][0] = '\0';
-           Log_kind[20][0] = '\0';
-           Log_message[20][0] = '\0'; 
-        }
-        logNr = 0;//start again
-        Log_MaxReached = false;     
-        //Serial.println("log cleared");   
-        }
-    } 
 }
 
 
-//void Clear_Log() {
-//    //Serial.println("clearing the log");
-//    if(logNr != 0) {
-//      //char nu[0]='\0';
-//      //char what[0]='\0';
-//      //char message[0]='\0';;
-//            for (int i=0; i <= Log_MaxEvents; i++) {
-//            //Update_log("clear", "");
-//            }
-//         logNr = 0;//start again
-//         Log_MaxReached = false;     
+//void Clear_Log(AsyncWebServerRequest *request) {
+//
+//    if(!checkRemote( request->client()->remoteIP().toString()) ) {
+//        if(logNr != 0) {
+////        for (int i=0; i <= Log_MaxEvents; i++) {
+////           Log_date[20][0] = '\0';
+////           Log_kind[20][0] = '\0';
+////           Log_message[20][0] = '\0'; 
+////        }
+//        logNr = 0;//start again
+//        Log_MaxReached = false;     
 //        //Serial.println("log cleared");   
-//    }
+//        }
+//    } 
 //}
+
+
+
+String putList(const String& var)
+{
+
+  if(var == "rows") 
+  {
+    Serial.println("found rows, logNr = " + String(logNr));
+ 
+   char content[1536] = {0};
+   char temp1[80]={0}; // 14 + 
+   char temp2[8]={0};
+   //char temp2[13];
+   byte Log_Count = 0;
+   Log_MaxReached ? Log_Count = Log_MaxEvents : Log_Count = logNr;  // determine if the max number of event is reached
+   int j = logNr;
+   // the rows 0-logNr are the recent updates, are printed from logNr to 0
+   // so first we print the recent from logNr -> null (j=logNr) 
+   // and next the old ones from maxnr -> logNr 
+   for ( int i = 1; i <= Log_Count; i++ ) {
+      j--; //  this is the index of the newest record in the array
+      if (j ==-1) j = Log_MaxEvents - 1; // if we are below the first index of the array ,we start at the last
+   
+   switch ( Log_Events[j].kind ) {
+      case 1:
+         strncpy( temp2, "system\0",  7 ) ;
+         break;
+      case 2:
+         strncpy( temp2, "zigbee\0",  7 ) ;
+         break;
+      case 3:
+         strncpy( temp2, "mqtt\0",    5 ) ;
+         break;
+      case 4:
+         strncpy( temp2, "pairing\0", 8 ) ;
+        }  
+      // One table line
+      sprintf(temp1,"<tr><td>%s</td><td>%s</td><td>%s</td>", Log_Events[j].date, temp2, Log_Events[j].message );
+      strcat(content, temp1);
+      }
+
+   return content;
+  }
+return String();
+}

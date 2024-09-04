@@ -10,19 +10,17 @@ const char HTML_HEAD[] PROGMEM = R"=====(
 <!DOCTYPE html><html><head><meta charset='utf-8'>
 <title>ESP32-ECU</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="stylesheet" type="text/css" href="/STYLESHEET_HOME">
-<link rel="stylesheet" type="text/css" href="/STYLESHEET_SUBS">
+<link rel="stylesheet" type="text/css" href="/STYLESHEET">
+
 <script type='text/javascript'>
 
 function showSubmit() {
 document.getElementById("sub").style.display = "block";
 }
 function submitFunction(a) {
-document.getElementById("bo").innerHTML="<br>wait...<br>processing<br>your<br>request"; 
-document.getElementById("bo").style.display="block"; 
 document.getElementById('formulier').submit();
-setTimeout(function(){window.location.href=a;}, 3000 ); 
 }
+
 function cl() {
 window.location.href='/MENU';
 }
@@ -35,62 +33,84 @@ window.location.href='/MENU';
 //.rad {background:#cc99ff;color:white; border:2px solid black;}
 
 
-const char STYLESHEET_HOME[] PROGMEM = R"=====(
-#sectie li{float:none;}
+const char STYLESHEET[] PROGMEM = R"=====(
 body { background: linear-gradient(#e8f5f7, #caf5fb); color:navy; font-family:'lato',Verdana,Sans-serif; font-size:16px; }
-.divstijl { background: linear-gradient(#e8edc8, #c8eaed); padding:0px 0px 0px 0px; width: 96%; height: 99%; }
-#msect { display: flex; flex-basis: 100%; align-items: center; margin: 0px 0px; width:96vw;}
-#msect:before, #msect:after { content: ""; flex-grow: 1;  margin: 0px 0px;}
-kop { font-size: 4vw; font-weight:bold; padding-top: 1vh; padding-bottom: 1vh;}
+.divstijl { background: linear-gradient(#e8edc8, #c8eaed); padding:0px 0px 0px 0px; width: 50vw; height: 99%; }
+
+kop { font-size: 24px; font-weight:bold; padding-top: 1vh; padding-bottom: 1vh;}
 p {color: #006600; font-family: 'lato',Verdana,Sans-serif; font-size:14px; }
 tr {height:45px;} ul { list-style-type: none; margin: 0 auto 0 auto; padding: 0; overflow: hidden; background-color: #333; border-radius:6px;width: 96vw; height: 48px;}
-li { float: left;} li a:hover { background-color: #ff0808 !important;} a:focus {background-color: red;} th { width:44px; }
-li a { display: inline-block; color: white; text-align: center; padding: 14px 6px 10px; text-decoration: none; width:70px; font-size:20px;}
-.close {color: red; font-size: 42px; font-weight: bold; cursor: pointer; width:70px; padding: 0px 20px;}.close:hover {color: green;} #fright {float:right;}
-@media only screen and (max-width: 800px) { li a { font-size:16px; padding: 14px 26px 10px 12px; width: 50px; }}
+input { font-size:16px; } .inp1 { width:46px; } .inp2 { width:52px; } .inp3 { width:76px; } .inp4 { width:180px;} .inp5 { width:172px;}.inp6 { width:190px;} 
+option { direction: ltr;} .sb1 {font-size:16px; height:24px; } 
+input[type=checkbox] {width:30px; height:30px;}
+.close:hover {color: green;} 
+
+/* new menu styling */
+#msect { display: flex; flex-direction: column; flex-basis: 100%; align-items: center; margin: 0px 0px; width:96vw;}
+#msect:before, #msect:after { content: ""; flex-grow: 1;  margin: 0px 0px;}
+
+#menu a:link, #menu2 a:link, #menu a:visited, #menu2 a:visited {
+  background-color: #333;
+  color: white;
+  border-radius: 6px;
+  text-align: center;
+  text-decoration: none; /* prevent the underline */
+  display: inline-block;
+  width: 58px;
+  line-height: 48px;
+  margin-right: 2px;
+}
+
+#menu a:hover, #menu2 a:hover { background-color: green; color: white;}
+#menu { height:48px; width: 60vw; overflow: hidden; background-color: #333; border-radius:6px;}
+.close { color: red !important; position: static; float:right; font-size: 42px; font-weight: bold; cursor: pointer;}
+
+b { color: #eab3f2; margin-left: 4px; font-size:16px;}
+#sub { float: left; }
+.fright {float:right;}
+
+@media only screen and (max-width: 800px) { 
+.divstijl {width:98vw;}
+.close { font-size: 32px; width:20px; padding: 0px 10px;}
+body { font-size:12px; }
+#menu {width:98vw;}
+input, .sb1 { font-size:16px; }
+.sb1 {height:24px;} 
+
+}
 )=====";
 
-const char STYLESHEET_SUBS[] PROGMEM = R"=====(
-body { background: linear-gradient(#e8f5f7, #caf5fb); color:navy; font-family:'lato',Verdana,Sans-serif; font-size:16px; }
-kop { font-size: 4vw; font-weight:bold; padding-top: 1vh; padding-bottom: 1vh;}
-input { font-size:24px; } .inp1 { width:46px; } .inp2 { width:62px; } .inp3 { width:76px; } .inp4 { width:180px;} .inp5 { width:172px;}.inp6 { width:230px;} 
-option { direction: ltr;} .sb1 {font-size:22px; height:30px; } 
-#bo {width:100%; height:100%; position: absolute; left:0; top:0; background-color:rgba(192,192,192,0.9); color:white; z-index:10; font-size: 90px;
-  font-weight: bold; text-align: center; display: none;} #sub { float: left; background:green; display:none }
-b {color: #;font-size:18px;font-weight:bold;} .close {color: red; font-size: 42px; font-weight: bold; cursor: pointer; width:70px; padding: 0px 20px;
-}.close:hover {color: green;} input[type=checkbox] {width:30px; height:30px;} #fright {float:right;}
-)=====";
 
 //<script type='text/javascript'>setTimeout(function(){ window.location.href='/SW=BACK';}, 3000 ); </script>
 
-const char CONFIRM[] PROGMEM = R"=====(
-<!DOCTYPE html><html><head><meta charset='utf-8'>
-<title>ESP-ECU</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="stylesheet" type="text/css" href="/STYLESHEET_HOME">
-</head>
-<body>
-<script type='text/javascript'>setTimeout(function(){ 
-  window.location.href='/SW=BACK';}, 3000 ); </script>
-
-<center><kop>PROCESSING YOUR REQUEST...</kop>
-<br><br>
-<div class='divstijl'>
-Please wait while your request is being executed.<br><br>
-If applicable, the data is saved and a reboot follows.<br><br>
-Visit the log page or information page for more information<br><br>
-This page will close automatically when the command is executed.<br>
-
-<br><br>
-<br>You will then return to the homepage. Check if the settings are correct.</center></div>
-</body></html>
-)=====";
+//const char CONFIRM[] PROGMEM = R"=====(
+//<!DOCTYPE html><html><head><meta charset='utf-8'>
+//<title>ESP-ECU</title>
+//<meta name="viewport" content="width=device-width, initial-scale=1">
+//<link rel="stylesheet" type="text/css" href="/STYLESHEET">
+//</head>
+//<body>
+//<script type='text/javascript'>setTimeout(function(){ 
+//  window.location.href='/SW=BACK';}, 3000 ); </script>
+//
+//<center><kop>PROCESSING YOUR REQUEST...</kop>
+//<br><br>
+//<div class='divstijl'>
+//Please wait while your request is being executed.<br><br>
+//If applicable, the data is saved and a reboot follows.<br><br>
+//Visit the log page or information page for more information<br><br>
+//This page will close automatically when the command is executed.<br>
+//
+//<br><br>
+//<br>You will then return to the homepage. Check if the settings are correct.</center></div>
+//</body></html>
+//)=====";
 
 const char CONFIRM_IP[] PROGMEM = R"=====(
 <!DOCTYPE html><html><head><meta charset='utf-8'>
 <title>ESP-ECU</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="stylesheet" type="text/css" href="/STYLESHEET_HOME">
+<link rel="stylesheet" type="text/css" href="/STYLESHEET">
 </head>
 <body style='font-size:16px;'>
 <script type='text/javascript'>setTimeout(function(){ window.location.href='http://{adres0}/'; }, 6000 ); </script>
@@ -101,51 +121,26 @@ Your Esp device is going to reboot. <strong>Wait util the led has blinked 3 time
 </body></html>
 )=====";
 
-const char CONFIRM_INV[] PROGMEM = R"=====(
-<!DOCTYPE html><html><head><meta charset='utf-8'>
-<title>ESP-ECU</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="stylesheet" type="text/css" href="/STYLESHEET_HOME">
-</head>
-<body style='font-size:16px;'>
-<script type='text/javascript'>setTimeout(function(){ window.location.href='/INV_CONFIG';}, 6000 ); </script>
-<center>
-<h1>PROCESSING THE INVERTER DATA...</h1><div class='lijnstijl'></div><br><br>
-<div class='divstijl'>
-The inverterdata are saved.<br><br>
-In a moment the device is going to reboot.<br><br> 
-You will be redirected to the inverter config page. 
-
-<br><br>
-</div>
-<br><br> <a href='/SW=BACK'><span class='close'>&times;</span></a></body></html>
-)=====";
-
-
-//const char UPDATE_FORM[] PROGMEM = R"=====(
+//const char CONFIRM_INV[] PROGMEM = R"=====(
 //<!DOCTYPE html><html><head><meta charset='utf-8'>
-//<link rel="stylesheet" type="text/css" href="/STYLESHEET_HOME">
-//<style> 
-//input {
-//  font-size:3vw;
-//}  
-//</style>
-//<script>
-//function showDiv() {
-//document.getElementById('main').style.background="#b3ffd9";  
-//document.getElementById('hiddendiv').innerHTML="<marquee><kop>updating firmware, do not interrupt .....</kop></marquee>";
-//}
-//</script></head>
-//<body><div id='main'>
-//<center><kop> HANSIART FIRMWARE UPDATER</kop>
-//<br><br><br><table><tr><td>
-//<form method='POST' action='/handleFwupdate' enctype='multipart/form-data' onsubmit='showDiv()'>
-//<input id='inP' type='file' name='update' pattern='\S+' title='cannot be empty' required>
-//<tr><td><br><tr><td><input type='submit' value='update'></form>
-//<tr><td><br><tr><td><a href='/SW=BACK'><input type='submit' value='cancel'></table><br>
-//<div id='hiddendiv' style='margin: 50px; width: 40%; background:#e7f2bd;'></div><br><br>
-//</div></center></body></html>    
+//<title>ESP-ECU</title>
+//<meta name="viewport" content="width=device-width, initial-scale=1">
+//<link rel="stylesheet" type="text/css" href="/STYLESHEET">
+//</head>
+//<body style='font-size:16px;'>
+//<script type='text/javascript'>setTimeout(function(){ window.location.href='/INV_CONFIG';}, 6000 ); </script>
+//<center>
+//<h1>PROCESSING THE INVERTER DATA...</h1><div class='lijnstijl'></div><br><br>
+//<div class='divstijl'>
+//The inverterdata are saved.<br><br>
+//In a moment the device is going to reboot.<br><br> 
+//You will be redirected to the inverter config page. 
+//
+//<br><br>
+//</div>
+//<br><br> <a href='/SW=BACK'><span class='close'>&times;</span></a></body></html>
 //)=====";
+
 
 const char WAIT_PAIR[] PROGMEM = R"=====(
 <!DOCTYPE html><html><head><meta charset='utf-8'>

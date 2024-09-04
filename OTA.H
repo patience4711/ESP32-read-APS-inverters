@@ -1,6 +1,6 @@
 const char otaIndex[] PROGMEM = R"=====(
 <!DOCTYPE html><html><head><meta charset='utf-8'>
-<link rel="stylesheet" type="text/css" href="/STYLESHEET">
+<link rel="stylesheet" type="text/css" href="/STYLESHEET_HOME">
 <style> 
 input {
   font-size:3vw;
@@ -15,7 +15,7 @@ document.getElementById('reboot').style.display="block";
 </script>
 
 </head><body>
-<center><h2>ESP32 ECU FIRMWARE UPFATE</h2><br><br>
+<center><h2>ESP32 ECU FIRMWARE UPDATE</h2><br><br>
 if the upload was successful the reboot button will appear.<br><br><br>
 <form method='POST' action='#' enctype='multipart/form-data' id='upload_form'>
 <input type='file' name='update'>
