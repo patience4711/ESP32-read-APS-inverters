@@ -71,10 +71,12 @@ input[type=checkbox] {width:30px; height:30px;}
 /* new menu styling */
 #msect { 
 display: flex; 
-flex-basis: 100%; 
-align-items: center; margin: 0px 0px; width:96vw;}
-
-#msect:before, #msect:after { content: ""; flex-grow: 1;  margin: 0px 0px;}
+flex-direction: column;
+align-items: center;
+justify-content: center; 
+margin: 0px 0px; 
+width:96vw;
+}
 
 #menu { height:48px; width: 60vw; overflow: hidden; background-color: #333; border-radius:6px;}
 #menu a:link, #menu a:visited, #menu2 a:link, #menu2 a:visited  { /*only in the div menu*/
@@ -95,7 +97,7 @@ align-items: center; margin: 0px 0px; width:96vw;}
 .close { color: red !important; position: static; float:right; font-size: 42px; font-weight: bold; cursor: pointer;}
 
 b { color: #eab3f2; margin-left: 4px; font-size:16px;}
-#sub { float: left; }
+#sub, #fleft { float: left; }
 .fright {float:right;}
 
 @media only screen and (max-width: 800px) { 
