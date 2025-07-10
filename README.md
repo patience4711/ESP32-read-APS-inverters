@@ -14,7 +14,7 @@ The system is intended for reading APS Systems inverters. The program can pair a
 Please see the <a href='https://github.com/patience4711/ESP32-read-APS-inverters/wiki'>WIKI</a> for information on building it, the working, etc. 
 
 ## downloads
-May 27 2024: There is a new version [ESP32-ECU_v0_9](https://github.com/patience4711/ESP32-read-APS-inverters/blob/main/ESP32-ECU_v0-9.bin) Please see changelog.
+july 7 2025: There is a new version [ESP32-ECU_v1_1](https://github.com/patience4711/ESP32-read-APS-inverters/blob/main/ESP32_ECU_v1_1.ino.bin) Please see changelog.
 
 <br><br>
 The frontpage:<br>
@@ -49,7 +49,13 @@ the new data.
 <br><br> example of a sensor in Domoticz:<br>
 ![graph2](https://user-images.githubusercontent.com/12282915/139062602-71e92216-9703-4fc4-acc6-fabf544c4ffd.jpg)
 
+
 ## changelog ##
+version ESP32-ECU_V1_1:
+* adapted to a modern ArduinoIDE(2.3.4) and board definitions(2.0.18 arduino5)
+* changed the SPIFFS save functions
+* changed the wifi connection Portal
+
 version ESP32-ECU_V0_9:
 * fixed a bug in the html of the inverterspage
 * introduced an improved debugging method
