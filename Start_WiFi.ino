@@ -33,7 +33,7 @@ void start_wifi() {
      }
    Serial.print("# connection attempts = ");  //Serial.println(event);
    event=0; // we kunnen door naar de rest
-   checkFixed();
+   //checkFixed();
 
    start_server();
 }
@@ -41,29 +41,29 @@ void start_wifi() {
 ////                      START THE SERVER 
 
 
- // ********************************************************************
-//             check if there must come a static ip
-// ********************************************************************
-void checkFixed() {
-  // we come here only when wifi connected
-    char GATE_WAY[16]="";
-    IPAddress gat=WiFi.gatewayIP();
-    sprintf(GATE_WAY, "%d.%d.%d.%d", gat[0], gat[1], gat[2], gat[3]);
-    //DebugPrint("GATE_WAY in checkFixed = nu: "); //DebugPrintln(String(GATE_WAY));
-    //DebugPrint("static_ip in checkFixed = nu: "); //DebugPrintln(String(static_ip));
+//  // ********************************************************************
+// //             check if there must come a static ip
+// // ********************************************************************
+// void checkFixed() {
+//   // we come here only when wifi connected
+//     char GATE_WAY[16]="";
+//     IPAddress gat=WiFi.gatewayIP();
+//     sprintf(GATE_WAY, "%d.%d.%d.%d", gat[0], gat[1], gat[2], gat[3]);
+//     //DebugPrint("GATE_WAY in checkFixed = nu: "); //DebugPrintln(String(GATE_WAY));
+//     //DebugPrint("static_ip in checkFixed = nu: "); //DebugPrintln(String(static_ip));
 
-    if (static_ip[0] != '\0' && static_ip[0] != '0') {
-      //DebugPrintln("we need s static ip  Custom STA IP/GW/Subnet");
-      IPAddress _ip,_gw,_sn(255,255,255,0); // declare 
-      _ip.fromString(static_ip);
-      _gw.fromString(GATE_WAY);//  if (ssid != "") {
-      WiFi.config(_ip, _gw, _sn);
-      //DebugPrintln(WiFi.localIP());
-  } else {
-      //DebugPrintln("trying to get rid of wificonfig");
-      WiFi.config(0u, 0u, 0u);     
-  }
-}
+//     if (static_ip[0] != '\0' && static_ip[0] != '0') {
+//       //DebugPrintln("we need s static ip  Custom STA IP/GW/Subnet");
+//       IPAddress _ip,_gw,_sn(255,255,255,0); // declare 
+//       _ip.fromString(static_ip);
+//       _gw.fromString(GATE_WAY);//  if (ssid != "") {
+//       WiFi.config(_ip, _gw, _sn);
+//       //DebugPrintln(WiFi.localIP());
+//   } else {
+//       //DebugPrintln("trying to get rid of wificonfig");
+//       WiFi.config(0u, 0u, 0u);     
+//   }
+// }
 
 void loginBoth(AsyncWebServerRequest *request, String who) {
   String authFailResponse = "<h2>login failed <a href='/'>click here</a></h2>";

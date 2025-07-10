@@ -64,7 +64,7 @@ tr {width:94vw;}
 // ************************************************************************************
 //                      U P D A T E    L O G
 // ************************************************************************************
- void Update_Log(int what, char message[14]) {
+ void Update_Log(int what, const char* message) {
   char nu[14];
   // when the log is full we start overwriting with the first row 
         sprintf(nu,"%d-%d:%d:%d ", day(), hour(), minute(), second());

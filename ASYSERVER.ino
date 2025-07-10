@@ -43,106 +43,111 @@ strcpy( requestUrl, request->url().c_str() );
 request->send_P(200, "text/html", DETAILSPAGE);
 });
 // ********************************************************************
-//      very often called  X H T  R E Q U E S T S
+// very often called  XHT REQUESTS handled by handleDataRequests()
 //***********************************************************************
-server.on("/get.General", HTTP_GET, [](AsyncWebServerRequest *request) {
-// this link provides the general data on the frontpage
-    char temp[15]={0};
-    uint8_t remote = 0;
-    if(checkRemote( request->client()->remoteIP().toString()) ) remote = 1; // for the menu link
-    uint8_t night = 0; 
-    if(!dayTime) { night = 1; }
-    
-    AsyncResponseStream *response = request->beginResponseStream("application/json");
-    DynamicJsonDocument root(160); //(160);
-    //JsonObject root = doc.to<JsonObject>();
-    root["cnt"] = inverterCount;    
-    root["rm"] = remote;
-    root["st"] = zigbeeUp;
-    root["sl"] = night;    
-    serializeJson(root, * response);
-    request->send(response);
-});
-// this link provides the inverterdata on the frontpage
-server.on("/get.Power", HTTP_GET, [](AsyncWebServerRequest *request) {
-// what to do with unpolled inverters that have been polled earlyer this day
-// we should show the energy value but 
-    int i = atoi(request->arg("inv").c_str()) ;
-    AsyncResponseStream *response = request->beginResponseStream("application/json");
-    DynamicJsonDocument root(128);
-    if(Inv_Data[i].en_total > 0) { // only possible when was polled this day
-        root["eN"] = round2(Inv_Data[i].en_total/(float)1000); // rounded
-    } else {
-        root["eN"] = "n/a" ;
-    }
-    //now populate the powervalues in an array "p":[p0, p1, p2, p3]
-    for(int z = 0; z < 4; z++ ) 
-    {
-         //is the panel connected? if not put n/e
-         if( ! Inv_Prop[i].conPanels[z] ) { root["p"][z] = "n/e";  }  
-         // so the panel is connected, is the inverter polled?
-         else if (polled[i]) 
-         {
-             //polled, we put a value
-               root["p"][z] = round1(Inv_Data[i].power[z]) ;
-         }   else {
-            // not polled, we put n/a
-               root["p"][z] = "n/a";
-         }
-     }
-
-    serializeJson(root, * response);
-    request->send(response);
+server.on("/get.Data", HTTP_GET, [](AsyncWebServerRequest *request) {
+  handleDataRequests(request);
 });
 
-// this link is called by the detailspage
-server.on("/get.Inverter", HTTP_GET, [](AsyncWebServerRequest *request) { 
-// this is used by the detailspage and for http requests      
-// set the array into a json object
-  AsyncResponseStream *response = request->beginResponseStream("application/json");
-  DynamicJsonDocument doc(768);
-  JsonObject root = doc.to<JsonObject>();
-  int i;
-  if (request->hasArg("inv")) {
-     i = (request->arg("inv").toInt()) ;
-  } else {
-     i = iKeuze;
-  }
-  if( i < inverterCount) {
-    root["inv"] = i;
-    root["name"] = Inv_Prop[i].invLocation;
-    root["polled"] = polled[i];
-    root["type"] = Inv_Prop[i].invType;
-    root["serial"] = Inv_Prop[i].invSerial;
-    root["sid"] = Inv_Prop[i].invID;
-    root["freq"] = round1(Inv_Data[i].freq);
-    root["temp"] = round1(Inv_Data[i].heath);
-    root["acv"] = round1(Inv_Data[i].acv);
-    root["sq"] = round1(Inv_Data[i].sigQ);     
-    root["pw_total"] = round1(Inv_Data[i].pw_total);
-    root["en_total"] = round2(Inv_Data[i].en_total/(float)1000); // rounded
-      for(int z = 0; z < 4; z++ ) 
-      {
-         if(Inv_Prop[i].conPanels[z]) // is this panel connected?
-         {
-              root["dcv"][z] = round1(Inv_Data[i].dcv[z]);
-              root["dcc"][z] = round1(Inv_Data[i].dcc[z]);
-              root["pow"][z] = round1(Inv_Data[i].power[z]);
-              root["en"][z] = round2(en_saved[i][z]); //rounded
-         }   else {
-              root["dcv"][z] = "n/e";
-              root["dcc"][z] = "n/e";
-              root["pow"][z] = "n/e";
-              root["en"][z] = "n/e";
-         }
-      }
-    serializeJson(root, * response);
-    request->send(response);
-     } else {
-     String term = "unknown inverter " + String(i);
-     request->send(200, "text/plain", term);
-     }
-});
+//server.on("/get.General", HTTP_GET, [](AsyncWebServerRequest *request) {
+//// this link provides the general data on the frontpage
+//    char temp[15]={0};
+//    uint8_t remote = 0;
+//    if(checkRemote( request->client()->remoteIP().toString()) ) remote = 1; // for the menu link
+//    uint8_t night = 0; 
+//    if(!dayTime) { night = 1; }
+//    
+//    AsyncResponseStream *response = request->beginResponseStream("application/json");
+//    DynamicJsonDocument root(160); //(160);
+//    //JsonObject root = doc.to<JsonObject>();
+//    root["cnt"] = inverterCount;    
+//    root["rm"] = remote;
+//    root["st"] = zigbeeUp;
+//    root["sl"] = night;    
+//    serializeJson(root, * response);
+//    request->send(response);
+//});
+
+//// this link provides the inverterdata on the frontpage
+//server.on("/get.Power", HTTP_GET, [](AsyncWebServerRequest *request) {
+//// what to do with unpolled inverters that have been polled earlyer this day
+//// we should show the energy value but 
+//    int i = atoi(request->arg("inv").c_str()) ;
+//    AsyncResponseStream *response = request->beginResponseStream("application/json");
+//    DynamicJsonDocument root(128);
+//    if(Inv_Data[i].en_total > 0) { // only possible when was polled this day
+//        root["eN"] = round2(Inv_Data[i].en_total/(float)1000); // rounded
+//    } else {
+//        root["eN"] = "n/a" ;
+//    }
+//    //now populate the powervalues in an array "p":[p0, p1, p2, p3]
+//    for(int z = 0; z < 4; z++ ) 
+//    {
+//         //is the panel connected? if not put n/e
+//         if( ! Inv_Prop[i].conPanels[z] ) { root["p"][z] = "n/e";  }  
+//         // so the panel is connected, is the inverter polled?
+//         else if (polled[i]) 
+//         {
+//             //polled, we put a value
+//               root["p"][z] = round1(Inv_Data[i].power[z]) ;
+//         }   else {
+//            // not polled, we put n/a
+//               root["p"][z] = "n/a";
+//         }
+//     }
+//
+//    serializeJson(root, * response);
+//    request->send(response);
+//});
+
+//// this link is called by the detailspage
+//server.on("/get.Inverter", HTTP_GET, [](AsyncWebServerRequest *request) { 
+//// this is used by the detailspage and for http requests      
+//// set the array into a json object
+//  AsyncResponseStream *response = request->beginResponseStream("application/json");
+//  DynamicJsonDocument doc(768);
+//  JsonObject root = doc.to<JsonObject>();
+//  int i;
+//  if (request->hasArg("inv")) {
+//     i = (request->arg("inv").toInt()) ;
+//  } else {
+//     i = iKeuze;
+//  }
+//  if( i < inverterCount) {
+//    root["inv"] = i;
+//    root["name"] = Inv_Prop[i].invLocation;
+//    root["polled"] = polled[i];
+//    root["type"] = Inv_Prop[i].invType;
+//    root["serial"] = Inv_Prop[i].invSerial;
+//    root["sid"] = Inv_Prop[i].invID;
+//    root["freq"] = round1(Inv_Data[i].freq);
+//    root["temp"] = round1(Inv_Data[i].heath);
+//    root["acv"] = round1(Inv_Data[i].acv);
+//    root["sq"] = round1(Inv_Data[i].sigQ);     
+//    root["pw_total"] = round1(Inv_Data[i].pw_total);
+//    root["en_total"] = round2(Inv_Data[i].en_total/(float)1000); // rounded
+//      for(int z = 0; z < 4; z++ ) 
+//      {
+//         if(Inv_Prop[i].conPanels[z]) // is this panel connected?
+//         {
+//              root["dcv"][z] = round1(Inv_Data[i].dcv[z]);
+//              root["dcc"][z] = round1(Inv_Data[i].dcc[z]);
+//              root["pow"][z] = round1(Inv_Data[i].power[z]);
+//              root["en"][z] = round2(en_saved[i][z]); //rounded
+//         }   else {
+//              root["dcv"][z] = "n/e";
+//              root["dcc"][z] = "n/e";
+//              root["pow"][z] = "n/e";
+//              root["en"][z] = "n/e";
+//         }
+//      }
+//    serializeJson(root, * response);
+//    request->send(response);
+//     } else {
+//     String term = "unknown inverter " + String(i);
+//     request->send(200, "text/plain", term);
+//     }
+//});
 
 server.on("/MENU", HTTP_GET, [](AsyncWebServerRequest *request) {
 //Serial.println("requestUrl = " + request->url() ); // can we use this
@@ -184,16 +189,16 @@ confirm(); // puts a response in toSend
 request->send(200, "text/html", toSend);
 });
 
-server.on("/IPCONFIG", HTTP_GET, [](AsyncWebServerRequest *request) {
-  if(checkRemote( request->client()->remoteIP().toString()) ) request->redirect( "/DENIED" );
-  loginBoth(request, "admin");
-  zendPageIPconfig();
-  request->send(200, "text/html", toSend);
-});
+// server.on("/IPCONFIG", HTTP_GET, [](AsyncWebServerRequest *request) {
+//   if(checkRemote( request->client()->remoteIP().toString()) ) request->redirect( "/DENIED" );
+//   loginBoth(request, "admin");
+//   zendPageIPconfig();
+//   request->send(200, "text/html", toSend);
+// });
 
-server.on("/IPconfig", HTTP_GET, [](AsyncWebServerRequest *request) {
-  handleIPconfig(request);
-});
+// server.on("/IPconfig", HTTP_GET, [](AsyncWebServerRequest *request) {
+//   handleIPconfig(request);
+// });
 
 server.on("/MQTT", HTTP_GET, [](AsyncWebServerRequest *request) {
   if(checkRemote( request->client()->remoteIP().toString()) ) request->redirect( "/DENIED" );

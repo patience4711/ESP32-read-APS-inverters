@@ -15,7 +15,8 @@
  *  I haven't investigate this further, for now only the method used here works
  */
 
-bool coordinator(bool normal) { // if true we send the extra command for normal operations
+bool coordinator(bool normal) 
+{ // if true we send the extra command for normal operations
     consoleOut(F("starting coordinator"));
     //} else 
     //if(diagNose == 2) ws.textAll(F("starting coordinator")); 
@@ -25,7 +26,6 @@ bool coordinator(bool normal) { // if true we send the extra command for normal 
     delay(1000); // to give the ZB the time to start
     empty_serial2(); //otherwise the check fails
     if ( checkCoordinator() == 0 ) // can be 0 1 or 2
-     
     {
         Update_Log(2, "started");
         consoleOut(F("ZB coordinator started"));

@@ -1,3 +1,4 @@
+// {//test
 class CaptiveRequestHandler : public AsyncWebHandler {
 public:
   CaptiveRequestHandler() {}
@@ -17,18 +18,19 @@ public:
 void start_portal() {
 // setup of configportal and next an infinitive loop
  
-WiFi.mode(WIFI_OFF); // otherwise the scanning fails
-delay(5000);
+  WiFi.mode(WIFI_OFF); // otherwise the scanning fails
+  delay(5000);
 
   Serial.println("scan start");
   scanWifi();
   Serial.println("result scan networksFound = " + String(networksFound));
-
-/* Soft AP network parameters */
-IPAddress apIP(192, 168, 4, 1);
-IPAddress netMsk(255, 255, 255, 0);
-dnsServer.setErrorReplyCode(DNSReplyCode::NoError);
-dnsServer.start(DNS_PORT, "*", apIP);
+  #define MAX_CLIENTS 4  // ESP32 supports up to 10 but I have not tested it yet
+  #define WIFI_CHANNEL 6  // 2.4ghz channel 6 https://en.wikipedia.org/wiki/List_of_WLAN_channels#2.4_GHz_(802.11b/
+  /* Soft AP network parameters */
+  IPAddress apIP(192, 168, 4, 1);
+  IPAddress netMsk(255, 255, 255, 0);
+  dnsServer.setErrorReplyCode(DNSReplyCode::NoError);
+  dnsServer.start(DNS_PORT, "*", apIP);
 
   //String chipId = getChipId(); 
 
@@ -36,58 +38,66 @@ dnsServer.start(DNS_PORT, "*", apIP);
   Serial.println("\ncould not connect with the last known wificredentials,  starting access point...");
   WiFi.softAPConfig(apIP, apIP, netMsk);
   const char* apNaam = getChipId(false).c_str();
-  const char* apPasswd = "123456789";
-  WiFi.softAP(apNaam, apPasswd);
-
+  //const char* apPasswd = "123456789";
+  const char* apPasswd = NULL;  
+  WiFi.softAP(apNaam, apPasswd, WIFI_CHANNEL, 0, MAX_CLIENTS);
+  // Disable AMPDU RX on the ESP32 WiFi to fix a bug on Android
+  esp_wifi_stop();
+  esp_wifi_deinit();
+  wifi_init_config_t my_config = WIFI_INIT_CONFIG_DEFAULT();
+  my_config.ampdu_rx_enable = false;
+  esp_wifi_init(&my_config);
+  esp_wifi_start();
   delay(500); // without delay tje IP address can be blanco
   Serial.println("AP IP address: ");
   Serial.println(WiFi.softAPIP());
 
   /* Setup web pages: root, wifi config pages, SO captive portal detectors and not found. */
-
-  server.on("/redirect", HTTP_GET, [](AsyncWebServerRequest *request) {
-  Serial.println("/redirect requested");
-  handlePortalRoot();    
-  request->send(200, "text/html", toSend); //send the html code to the client
-  });
-
+//  server.on("/redirect", HTTP_GET, [](AsyncWebServerRequest *request) {
+//  consoleOut("/redirect requested");
+//  handlePortalRoot();    
+//  request->send(200, "text/html", toSend); //send the html code to the client
+//  });
+  server.on("/generate_204", [](AsyncWebServerRequest *request) { request->redirect("192.168.4.1"); });
+  server.on("/redirect", [](AsyncWebServerRequest *request) { request->redirect("192.168.4.1"); });
+  server.on("/hotspot-detect.html", [](AsyncWebServerRequest *request) { request->redirect("192.168.4.1"); });
+  server.on("/canonical.html", [](AsyncWebServerRequest *request) { request->redirect("192.168.4.1"); });
+  server.on("/ncsi.txt", [](AsyncWebServerRequest *request) { request->redirect("192.168.4.1"); });
+  server.on("/ERASE_FLASH", HTTP_GET, [](AsyncWebServerRequest *request) {
+  Serial.println("/erase flash requested");
+  flashErase(request);    
+  });  
   server.on("/fwlink", HTTP_GET, [](AsyncWebServerRequest *request) {
   Serial.println("/redirect requested");
   handlePortalRoot();    
   request->send(200, "text/html", toSend); //send the html code to the client
   });
 
-  server.on("/Bback", HTTP_GET, [](AsyncWebServerRequest *request) {
-  Serial.println("/Bback requested");    
+  server.on("/home", HTTP_GET, [](AsyncWebServerRequest *request) {
+  consoleOut("/home requested");    
   handlePortalRoot();
   //sendHeaders();
   request->send(200, "text/html", toSend); //send the html code to the client
   });
 
-  server.on("/Bback", HTTP_GET, [](AsyncWebServerRequest *request) {
-  Serial.println("/Bback requested");    
-  handlePortalRoot();
-  //sendHeaders();
-  request->send(200, "text/html", toSend); //send the html code to the client
-  });
-  
+ 
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
-  Serial.println("/ requested");    
+  consoleOut("/ requested");    
   handlePortalRoot();
   //sendHeaders();
   request->send(200, "text/html", toSend); //send the html code to the client
   });
  
   server.on("/wifiForm", HTTP_GET, [](AsyncWebServerRequest *request) {
-  Serial.println("/wifiForm requested");    
+  consoleOut("/wifiForm requested");    
   handleForm();
   //sendHeaders();
   request->send(200, "text/html", toSend); //send the html code to the client
   });
 
-  server.on("/PORTAL_STYLE", HTTP_GET, [](AsyncWebServerRequest *request) {
+  server.on("/STYLESHEET", HTTP_GET, [](AsyncWebServerRequest *request) {
   //Serial.println("stylesheet requested");
-    request->send_P(200, "text/css", PORTAL_STYLESHEET);
+    request->send_P(200, "text/css", STYLESHEET);
   });
 // **********************************************************
 //                   CONNECTING TO WIFI
@@ -114,20 +124,25 @@ dnsServer.start(DNS_PORT, "*", apIP);
   Serial.println("send confirm page  ");
 
 if (connectWifi() == WL_CONNECTED) {
-  Serial.println("youpy, connected");
+  Serial.println("wifiCon youpy, connected");
+  ledblink(3, 200);
   esp_task_wdt_reset();
-    digitalWrite(led_onb, LED_UIT);
+  digitalWrite(led_onb, LED_UIT);
+  //pixelsAan(0);
   event=101;
    
     } else {
   Serial.println("could not connect, try again");
   esp_task_wdt_reset();
     ledblink(10, 200);
-    digitalWrite(led_onb, LED_AAN); // 
+    digitalWrite(led_onb, LED_AAN); 
+    //set_pwm(200);
+    //pixelsAan(100); 
+
     event=100;
     }
-//toSend = FPSTR(PORTAL_HEAD);
-toSend = FPSTR(PORTAL_CONFIRM); 
+toSend = FPSTR(HTML_HEAD);
+toSend += FPSTR(PORTAL_CONFIRM); 
 if(event==100) {
 toSend.replace("{text}", "connection has failed");
 } else {
@@ -148,23 +163,10 @@ request->send(200, "text/html", toSend); //send the html code to the client
 //  request->send(200, "text/html", toSend); //send the html code to the client 
    });
 
-//  server.on("/LittleFS_ERASE", eraseFiles);
-//  server.on("/STATIC_ERASE", resetStatic);   
-  server.on("/STATIC_ERASE", HTTP_GET, [](AsyncWebServerRequest *request) {
-  Serial.println("static erase requested");
-  String toSend = F("<!DOCTYPE html><html><head>");
-  toSend += F("<script type='text/javascript'>setTimeout(function(){ window.location.href='/redirect'; }, 500 ); </script>");
-
-  toSend += F("</head><body><h2>erase ip settings, please wait... !</h2></body></html>");
-
-  static_ip[0] = '\0';
-  static_ip[1] = '\0';
-  wifiConfigsave();
-  request->send(200, "text/html", toSend); //send the html code to the client 
-   });
   
-  server.on("/close", HTTP_GET, [](AsyncWebServerRequest *request) {
-  handlePortalClose();
+  server.on("/wifiClose", HTTP_GET, [](AsyncWebServerRequest *request) {
+  Serial.println("wifiClose called");
+  handlePortalClose(request);
   request->send(200, "text/html", toSend); //send the html code to the client 
    }); 
 
@@ -173,7 +175,12 @@ request->send(200, "text/html", toSend); //send the html code to the client
   server.begin(); // Web server start
   Serial.println("started async HTTP server for the portal");
   digitalWrite(led_onb, LED_AAN);  // led aan
+   //pixelsAan(100);
 
+
+// * * * * * * * *  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * 
+//                               the connect portal loop
+// * * * * * * * *  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
   // now we enter an infinitive loop that we leave only after 5 minutes, 
   // or when via server.handleClient something happens   
   //  bool Timed_Out = true;
@@ -183,83 +190,55 @@ request->send(200, "text/html", toSend); //send the html code to the client
   // this is the infinitive  loop 
   static unsigned long heartbeat = 0;
   while (millis() < laatsteMeting + 300*1000UL) { // 5 minuten== 300 30 == 30sec
-  if ( millis() > heartbeat + 10*1000UL ) {
-    heartbeat = millis(); // elke 10 sec een heartbeat
-    Serial.print("a ");
-  }
-//  // SERIAL: *************** see if there is data available **********************
-//  if(Serial.available()) {
-//       handle_Serial();
-//   }
   
-  if (tryConnectFlag) { // there are credentials provided
-      wifiConnect(); // if connected we break out of this loop
-  }
-      //DNS
-    //dnsServer.processNextRequest();
+     if(actionFlag == 10) break; // set by portalClose 
+     //DNS
+     dnsServer.processNextRequest();
   } 
   // ************************ end while loop ******************************* 
 
-  //we only are here after a timeout. If we click finish we restart      
-//  if (Timed_Out == true) {
+   //we only are here after a timeout or a break.      
     Serial.println("portal timed out, resetting...");
     ESP.restart();
-//    } 
+ 
 }
 
 // ********************************************************************
 //                 de homepagina van het portal
 // ********************************************************************
 void handlePortalRoot() {
-//  always as we are here, portalstart is updated, so when there is activity in the
-// webinterface we won't time out. 
-//sendHeaders();
-laatsteMeting = millis(); // update portalstart
-Serial.println("handlePortalRoot, event = " + String(event));
-//toSend = FPSTR(PORTAL_HEAD);
-toSend = FPSTR(PORTAL_PAGE);
-//toSend.replace("{haha}" , "if (window.location.hostname != \"192.168.4.1\") {window.location.href = 'http://192.168.4.1'};");
-toSend.replace("{ma}", String(WiFi.macAddress()) );
+    //  always as we are here, portalstart is updated, so when there is activity in the
+    //  webinterface we won't time out. 
+    //  sendHeaders();
+    laatsteMeting = millis(); // update portalstart
+    Serial.println("handlePortalRoot, event = " + String(event));
+    toSend = FPSTR(HTML_HEAD); // the normal head
+    toSend += FPSTR(PORTAL_HOMEPAGE);
+    //toSend.replace("{haha}" , "if (window.location.hostname != \"192.168.4.1\") {window.location.href = 'http://192.168.4.1'};");
+    toSend.replace("{ma}", String(WiFi.macAddress()) );
 
-      // if event = 101 we adapt the page with new data
-      if (event == 101) {  // the 2e time that we are here we are connected 101 or not 100
+    // The value of event decides what is shown on this page
+    // when event = 101 (we are connected) we adapt the page with new state
+    if (event == 101) {  // the 2e time that we are here we are connected 101 or not 100
+        toSend.replace("hadden", "hidden"); // hide the setup button
+        toSend.replace("hodden", "hidden"); // hide the "eraseflash" link
+        //toSend.replace("close' hidden", "close'"); // show the close button
+        String page = "";
+        page += F("<div class=\"msg\">");
+        page += "connected to <strong>" + WiFi.SSID() + "</strong><br><br>";
+        page += "The IP address is <strong>http://" + WiFi.localIP().toString() + "</strong><br><br>";
+        page += F("<h3 style='color:#FF0000';>Note down the ip-address and click \"close\"!</h3>");
+        toSend.replace("<irame>" , page);
+        // show the closebutton afsluitknop
+        toSend.replace("close' hidden", "close'");
+    }
+    if (event==100) {  // niet verbonden
+        String page = "";
+        page+=F("Connection has failed!<br><br>");
+        page+=F("Retry, click setup wifi or erase flash first!"); 
+        toSend.replace("<irame>" , page);
+    }
 
-          toSend.replace("hadden", "hidden"); // verberg de configuratieknop
-          toSend.replace("close' hidden", "close'"); // show the close button
-          String page = "";
-          page += F("<div class=\"msg\">");
-          page += F("connected to network <strong> unset<a>");
-          page.replace("unset", WiFi.SSID());
-          page += F("</strong><br><br>");
-          page += F("The IP address is <strong><a href=\"http://");
-          page += WiFi.localIP().toString();
-          page += F("\">");
-          page += WiFi.localIP().toString();
-          page += F("</a></strong><br><br>");
-          page += F("<h3 style='color:#FF0000';>Note down the ip-address and click \"close\"!</h3>");
-      toSend.replace("<strong>Currently not connected to a wifi network!</strong>" , page);
-      // toon de afsluitknop
-      toSend.replace("close' hidden", "close'");
-      }
-      if (event==100) {  // niet verbonden
-          String page = "";
-          page+=F("Your attempt to connect to the network has failed!<br><br>");
-          page+=F("Try again, click on wifi configuration!"); 
-          toSend.replace("Currently not connected to a  wifi network!" , page);
-      }
-      // hadden hudden hodden hedden
-      // verberg de wis knop als gewist en wanneer verbonden
-      if ( SPIFFS.exists("/basisconfig.json") && event!=101 ) { //show if file is present
-       toSend.replace("erase' hidden", "erase'");
-      }  
-       //deze laten we zien als niet 101 en wel static ip
-      if( static_ip[0] != '\0' && static_ip[0] != '0' && event!=101) { //show if static is present
-       toSend.replace("static' hidden", "static'"); 
-      }
-//        sendHeaders();
-//        request->send(200, "text/html", toSend); //send the html code to the client
-//        delay(500);//wait half a second after sending the data 
-//        event = 0; //voor de volgende ronde 
 }
 
 
@@ -270,8 +249,8 @@ void handleForm() {
    laatsteMeting = millis();
 // als we de eerste keer hierkomen beginnen we met een netwerkscan
 
-//toSend = FPSTR(PORTAL_HEAD);
-toSend = FPSTR(WIFI_PAGE);
+toSend = FPSTR(HTML_HEAD);
+toSend = FPSTR(PORTAL_WIFIFORM);
 toSend.replace("{pw}",  String(pswd) );
 toSend.replace("{sl}",  String(securityLevel) );
 if (networksFound == 0) {
@@ -282,41 +261,7 @@ if (networksFound == 0) {
       Serial.println("lijst = "); Serial.println(lijst);
       toSend.replace("aplijst", lijst);  
     }
-
-//  sendHeaders();
-//  request->send(200, "text/html", toSend); //send the html code to the client
-//  delay(500); //wait half a second after sending the data
- //deze pagina heeft een form met action="wifiCon", verwijst naar wifiConnect
 }
-
-//**********************************************************************
-//      process the provided data and try to connect
-// **********************************************************************
-void wifiConnect() {
-  // we are here because bool tryConnectFlag was true in the loop
-      digitalWrite(led_onb, LED_UIT);
-       tryConnectFlag=false;
-       laatsteMeting = millis();
-
-      Serial.println("we are in wifiConnect");
-
-      WiFi.mode(WIFI_AP_STA);
-      delay(500);
-     
-      Serial.println("Connecting to " + String(ssid));
-      Serial.println("password =  " + String(pass));
-
-      if (connectWifi() == 1) {
-        Serial.println("youpy, connected");
-         ledblink(3, 500);
-         event=101;
-       } else {
-         Serial.println("could not connect, try again");
-         digitalWrite(led_onb, LED_AAN); // 
-         event=100;
-        } 
-      // must jump out of the loop
- }
 
 void handlePortalNotFound(AsyncWebServerRequest *request) {
   String message="file not found";
@@ -342,60 +287,26 @@ int connectWifi() {
   int connRes = WiFi.waitForConnectResult();
   Serial.print("Connection result is : " + connRes);
   Serial.println(WiFi.localIP());
-  checkFixed(); // set static ip if configured
+  //checkFixed(); // set static ip if configured
 
   return connRes;
 }
 // *********************************************************************
 //                         Closing the  portal
 // *********************************************************************
-void handlePortalClose() {
-   laatsteMeting = millis();
+void handlePortalClose(AsyncWebServerRequest *request  ) {
+  laatsteMeting = millis();
   String toSend = F("<!DOCTYPE html><html><head>");
   toSend += F("<script type='text/javascript'>setTimeout(function(){ window.location.href='/'; }, 1000 ); </script>");
-  toSend += F("</head><body><h2>The esp is going to restart.!</h2>Do not forget to note the ip address!!<br>");
+  toSend += F("</head><body><center><h2>The esp is going to restart.!</h2>Do not forget to note the ip address!!<br>");
   toSend += F("<h2>The ip address is : ");
   toSend += WiFi.localIP().toString();
   toSend += F("</h2></body></html>");
-
-  ESP.restart();
+  request->send(200, "text/html", toSend);
+  actionFlag = 10; // ends the infinity loop and restarts
+  //ESP.restart();
 }
 
-void eraseFiles() {
-  Serial.println("LittleFS wipe and format");
-  String toSend = F("<!DOCTYPE html><html><head>");
-  toSend += F("<script type='text/javascript'>setTimeout(function(){ window.location.href='/redirect'; }, 1000 ); </script>");
-#ifdef DUTCH
-  toSend += F("</head><body><h2>bestandssysteem wissen, even wachten... !</h2></body></html>");
-#else
-  toSend += F("</head><body><h2>erasing the filesystem, please wait... !</h2></body></html>");
-#endif  
-//  portalserver.send ( 200, "text/html", toSend ); //zend bevestiging
-  delay(500); //wait half a second after sending the data 
-  delay(1);
-     if (SPIFFS.exists("/wifiConfig.conf")) { SPIFFS.remove("/wificonfig.json"); } 
-     if (SPIFFS.exists("/wificonfig.json")) { SPIFFS.remove("/wificonfig.json"); }
-     if (SPIFFS.exists("/basisconfig.json")) { SPIFFS.remove("/basisconfig.json"); }
-     if (SPIFFS.exists("/timerconfig.json")) { SPIFFS.remove("/timerconfig.json"); }
-     SPIFFS.format();
-     Serial.println("We gaan LittleFS wissen");
-}
-
-void resetStatic() {
-   Serial.println("static ip wissen");
-  String toSend = F("<!DOCTYPE html><html><head>");
-  toSend += F("<script type='text/javascript'>setTimeout(function(){ window.location.href='/redirect'; }, 500 ); </script>");
-#ifdef DUTCH
-  toSend += F("</head><body><h2>ip instelling wissen, even wachten... !</h2></body></html>");
-#else
- toSend += F("</head><body><h2>erasing ip settings, please wait... !</h2></body></html>");
-#endif
-//request->send ( 200, "text/html", toSend ); //zend bevestiging
-  delay(500); //wait half a second after sending the data 
-  delay(1);
-  static_ip[0] = '\0';
-  static_ip[1] = '\0';  
-}
 
 void scanWifi() {
   // WiFi.scanNetworks will return the number of networks found
@@ -444,16 +355,15 @@ String makeList(int aantal) { // aantal is het aantal gevonden netwerken
       }   
    
   String lijst="";
-  for (int i = 0; i < aantal; i++) {
+  for (int i = 0; i < 8; i++) { //max 8 items
 
         String item = FPSTR(PORTAL_LIST);
         String rssiQ;
         //int quality = (WiFi.RSSI(i));
         int quality = WiFi.RSSI(indices[i]);
         Serial.print("quality = "); Serial.println(quality);
-        // -50 is groter dan -80
-        if (quality < -99){ continue; } // skip als kleiner dan -65 bijv -66
-//        item.replace("{v}", WiFi.SSID(i));
+        // -50 is greather than -80
+        if (quality < -99){ continue; } // skip if smaller than  -65 p.e. -66
         item.replace("{v}", WiFi.SSID(indices[i]));        
         item.replace("{r}", String(quality));
         item.replace("{i}", "");

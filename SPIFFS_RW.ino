@@ -70,9 +70,9 @@ bool leesStruct(String whichfile) {
 void wifiConfigsave() {
    Serial.println("saving config");
 
-    DynamicJsonDocument doc(1024);
+    JsonDocument doc;
     JsonObject json = doc.to<JsonObject>();   
-    json["ip"] = static_ip;
+    //json["ip"] = static_ip;
     json["pswd"] = pswd;
     json["longi"] = longi;
     json["lati"] = lati;
@@ -97,7 +97,7 @@ void wifiConfigsave() {
 
 void basisConfigsave() {
     Serial.println("saving basis config");
-    DynamicJsonDocument doc(1024);
+    JsonDocument doc;
     JsonObject json = doc.to<JsonObject>();
     json["ECU_ID"] = ECU_ID;
     json["userPwd"] = userPwd;
@@ -119,7 +119,7 @@ void basisConfigsave() {
 
 void mqttConfigsave() {
    //DebugPrintln("saving mqtt config");
-    DynamicJsonDocument doc(1024);
+    JsonDocument doc;
     JsonObject json = doc.to<JsonObject>();
 // 
 //    json["Mqtt_Enabled"] = Mqtt_Enabled;
@@ -160,46 +160,40 @@ bool file_open_for_read(String bestand) {
           // Allocate a buffer to store contents of the file.
            std::unique_ptr<char[]> buf(new char[size]);
            configFile.readBytes(buf.get(), size);
-           DynamicJsonDocument doc(1024);
+           StaticJsonDocument<400> doc;
            auto error = deserializeJson(doc, buf.get());
            serializeJson(doc, Serial); Serial.println(F(""));
              if (error) return false;
               //DebugPrintln("parsed json");
               String jsonStr = ""; // we printen het json object naar een string
-            // nu kunnen we eerst controleren of een bepaalde entry bestaat
-            // zoniet slaan we die over anders crasht de ESP
+            // we read every variable with a fall back value to prevent crashes
                 serializeJson(doc, jsonStr);
             if (bestand == "/wificonfig.json") {
-                      if(jsonStr.indexOf("ip") > 0){ strcpy(static_ip, doc["ip"]);}
-                      if(jsonStr.indexOf("pswd") > 0){ strcpy(pswd, doc["pswd"]);}
-//                      if(jsonStr.indexOf("lengte") > 0){ strcpy(lengte, doc["lengte"]);}
-//                      if(jsonStr.indexOf("breedte") > 0){ strcpy(breedte, doc["breedte"]);}
-                      if(jsonStr.indexOf("longi") > 0){longi = doc["longi"].as<float>();}
-                      if(jsonStr.indexOf("lati") > 0){lati = doc["lati"].as<float>();}                      
-                      if(jsonStr.indexOf("gmtOffset") > 0){ strcpy(gmtOffset, doc["gmtOffset"]);}
-                      if(jsonStr.indexOf("zomerTijd") > 0){zomerTijd = doc["zomerTijd"].as<bool>();}
-                      if(jsonStr.indexOf("securityLevel") > 0){securityLevel = doc["securityLevel"].as<int>();}
+                      //strcpy(static_ip, doc["ip"] | "000.000.000.000");
+                      strcpy(pswd, doc["pswd"] | "0000");
+                      longi = doc["longi"] | 5.432;
+                      lati = doc["lati"] | 51.743;                      
+                      strcpy(gmtOffset, doc["gmtOffset"] | "+120");
+                      zomerTijd = doc["zomerTijd"].as<bool>() | true;
+                      securityLevel = doc["securityLevel"].as<int>() | 6;
             }
 
             if (bestand == "/basisconfig.json") {
-                    if(jsonStr.indexOf("ECU_ID") > 0) { strcpy (ECU_ID, doc["ECU_ID"] );}
-                    if(jsonStr.indexOf("userPwd") > 0) { strcpy (userPwd, doc["userPwd"] );}
-  //                  if(jsonStr.indexOf("pollRes") > 0) {pollRes = doc["pollRes"].as<int>();}
-                    if(jsonStr.indexOf("pollOffset") > 0) {pollOffset = doc["pollOffset"].as<int>();}
-                    //if(jsonStr.indexOf("inverterCount") > 0) {inverterCount = doc["inverterCount"].as<int>();}
-                    if(jsonStr.indexOf("Polling") > 0) {Polling = doc["Polling"].as<bool>();}
-                   // if(jsonStr.indexOf("calli") > 0) {calliBration = doc["calli"].as<float>();}
+                    strcpy (ECU_ID, doc["ECU_ID"] | "D8A3011B9780");
+                    strcpy (userPwd, doc["userPwd"] | "1111" );
+                    pollOffset = doc["pollOffset"].as<int>() | 0;
+                    Polling = doc["Polling"].as<bool>() | false;
+                  
               }            
 
             if (bestand == "/mqttconfig.json"){
-                     if(jsonStr.indexOf("Mqtt_Broker")   >  0) { strcpy(Mqtt_Broker,   doc["Mqtt_Broker"]);}
-                     if(jsonStr.indexOf("Mqtt_Port")     >  0) { strcpy(Mqtt_Port,     doc["Mqtt_Port"]);}  
-      //               if(jsonStr.indexOf("Mqtt_inTopic")  >  0) { strcpy(Mqtt_inTopic,  doc["Mqtt_inTopic"]);}         
-                     if(jsonStr.indexOf("Mqtt_outTopic") >  0) { strcpy(Mqtt_outTopic, doc["Mqtt_outTopic"]);}         
-                     if(jsonStr.indexOf("Mqtt_Username") >  0) { strcpy(Mqtt_Username, doc["Mqtt_Username"]);}
-                     if(jsonStr.indexOf("Mqtt_Password") >  0) { strcpy(Mqtt_Password, doc["Mqtt_Password"]);}
-                     if(jsonStr.indexOf("Mqtt_Format")   >  0) { Mqtt_Format =         doc["Mqtt_Format"].as<int>();}
-                      if(jsonStr.indexOf("Mqtt_stateIDX")   >  0) { Mqtt_stateIDX =         doc["Mqtt_stateIDX"].as<int>();}       
+                     strcpy(Mqtt_Broker,   doc["Mqtt_Broker"] | "192.168.0.100");
+                     strcpy(Mqtt_Port,     doc["Mqtt_Port"]   | "1883");  
+                     strcpy(Mqtt_outTopic, doc["Mqtt_outTopic"] | "domoticz/in");         
+                     strcpy(Mqtt_Username, doc["Mqtt_Username"] | "n/a");
+                     strcpy(Mqtt_Password, doc["Mqtt_Password"] | "n/a");
+                     Mqtt_Format = doc["Mqtt_Format"].as<int>() | 0;
+                     Mqtt_stateIDX = doc["Mqtt_stateIDX"].as<int>() | 123;      
             }
              return true;
 } 

@@ -57,7 +57,7 @@ void MQTT_Receive_Callback(char *topic, byte *payload, unsigned int length)
     
    // ws.textAll("mqtt received " + Payload);
 
-    StaticJsonDocument<1024> doc;       // We use json library to parse the payload                         
+    JsonDocument doc;       // We use json library to parse the payload                         
    //  The function deserializeJson() parses a JSON input and puts the result in a JsonDocument.
    // DeserializationError error = deserializeJson(doc, Payload); // Deserialize the JSON document
     DeserializationError error = deserializeJson(doc, payload); // Deserialize the JSON document
@@ -70,7 +70,7 @@ void MQTT_Receive_Callback(char *topic, byte *payload, unsigned int length)
     // We check the kind of command format received with MQTT
     //now we have a payload like {"poll",1}    
 
-    if( doc.containsKey("poll") )
+    if( doc["poll"] != 0 )
     {
         int inv = doc["poll"].as<int>(); 
         consoleOut( "got message {\"poll\":" + String(inv) + "}" );

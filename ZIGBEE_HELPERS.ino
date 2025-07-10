@@ -118,7 +118,7 @@ char bufferCRC_2[254] = {0};
 // calculate and return the length of the message
 char *sLen(char Command[])  
 {
-    char bufferSln[9]; // why is this so big 254
+    char bufferSln[254]; // why is this so big 254
     sprintf(bufferSln, "%02X", (strlen(Command) / 2 - 2));
     delayMicroseconds(250); //give memset a little bit of time to empty all the buffers
     return bufferSln;
@@ -141,9 +141,6 @@ String ECU_REVERSE() {
 // ******************************************************************************
 //                   reboot an inverter
 // *******************************************************************************
-// ******************************************************************************
-//                   reboot an inverter
-// *******************************************************************************
 void inverterReboot(int which) {
     char ecu_id_reverse[13];  
     ECU_REVERSE().toCharArray(ecu_id_reverse, 13);
@@ -152,11 +149,7 @@ void inverterReboot(int which) {
        return; 
     }
 
-//swap_to_usb ();
-//    Serial.println("sending the reboot message");
-    
-    //char inv_id[7];
-    //strncpy(inv_id, Inv_Prop[which].invID, strlen(Inv_Prop[which].invID));
+
     char rebootCmd[57]={0};
     char s_d[200]={0};
     
