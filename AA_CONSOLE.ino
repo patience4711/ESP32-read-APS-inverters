@@ -292,7 +292,7 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
          case 1:
             diagNose = 2; 
             break;            
-         case 2:
+         default:
             diagNose = 0; 
             break; 
          }

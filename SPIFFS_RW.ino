@@ -146,29 +146,32 @@ void mqttConfigsave() {
 }
 
 
-bool file_open_for_read(String bestand) {
+bool file_open_for_read(const char* bestand) 
+{
       //DebugPrint("we are in file_open_for_read, bestand = "); //DebugPrintln(bestand); 
-      if (!SPIFFS.exists(bestand)) return false;
-
-      //file exists, reading and loading
-      //DebugPrintln("bestand bestaat");
+        StaticJsonDocument<400> doc;
         File configFile = SPIFFS.open(bestand, "r");
-        if (!configFile) return false;
-
-           //DebugPrint("opened config file"); //DebugPrintln(bestand);
-           size_t size = configFile.size();
-          // Allocate a buffer to store contents of the file.
-           std::unique_ptr<char[]> buf(new char[size]);
-           configFile.readBytes(buf.get(), size);
-           StaticJsonDocument<400> doc;
-           auto error = deserializeJson(doc, buf.get());
-           serializeJson(doc, Serial); Serial.println(F(""));
-             if (error) return false;
-              //DebugPrintln("parsed json");
-              String jsonStr = ""; // we printen het json object naar een string
+        if (configFile) {
+        DeserializationError error = deserializeJson(doc, configFile);
+        configFile.close();
+        if (error) {
+            Serial.print(F("Failed to parse config file: "));
+            Serial.println(error.c_str());
+            // Continue with fallback values
+        } else {
+        // no error so we can print the file
+            serializeJson(doc, Serial);  // always print
+        }
+    } else {
+        Serial.print(F("Cannot open config file: "));
+        Serial.println(bestand);
+        // Continue with empty doc -> all fallbacks will be used
+    }
+            // we read the file even if it doesn't exist, so that variables are initialized
             // we read every variable with a fall back value to prevent crashes
-                serializeJson(doc, jsonStr);
-            if (bestand == "/wificonfig.json") {
+
+            //serializeJson(doc, jsonStr);
+            if (strcmp(bestand, "/wificonfig.json") == 0) {
                       //strcpy(static_ip, doc["ip"] | "000.000.000.000");
                       strcpy(pswd, doc["pswd"] | "0000");
                       longi = doc["longi"] | 5.432;
@@ -178,7 +181,7 @@ bool file_open_for_read(String bestand) {
                       securityLevel = doc["securityLevel"].as<int>() | 6;
             }
 
-            if (bestand == "/basisconfig.json") {
+            if ( strcmp(bestand, "/basisconfig.json") == 0) {
                     strcpy (ECU_ID, doc["ECU_ID"] | "D8A3011B9780");
                     strcpy (userPwd, doc["userPwd"] | "1111" );
                     pollOffset = doc["pollOffset"].as<int>() | 0;
@@ -186,7 +189,7 @@ bool file_open_for_read(String bestand) {
                   
               }            
 
-            if (bestand == "/mqttconfig.json"){
+            if ( strcmp(bestand, "/mqttconfig.json") == 0) {
                      strcpy(Mqtt_Broker,   doc["Mqtt_Broker"] | "192.168.0.100");
                      strcpy(Mqtt_Port,     doc["Mqtt_Port"]   | "1883");  
                      strcpy(Mqtt_outTopic, doc["Mqtt_outTopic"] | "domoticz/in");         
@@ -198,7 +201,7 @@ bool file_open_for_read(String bestand) {
              return true;
 } 
 
-// we do this before swap_to_zigbee
+
 void printStruct( String bestand ) {
 //input String bestand = "/Inv_Prop" + String(x) + ".str";
       //String bestand = bestand + String(i) + ".str"

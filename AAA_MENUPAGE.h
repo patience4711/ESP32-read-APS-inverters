@@ -6,7 +6,8 @@ const char MENUPAGE[] PROGMEM = R"=====(
 <link rel="stylesheet" type="text/css" href="/STYLESHEET_HOME">
 
 <style>
-#menu a:link, #menu2 a:link, #menu a:visited, #menu2 a:visited { width: 98px;}
+#menu2 a:link, #menu2 a:visited {
+  width: 98px;
 }
 </style>
 <script type="text/javascript" src="SECURITY"></script>
