@@ -34,7 +34,16 @@ window.location.href='/MENU';
 
 
 const char STYLESHEET[] PROGMEM = R"=====(
-body { background: linear-gradient(#e8f5f7, #caf5fb); color:navy; font-family:'lato',Verdana,Sans-serif; font-size:16px; }
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body { background: linear-gradient(#e8f5f7, #caf5fb); 
+color:navy; font-family:'lato',Verdana,Sans-serif; 
+font-size:16px; margin-left:2px;
+}
 .divstijl { background: linear-gradient(#e8edc8, #c8eaed); padding:0px 0px 0px 0px; width: 50vw; height: 99%; }
 
 kop { font-size: 24px; font-weight:bold; padding-top: 1vh; padding-bottom: 1vh;}
@@ -44,12 +53,31 @@ input { font-size:16px; } .inp1 { width:46px; } .inp2 { width:52px; } .inp3 { wi
 option { direction: ltr;} .sb1 {font-size:16px; height:24px; } 
 input[type=checkbox] {width:30px; height:30px;}
 .close:hover {color: green;} 
+.bt, .bt_small{
+  width:30vw;
+  padding:6px;
+  margin:6px;
+  text-align:center;
+  border-radius:15px;
+  color:white;
+  background: #262626;
+  font-weight:bold;
+  font-size:4vw;
+  box-shadow: 0 9px #999;
+  }
+.bt {height:16vw;}
+.bt_small {height:8vw;}
 
 /* new menu styling */
-#msect { display: flex; flex-direction: column; flex-basis: 100%; align-items: center; margin: 0px 0px; width:96vw;}
+#msect { 
+display: flex; 
+flex-basis: 100%; 
+align-items: center; margin: 0px 0px; width:96vw;}
+
 #msect:before, #msect:after { content: ""; flex-grow: 1;  margin: 0px 0px;}
 
-#menu a:link, #menu2 a:link, #menu a:visited, #menu2 a:visited {
+#menu { height:48px; width: 60vw; overflow: hidden; background-color: #333; border-radius:6px;}
+#menu a:link, #menu a:visited, #menu2 a:link, #menu2 a:visited  { /*only in the div menu*/
   background-color: #333;
   color: white;
   border-radius: 6px;
@@ -60,9 +88,10 @@ input[type=checkbox] {width:30px; height:30px;}
   line-height: 48px;
   margin-right: 2px;
 }
-
+#menu #sub { float: right; background:green;display:none }
+#menu2 a:link, #menu2 a:visited {width:98px;}
 #menu a:hover, #menu2 a:hover { background-color: green; color: white;}
-#menu { height:48px; width: 60vw; overflow: hidden; background-color: #333; border-radius:6px;}
+
 .close { color: red !important; position: static; float:right; font-size: 42px; font-weight: bold; cursor: pointer;}
 
 b { color: #eab3f2; margin-left: 4px; font-size:16px;}
@@ -70,13 +99,14 @@ b { color: #eab3f2; margin-left: 4px; font-size:16px;}
 .fright {float:right;}
 
 @media only screen and (max-width: 800px) { 
-.divstijl {width:98vw;}
+.divstijl {margin: 0 auto; width:98vw;}
 .close { font-size: 32px; width:20px; padding: 0px 10px;}
-body { font-size:12px; }
+body  { font-size:12px; margin-left: 2px;}
 #menu {width:98vw;}
 input, .sb1 { font-size:16px; }
 .sb1 {height:24px;} 
-
+.bt_small {height:16vw;}
+.bt {height:22vw;}
 }
 )=====";
 
