@@ -202,16 +202,4 @@ void ZBhardReset()
     }
 
 
-// function to 
-void consoleOut(String toLog) {
- 
-  if( diagNose == 0 ) return; 
-  if (diagNose == 2 )
-  {
-    Serial.println(toLog);
-  } else {
-    delay(100); // otherwise the socket cannot keep up
-    ws.textAll(toLog);
-  }
-
-}    
+    

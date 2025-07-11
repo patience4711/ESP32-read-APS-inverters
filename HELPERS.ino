@@ -132,9 +132,13 @@ if (actionFlag == 15) {
     if (actionFlag == 45) { //triggered by the webconsole
         actionFlag = 0; //reset the actionflag
         //Serial.println("someone made actionFlag 45 !!"); the uin8_t doesn't allow 301
-        testMessage(true); // the bool decides where to find the input
+        rawMessage(true); // the bool decides where to find the input
     }
-    
+        if (actionFlag == 55) { //triggered by the webconsole
+        actionFlag = 0; //reset the actionflag
+        //Serial.println("someone made actionFlag 45 !!"); the uin8_t doesn't allow 301
+        rawMessage(true); // the bool decides where to find the input
+    }
     if (actionFlag == 46) { //triggered by the webpage zbtest
         actionFlag = 0; //reset the actionflag
         showDir(); 
@@ -220,3 +224,17 @@ void showDir() {
       file = root.openNextFile();
     }
   }
+
+  // function to 
+void consoleOut(String toLog) {
+ 
+  if( diagNose == 0 ) return; 
+  if (diagNose == 2 )
+  {
+      Serial.println(toLog);
+  } else {
+      delay(100); // otherwise the socket cannot keep up
+      ws.textAll(toLog);
+  }
+
+}

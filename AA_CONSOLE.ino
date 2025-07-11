@@ -24,19 +24,22 @@ document.getElementById("help").style.display = "none";
  li a:hover {
    background-color: #333 !important;
 }
-#help {
+#hulp {
   background-color: #ffffff; 
   border: solid 2px; 
   display:none; 
   padding:4px;
   width:94vw;
 }
+.divstl { width: 60vw; height:84vh; background: #dbd89c; border:1px solid; padding-left:10px;
+}
 </style>
 </head>
 <body>
-  <div id='help'>
+  <div id='hulp'>
   <span class='close' onclick='sl();'>&times;</span><h3>CONSOLE COMMANDS</h3>
   <b>10;ZBT=message: </b> send a zigbee message (e.g. 2710).<br><br>
+  <b>10;SENDRAW=message: </b> send a raw zigbee message (no checksum etc).<br><br>
   <b>10;DELETE=filename: </b> delete a file.<br><br>
   <b>10;INV_REBOOT: </b> reboot an unresponsive inverter<br><br>
   <b>10;HEALTH: </b> healthcheck zigbee hw/system<br><br>
@@ -57,7 +60,7 @@ document.getElementById("help").style.display = "none";
 <a><input type="text" placeholder="type here" id="tiep"></a>
 </div>  
 <br>  
-  <div class='divstijl' style='height:84vh; border:1px solid; padding-left:10px;'>
+  <div class='divstl'>
   <table id='tekstveld'></table>
   </div>
  </div>
@@ -239,7 +242,13 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
               actionFlag = 45;
               return;             
           } else 
-
+ // ********************** zigbee test raw *****************************          
+           if (strncasecmp(txBuffer+3,"SENDRAW=",8) == 0) {  
+              ws.textAll("send a raw message, len=" + String(len));
+              //we do this in the loop
+              actionFlag = 45;
+              return;             
+          } else 
            if (strncasecmp(txBuffer+3,"ERASE",5) == 0) {  
               ws.textAll("going to delete all inverter files");
               String bestand;

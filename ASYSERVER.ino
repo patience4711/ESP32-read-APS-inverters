@@ -154,9 +154,9 @@ server.on("/MENU", HTTP_GET, [](AsyncWebServerRequest *request) {
 if(checkRemote( request->client()->remoteIP().toString()) ) request->redirect( "/DENIED" );
 
 loginBoth(request, "admin");
-toSend = FPSTR(HTML_HEAD);
-toSend += FPSTR(MENUPAGE);
-request->send(200, "text/html", toSend);
+//toSend = FPSTR(HTML_HEAD);
+//toSend += FPSTR(MENUPAGE);
+request->send_P(200, "text/html", MENUPAGE);
 });
 server.on("/SECURITY", HTTP_GET, [](AsyncWebServerRequest *request) {
    request->send_P(200, "text/css", SECURITY);

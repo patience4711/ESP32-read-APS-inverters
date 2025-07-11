@@ -1,10 +1,28 @@
 
 const char ECU_HOMEPAGE [] PROGMEM = R"=====(
-<!DOCTYPE html><html><head><meta charset='utf-8' name='viewport' content='width=device-width, initial-scale=1'><title>ESP32-ECU</title><link rel="icon" type="image/x-icon" href="/favicon.ico" /><link rel='stylesheet' type='text/css' href='/STYLESHEET'><style>body { background-color: #EEE;}span {padding: 6px;}table, th, td {border: 2px solid blue; font-size:16px; padding:6px; text-align:center; border-collapse:collapse;backgound-color:#dfff80;}tr {background-color:#ccffcc;}td { width:70px; }.btn { background-color: #199319; color: white; padding: 5px 22px; border-radius:6px;}.btn:hover {background: #eeeF; color:black;} @media only screen and (max-width: 800px) {th, td { width:60px; font-size:11px;}tr {height:35px;} .btn { padding: 5px 18px; font-size:10px;}}</style>
+<!DOCTYPE html><html><head><meta charset='utf-8' name='viewport' content='width=device-width, initial-scale=1'>
+<title>ESP32-ECU</title><link rel="icon" type="image/x-icon" href="/favicon.ico" />
+<link rel='stylesheet' type='text/css' href='/STYLESHEET'>
+<style>
+body.l_s { background-color: #EEE;}
+.l_s span {padding: 6px;}
+.ls table {max-width: 98% }
+.l_s table, .l_s th, .l_s td {border: 2px solid blue; font-size:16px; padding:6px; text-align:center; border-collapse:collapse;backgound-color:#dfff80;}
+.l_s tr {background-color:#ccffcc;}
+.l_s td { width:70px; }
+.l_s .btn { background-color: #199319; color: white; padding: 5px 22px; border-radius:6px;}
+.l_s .btn:hover {background: #eeeF; color:black;} 
+@media only screen and (max-width: 800px) {
+  .l_s th, .l_s td { width:60px; font-size:11px;}
+  .l_s tr {height:35px;} 
+  .l_s .btn { padding: 5px 18px; font-size:10px;}}
+  </style>
 <script type="text/javascript" src="SECURITY"></script>
 <script type='text/javascript'> 
 var term,table_row;window.addEventListener("visibilitychange",(()=>{"visible"===document.visibilityState&&(getGeneral(),setTimeout(getAll,300))}));var cnt=0,totalEn=0;function loadScript(){getGeneral(),setTimeout(getAll,300)}function celbgc(e){e.startsWith("e")||e.startsWith("i")?document.getElementById(e).style="background-color:#c6ff1a":document.getElementById(e).style="background-color:#a6a6a6"}function getAll(){totalEn=0;for(let e=0;e<cnt;e++)term="get.Data?Power=0&inv="+e,table_row="inv"+e,getData(e)}function getData(e){var t=new XMLHttpRequest;t.onreadystatechange=function(){if(4==this.readyState&&200==this.status){var t=this.responseText,n=JSON.parse(t),l=n.eN,o="r"+String(e);document.getElementById(o).style.display="table-row";var a="i"+String(e);document.getElementById(a).innerHTML="<a href='/details?inv="+String(e)+"'><button class='btn'>"+String(e)+"</button</a>";for(let t=0;t<4;t++)a="p"+String(e)+t,"n/e"==n.p[t]?celbgc(a):"n/a"==n.p[t]?document.getElementById(a).innerHTML=n.p[t]:document.getElementById(a).innerHTML=n.p[t].toFixed(1);celbgc(a="e"+String(e)),"n/a"!=l?(cnt>1&&(totalEn+=parseFloat(l),celbgc("e9"),document.getElementById("r9").style.display="table-row",document.getElementById("e9").innerHTML=totalEn.toFixed(2)),document.getElementById(a).innerHTML=l.toFixed(2)):document.getElementById(a).innerHTML=l,document.getElementById("noOutput").style.display="none",document.getElementById("4channel").style.display="block";const d=(new Date).toString();document.getElementById("time").innerHTML=d.substr(16,8)}},t.open("GET",term,!0),t.send()}function getGeneral(){var e=new XMLHttpRequest;e.onreadystatechange=function(){if(4==this.readyState&&200==this.status){var e=this.responseText,t=JSON.parse(e);cnt=t.cnt,console.log("getGeneral cnt = "+cnt);var l=t.st,o=t.sl;0==t.rm&&(document.getElementById("ml").style.display="block"),"11"==l?document.getElementById("busy").style.display="block":(document.getElementById("busy").style.display="none",document.getElementById("failed").style.display="none"),"0"!=l&&"25"!=l||(document.getElementById("failed").style.display="block");var a=document.getElementById("maindiv");document.getElementById("sleep");"1"==o?(a.style.background="grey",document.getElementById("noOutput").style.display="none"):a.style.background="linear-gradient(#e8edc8, #c8eaed)"}},e.open("GET","get.Data?General=1",!0),e.send()}if(window.EventSource){var source=new EventSource("/events");source.addEventListener("open",(function(e){console.log("Events Connected")}),!1),source.addEventListener("error",(function(e){e.target.readyState!=EventSource.OPEN&&console.log("Events Disconnected")}),!1),source.addEventListener("message",(function(e){console.log("message",e.data),"general"==e.data&&getGeneral(),"getall"==e.data&&getAll(),"reload"==e.data&&(getGeneral(),setTimeout(getAll,300))}),!1)}
-</script></head><body onload='loadScript()'>
+</script></head>
+<div class="l_s">
+<body class="l_s" onload='loadScript()'>
 <div id='msect'>
 <div id='menu'>
 <a class='fright' id='ml' href='/MENU'>menu</a>
@@ -24,7 +42,9 @@ var term,table_row;window.addEventListener("visibilitychange",(()=>{"visible"===
 <tr id='r7' style='display:none;'><td id='i7'></td><td id='p70'></td><td id='p71'></td><td id='p72'></td><td id='p73'></td><td id='e7'></td></tr>
 <tr id='r8' style='display:none;'><td id='i8'></td><td id='p80'></td><td id='p81'></td><td id='p82'></td><td id='p83'></td><td id='e8'></td></tr>
 <tr id='r9' style='display:none;'><td colspan='5' style='text-align:right;'>total of all inverters&nbsp;</td><td id='e9'></td></tr>
-</table></div><p>Powered by Hansiart</p><div id='busy'><span style='color:red;'><h3>checking / initialyzing zigbee network...</h3></span><br></div><div id='failed' style='display:none;'><span style='color:red;'><h3>the zigbee module is not working.</h3></span><br></div></center></div></div></body></html>
+</table></div><p>Powered by Hansiart</p><div id='busy'><span style='color:red;'><h3>checking / initialyzing zigbee network...</h3></span>
+<br></div><div id='failed' style='display:none;'><span style='color:red;'><h3>the zigbee module is not working.</h3></span>
+<br></div></center></div></div></div></body></html>
 )=====";
 
 

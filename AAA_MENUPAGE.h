@@ -3,7 +3,7 @@ const char MENUPAGE[] PROGMEM = R"=====(
 <title>ESP32-ECU</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="icon" type="image/x-icon" href="/favicon.ico" />
-<link rel="stylesheet" type="text/css" href="/STYLESHEET_HOME">
+<link rel="stylesheet" type="text/css" href="/STYLESHEET">
 
 <style>
 #menu2 a:link, #menu2 a:visited {

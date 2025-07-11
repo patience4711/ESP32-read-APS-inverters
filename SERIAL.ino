@@ -19,7 +19,7 @@ void handle_Serial () {
        }  
      Serial.println("InputBuffer_Serial = " + String(InputBuffer_Serial) );
      diagNose = 1; // direct the output to serial
-     // evaluate the incomming data
+     Serial.println"\nType 10;HELP to list available commands");
      if (strlen(InputBuffer_Serial) > 6) {                                // need to see minimal 8 characters on the serial port
        if (strncmp (InputBuffer_Serial,"10;",3) == 0) {                 // Command from Master to RFLink
   
@@ -29,6 +29,7 @@ void handle_Serial () {
               Serial.println(F("10;DIAG=x; (if x = 1 set diagNose for serial debug)"));
               Serial.println(F("10;POLL=x; (poll inverter nr x (9=all))"));                            
               Serial.println(F("10;ZBT=; (send zigbee message, e.g. 10;zbt=2101 (ping))"));
+              Serial.println(F("10;SENDRAW=; (send raw zbmessage, no FE checksum etc)"));
               Serial.println(F("10;DELETE=<file>; (delete a file)"));              
               Serial.println(F("10;HEALTH; (perform healthcheck zigbee)"));             
               Serial.println(F("10;INV_REBOOT; (reboot an unresponsive inverter)"));
@@ -51,19 +52,31 @@ void handle_Serial () {
           } else
               
 // // ********************** zigbee test new*****************************          
-           if (strncasecmp(InputBuffer_Serial+3,"ZBT=",4) == 0) { 
+        if (strncasecmp(InputBuffer_Serial+3,"ZBT=",4) == 0) { 
             char tmp[128]={0}; 
             int len = strlen(InputBuffer_Serial); 
               Serial.println("\n\nsend a zigbee command, len=" + String(len));
-      for(int i=0; i<len; i++) 
-      {
-        tmp[i] = InputBuffer_Serial[i+7];
-      }
-      //Serial.print("command = " + String(tmp));
-      testMessage(false);
-      return;             
-          
-      } else 
+            for(int i=0; i<len; i++) 
+            {
+              tmp[i] = InputBuffer_Serial[i+7];
+            }
+            //Serial.print("command = " + String(tmp));
+            testMessage(false);
+            return;             
+        } else 
+          // // ********************** zigbee raw *****************************          
+        if (strncasecmp(InputBuffer_Serial+3,"SENDRAW=",8) == 0) { 
+            char tmp[128]={0}; 
+            int len = strlen(InputBuffer_Serial); 
+              Serial.println("\n\nsend a zigbee command, len=" + String(len));
+            for(int i=0; i<len; i++) 
+            {
+              tmp[i] = InputBuffer_Serial[i+11];
+            }
+            //Serial.print("command = " + String(tmp));
+            rawMessage(false);
+            return; 
+        } else 
           
            if (strncasecmp(InputBuffer_Serial+3,"EDIT=",5) == 0) {
              int kz = String(InputBuffer_Serial[8]).toInt();
