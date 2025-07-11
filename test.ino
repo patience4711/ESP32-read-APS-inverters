@@ -78,7 +78,7 @@ void sendRaw( char printString[] )
             
     }
     
-    consoleOut("  ZB sent " + String(printString));
+    consoleOut("ZB sent " + String(printString));
      
     //else if (diagNose == 2) ws.textAll("sendZB FE" + String(bufferSend));
 }

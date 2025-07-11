@@ -132,7 +132,7 @@ if (actionFlag == 15) {
     if (actionFlag == 45) { //triggered by the webconsole
         actionFlag = 0; //reset the actionflag
         //Serial.println("someone made actionFlag 45 !!"); the uin8_t doesn't allow 301
-        rawMessage(true); // the bool decides where to find the input
+        testMessage(true); // the bool decides where to find the input
     }
         if (actionFlag == 55) { //triggered by the webconsole
         actionFlag = 0; //reset the actionflag

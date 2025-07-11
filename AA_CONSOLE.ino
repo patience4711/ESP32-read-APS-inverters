@@ -246,7 +246,7 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
            if (strncasecmp(txBuffer+3,"SENDRAW=",8) == 0) {  
               ws.textAll("send a raw message, len=" + String(len));
               //we do this in the loop
-              actionFlag = 45;
+              actionFlag = 55;
               return;             
           } else 
            if (strncasecmp(txBuffer+3,"ERASE",5) == 0) {  
