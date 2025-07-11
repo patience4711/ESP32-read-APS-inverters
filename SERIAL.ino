@@ -19,7 +19,7 @@ void handle_Serial () {
        }  
      Serial.println("InputBuffer_Serial = " + String(InputBuffer_Serial) );
      diagNose = 1; // direct the output to serial
-     Serial.println"\nType 10;HELP to list available commands");
+     Serial.println("\nType 10;HELP to list available commands");
      if (strlen(InputBuffer_Serial) > 6) {                                // need to see minimal 8 characters on the serial port
        if (strncmp (InputBuffer_Serial,"10;",3) == 0) {                 // Command from Master to RFLink
   
