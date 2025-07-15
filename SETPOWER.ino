@@ -49,7 +49,8 @@ void setMaxPower(int which)
 consoleOut("sending the trrottle command");
 int Scaled = Inv_Prop[which].maxPower * 16.59;
 char powCommand[85];
-
+char ecu_id_reverse[13];
+ECU_REVERSE().toCharArray(ecu_id_reverse, 13);
 // first we convert the scaled maxPower value to hex, ( msb and lsb )
 // and calculate the validation byte
   uint8_t msb = (Scaled >> 8) & 0xFF; // 0x02
@@ -60,7 +61,7 @@ char powCommand[85];
   Serial.println("for maxpower = " + String(Inv_Prop[which].maxPower) + " * 16.59, the values are ");
   Serial.printf("MSB: %02X, LSB: %02X, VV: %02X\n", msb, lsb, vv);
 
-  snprintf(powCommand, sizeof(powCommand), "2401%s1414060000050F1480971B%sFBFB06AA270000%02X%02X01%02XFEFE", Inv_Prop[0].invID, ECU_ID, msb, lsb, vv);
+  snprintf(powCommand, sizeof(powCommand), "2401%s1414060000050F1480971B%sFBFB06AA270000%02X%02X01%02XFEFE", Inv_Prop[0].invID, ecu_id_reverse, msb, lsb, vv);
   Serial.println("The raw powCommand = " + String(powCommand));
   // now we can send it
   sendZB(powCommand);
