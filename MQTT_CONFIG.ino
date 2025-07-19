@@ -23,7 +23,7 @@ const char MQTTCONFIG[] PROGMEM = R"=====(
   <tr><td>state idx:&nbsp<td><input class='inp2' name='mqidx' value='{idx}' size='4' length='4'></tr>
   <tr><td>username:&nbsp<td><input class='inp6' name='mqtUser' value='{mqtu}'></td></tr>
   <tr><td>password:&nbsp<td><input class='inp6' name='mqtPas' value='{mqtp}'></td></tr>
-  <tr><td>client id:&nbsp<td><input class='inp6' name='mqtCi' value='{mqtc}'></td></tr>
+  <tr><td>client id:&nbsp<td><input class='inp6' name='mqtCi' value='{mqtc}' readonly></td></tr>
   </form>
   </td></table>
   </div><br>
@@ -50,7 +50,9 @@ webPage.replace("{mqttoutTopic}", String(Mqtt_outTopic) );
 webPage.replace("{mqtu}",         String(Mqtt_Username) );
 webPage.replace("{mqtp}",         String(Mqtt_Password) );
 webPage.replace("{idx}"          , String(Mqtt_stateIDX) ); 
-webPage.replace("{mqtc}"         , String(Mqtt_Clientid) );
+
+//String Mqtt_Clientid = getChipid(false);
+webPage.replace("{mqtc}"         , getChipId(false));
 switch (Mqtt_Format) {
  case 0:
     webPage.replace("fm_0", "selected");

@@ -10,11 +10,11 @@ bool mqttConnect() {   //
     if (Mqtt_Port[0] == '\0' ) strcpy(Mqtt_Port, "1883");   // just in case ....
     uint8_t retry = 3;
     
-    //char Mqtt_inTopic[11]={"ESP-ECU/in"};
+    //String Clientid = getChipId(false); 
 
     while (!MQTT_Client.connected()) {
 
-      if ( MQTT_Client.connect( Mqtt_Clientid, Mqtt_Username, Mqtt_Password) )
+      if ( MQTT_Client.connect( getChipId(false).c_str(), Mqtt_Username, Mqtt_Password) )
       {
          //connected, so subscribe to inTopic (not for thingspeak)
         if(Mqtt_Format != 5 ) {

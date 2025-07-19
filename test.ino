@@ -1,7 +1,8 @@
 // we can send a zigbee message via serial console
-void testMessage(bool console) {
+void testMessage(bool console) 
+{
       char sendCmd[100]={0};
-      char reCeived[254]={0};
+     
       if(console) diagNose = 1; else diagNose = 2;
       int len;
       if(console) len = strlen( txBuffer );  else len = strlen( InputBuffer_Serial );
@@ -16,15 +17,14 @@ void testMessage(bool console) {
        sendZB(sendCmd);
        // find the answer
        
-      char s_d[200]={0};  
-      // now read the answer if there is one
-      readZB(s_d);
+      decodeGeneralAnswer();
       delayMicroseconds(250);
        
        // cleanup
        memset(&sendCmd, 0, sizeof(sendCmd)); //zero out 
        delayMicroseconds(250);
 }
+
 void rawMessage(bool console) {
       char sendCmd[100]={0};
       char reCeived[254]={0};
@@ -42,9 +42,8 @@ void rawMessage(bool console) {
        sendRaw(sendCmd); // this adds the
        // find the answer
        
-      char s_d[200]={0};  
-      // now read the answer if there is one
-      readZB(s_d);
+      decodeGeneralAnswer();
+      
       delayMicroseconds(250);
        
        // cleanup
@@ -84,7 +83,66 @@ void sendRaw( char printString[] )
 }
 
 
+// ******************************************************************
+//                    decode zigbee answer
+// ******************************************************************
+int decodeGeneralAnswer()
+{
+    char messageToDecode[CC2530_MAX_SERIAL_BUFFER_SIZE] = {0};
+  
+    char s_d[CC2530_MAX_SERIAL_BUFFER_SIZE] = {0};
+    uint8_t Message_begin_offset = 0;    
+  
+    //retrieve the answer
+    strcpy(messageToDecode, readZB(s_d));
+    if (readCounter == 0) {
+        consoleOut(F("decodeGeneralAnswer: no answer on request"));  
+        return 50; //no answer
+      }
 
+
+    char *tail;
+    int fault=0;               
+
+
+    if(strstr(messageToDecode,  "FE01640100") == NULL) // answer to AF_DATA_REQUEST 00=success
+    {
+     consoleOut( "AF_DATA_REQUEST failed" );
+     fault = 10;    
+    } else
+    if (strstr(messageToDecode, "FE03448000") == NULL) //  AF_DATA_CONFIRM the 00 byte = success
+    {
+      consoleOut("no AF_DATA_CONFIRM");
+      fault = 11;
+    } else
+    if (strstr(messageToDecode, "FE0345C4") == NULL) //  ZDO_SRC_RTG_IND
+    {
+      consoleOut("no route receipt");
+      //return 12; // this command seems facultative
+    } else 
+    if (strstr(messageToDecode, "4481") == NULL)
+    {
+      consoleOut("no  AF_INCOMING_MSG"); // this is the real answer
+      fault=13;
+    }
+    if(fault > 9 ) {
+       memset(&messageToDecode, 0, sizeof(messageToDecode)); //zero out 
+       delayMicroseconds(250); 
+      return fault;
+    }
+   
+    consoleOut("received response " + String(messageToDecode) );
+         
+    // so now we have a message containing    
+    // shorten the message by removing everything before 4481
+
+    tail = split(messageToDecode, "44810000"); // remove the 0000 as well
+    //tail = after removing the 1st part
+    // in tail at offset 14, 2 bytes with signalQuality reside   
+    consoleOut("tail " + String(tail) );
+  
+    return 0;
+} 
 
 #ifdef TEST
 void testDecode() {
