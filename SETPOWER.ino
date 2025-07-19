@@ -65,4 +65,17 @@ ECU_REVERSE().toCharArray(ecu_id_reverse, 13);
   Serial.println("The raw powCommand = " + String(powCommand));
   // now we can send it
   sendZB(powCommand);
+
+  errorCode = decodeGeneralAnswer();     
+  switch( errorCode )
+    {
+        case 0:
+                 yield();
+                 break;
+        default:
+              consoleOut("request has errorcode " + String(errorCode)); 
+    }
+
+
 }
+

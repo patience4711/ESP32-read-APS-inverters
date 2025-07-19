@@ -149,7 +149,7 @@ void mqttConfigsave() {
 bool file_open_for_read(const char* bestand) 
 {
       //DebugPrint("we are in file_open_for_read, bestand = "); //DebugPrintln(bestand); 
-        StaticJsonDocument<400> doc;
+        JsonDocument doc;
         File configFile = SPIFFS.open(bestand, "r");
         if (configFile) {
         DeserializationError error = deserializeJson(doc, configFile);
