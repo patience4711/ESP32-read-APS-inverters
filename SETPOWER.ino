@@ -43,10 +43,11 @@
 
 // }
 
-void setMaxPower(int which) 
+bool setMaxPower(int which) 
 {
+// if there is no coordinator, this command fails
 
-consoleOut("sending the trrottle command");
+consoleOut("sending the throttle command");
 int Scaled = Inv_Prop[which].maxPower * 16.59;
 char powCommand[85];
 char ecu_id_reverse[13];
@@ -64,18 +65,17 @@ ECU_REVERSE().toCharArray(ecu_id_reverse, 13);
   snprintf(powCommand, sizeof(powCommand), "2401%s1414060000050F14%sFBFB06AA270000%02X%02X01%02XFEFE", Inv_Prop[0].invID, ecu_id_reverse, msb, lsb, vv);
   Serial.println("The raw powCommand = " + String(powCommand));
   // now we can send it
+  Serial.println("\nzigbeeUp value = " + String(zigbeeUp));
+  if(zigbeeUp != 1) {
+      Serial.println("no zigbee coordinator, fail"); 
+      return false;
+    }
+  
   sendZB(powCommand);
 
-  errorCode = decodeGeneralAnswer();     
-  switch( errorCode )
-    {
-        case 0:
-                 yield();
-                 break;
-        default:
-              consoleOut("request has errorcode " + String(errorCode)); 
-    }
-
+  errorCode = decodeGeneralAnswer(true);     
+  
+  if(errorCode == 0) return true; else return false;
 
 }
 

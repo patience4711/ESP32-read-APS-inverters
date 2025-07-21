@@ -36,22 +36,21 @@ void handleForms(AsyncWebServerRequest *request)
   strcpy( Mqtt_outTopic, request->getParam("mqtoutTopic")->value().c_str() );
   strcpy( Mqtt_Username, request->getParam("mqtUser")    ->value().c_str() );
   strcpy( Mqtt_Password, request->getParam("mqtPas")     ->value().c_str() );
-  strcpy( Mqtt_Clientid, request->getParam("mqtCi")     ->value().c_str() );  
+  //strcpy( Mqtt_Clientid, request->getParam("mqtCi")     ->value().c_str() );  
   Mqtt_stateIDX = request->arg("mqidx").toInt(); //values are 0 1 2
   Mqtt_Format = request->arg("fm").toInt(); //values are 0 1 2 3 4 5
         mqttConfigsave();  // 
         actionFlag=24; // reconnect with these settings
         return;
   } else
-
-      if(request->hasParam("maxPower")) // name of the hidden input
-      // because of the hidden input named maxPower we know we received the setPower form 
-      Serial.println("found maxPower");
-      // check thast the form has the right params ( should be maxPx and naxPower)
+// the request is something like pMax=200 MPW=0
+  if(request->hasParam("pMax")) // name of the hidden input
+  {    // because of the hidden input named maxPower we know we received the setPower form 
+      Serial.println("found pMax");
+      // check that the form has the right params ( should be pMax and MPW)
       int params = request->params();
       Serial.print("Number of params: ");
-      Serial.println(params);
-
+      Serial.println(params);   
       for (int i = 0; i < params; i++) {
         AsyncWebParameter* p = request->getParam(i);
         Serial.print("Param name: ");
@@ -60,8 +59,11 @@ void handleForms(AsyncWebServerRequest *request)
         Serial.println(p->value());
       }
        
-      {
-          int add; // to determin which inverter we are editing
+       int Inv = request->arg("INV").toInt();
+       Serial.println("the form is for inverter " + String(Inv));
+       Inv_Prop[Inv].maxPower = request->getParam("pMax")->value().toInt();
+      //{
+        //  int add; // to determin which inverter we are editing
           // if(request->hasParam("maxP0")) {Inv_Prop[0].maxPower = request->getParam("maxP0")->value().toInt(); add=0;}
           // if(request->hasParam("maxP1")) {Inv_Prop[1].maxPower = request->getParam("maxP1")->value().toInt(); add=1;}
           // if(request->hasParam("maxP2")) {Inv_Prop[2].maxPower = request->getParam("maxP2")->value().toInt(); add=2;}
@@ -71,25 +73,26 @@ void handleForms(AsyncWebServerRequest *request)
           // if(request->hasParam("maxP6")) {Inv_Prop[6].maxPower = request->getParam("maxP6")->value().toInt(); add=6;}     
           // if(request->hasParam("maxP7")) {Inv_Prop[7].maxPower = request->getParam("maxP7")->value().toInt(); add=7;}
           // if(request->hasParam("maxP8")) {Inv_Prop[8].maxPower = request->getParam("maxP8")->value().toInt(); add=8;}
-          for (int i = 0; i <= 8; i++) {
-              String paramName = "maxP" + String(i);
-              if (request->hasParam(paramName)) {
-                  Inv_Prop[i].maxPower = request->getParam(paramName)->value().toInt();
-                  add = i;
-                  break;
-              }
-          }
+          //for (int i = 0; i <= 8; i++) {
+          //    String paramName = "maxP" + String(i);
+          //    Serial.println("parameter name = " + paramName);
+          //    if (request->hasParam(paramName)) {
+          //        Inv_Prop[i].maxPower = request->getParam(paramName)->value().toInt();
+          //       add = i;
+          //        break;
+          //    }
+          //}
                 
-          Serial.println("Inv_Prop[add].maxPower set to = " + String(Inv_Prop[add].maxPower)); 
-          actionFlag=240 + add; // save the settings and send zigbee to inverter
-          Serial.println("actionFlag set to" + String(actionFlag));
+          Serial.println("Inv_Prop[Inv].maxPower set to = " + String(Inv_Prop[Inv].maxPower)); 
+          actionFlag=240 + Inv; // save the settings and send zigbee to inverter
+          Serial.println("actionFlag set to " + String(actionFlag));
           //Serial.println("setting the return url to /details?inv=");
-          String toReturn = "/details?inv=" + String(add);
+          String toReturn = "/details?inv=" + String(Inv);
           strcpy(requestUrl, toReturn.c_str() ); 
           Serial.println("requestUrl = " + String(requestUrl));
           return;
 
-     }
+  }
 
      // if we are here something was wrong, no parameters found
      request->send(200, "text/html", "no valid form found");

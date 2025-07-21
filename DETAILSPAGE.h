@@ -24,11 +24,11 @@ var e=new XMLHttpRequest;
 e.onreadystatechange=function(){
   if(4==this.readyState&&200==this.status){
     var e=this.responseText,n=JSON.parse(e);
-    var pinput= document.getElementById("pMax");
-    pinput.name="maxP" + n.inv;
-    console.log("name changed to " + pinput.name );
-    pinput.value = n.pwMax;
-    console.log("value changed to " + pinput.value );
+    document.getElementById("INV").value=n.inv;
+    //pinput.value= n.inv;
+    console.log("INV value changed to " + n.inv );
+    document.getElementById("pMax").value = n.pwMax;
+    console.log("pMax value changed to " + n.pwMax );
     document.getElementById("ivn").innerHTML=n.inv,document.getElementById("nm").innerHTML="<strong>"+n.name+"</strong>",document.getElementById("snr").innerHTML=n.serial;var t=n.sid;document.getElementById("sid").innerHTML=t;var d=n.type,c="YC600";if("1"==d&&(c="QS1"),"2"==d&&(c="DS3"),document.getElementById("tp").innerHTML=c,"0000"!=t||""==t)if("1"==n.polled){document.getElementById("dcvc").style.display="block",document.getElementById("npo").style.display="none",document.getElementById("sq").innerHTML=n.sq+" %",document.getElementById("acv").innerHTML=n.acv+" V",document.getElementById("tmp").innerHTML=n.temp+" &#8451;",document.getElementById("fr").innerHTML=n.freq+" Hz";for(let e=0;e<4;e++)"n/e"!=n.dcv[e]&&"n/a"!=n.dcv[e]&&(n.dcv[e]=n.dcv[e].toFixed(1)),"n/e"!=n.dcc[e]&&"n/a"!=n.dcc[e]&&(n.dcc[e]=n.dcc[e].toFixed(1));document.getElementById("v0").innerHTML=n.dcv[0],document.getElementById("v1").innerHTML=n.dcv[1],document.getElementById("v2").innerHTML=n.dcv[2],document.getElementById("v3").innerHTML=n.dcv[3],document.getElementById("c0").innerHTML=n.dcc[0],document.getElementById("c1").innerHTML=n.dcc[1],document.getElementById("c2").innerHTML=n.dcc[2],document.getElementById("c3").innerHTML=n.dcc[3],paintCells()}else document.getElementById("npo").style.display="block",document.getElementById("dcvc").style.display="none";else document.getElementById("npa").style.display="block"}},
     e.open("GET","get.Data?Inverter=0",!0),e.send()}
   
@@ -50,7 +50,7 @@ e.onreadystatechange=function(){
 <tr><td> ac voltage<td id="acv">n/a</td></tr>
 <tr><td> temperature<td id="tmp">n/a</td></tr> 
 <tr><td> frequency<td id="fr">n/a</td></tr>
-<tr><td> throttle<td><form id='formulier' method='get' action='submitform'><input id='pMax' name='dummy' value="" type='number' min='0' max='500' step='100' class="inp3" oninput='showSubmit()'></input><input type='hidden'name='maxPower' value="111"></input></tr></form>
+<tr><td> throttle<td><form id='formulier' method='get' action='submitform'><input id='pMax' name='pMax' value="" type='number' min='0' max='500' step='100' class="inp3" oninput='showSubmit()'></input><input type='hidden' id='INV' name='INV' value=""></input></tr></form>
 </table>
 
 <h4>INVERTER OUTPUT</h4><div id="dcvc" style="display:none;"><table>

@@ -64,8 +64,11 @@ int readInverterfiles() {
 }
 
     void test_actionFlag() {
-  // ******************  reset the nework data and reboot in AP *************************
-    if (actionFlag == 11 || value == 11) { // 
+    if(actionFlag == 0) return;
+    //if(actionFlag != 0) Serial.println("test_actionFlag 1 val = " + String(actionFlag));  
+    // ******************  reset the nework data and reboot in AP *************************
+    if (actionFlag == 11 || value == 11) 
+    { // 
      //DebugPrintln("erasing the wifi credentials, value = " + String(value) + "  actionFlag = " + String(actionFlag));
      delay(1000); //reserve time to release the button
      //eraseWifiFlash();
@@ -74,19 +77,19 @@ int readInverterfiles() {
      // we write a flag in EEPROM
      consoleOut(F("wifi disconnected"));
 //we try to overwrite the wifi creentials     
-const char* ssid = "dummy";
-const char* password = "dummy";
+     const char* ssid = "dummy";
+    const char* password = "dummy";
     WiFi.begin(ssid, password);
     Serial.println(F("\nConnecting to dummy network"));
     int teller = 0;
-    while(WiFi.status() != WL_CONNECTED){
-        Serial.print(F("wipe wifi credentials\n"));
-        delay(100);         
-        teller ++;
-        if (teller > 2) break;
-    }
+      while(WiFi.status() != WL_CONNECTED){
+          Serial.print(F("wipe wifi credentials\n"));
+          delay(100);         
+          teller ++;
+          if (teller > 2) break;
+      }
      ESP.restart();
-  }  
+    }  
 
     if (actionFlag == 10) { // the button was pressed a long time, start ap
      delay(2000); // give the server the time to send the confirm
@@ -94,20 +97,24 @@ const char* password = "dummy";
      write_eeprom();
      ESP.restart();
   }
-// interrrupt button test
-if (actionFlag == 15) {
-  actionFlag = 0;
-  buttonPressed();
-}
     
+    //Serial.println("test_actionFlag 2 val = " + String(actionFlag));
+    // interrrupt button test
+    if (actionFlag == 15) {
+      actionFlag = 0;
+      buttonPressed();
+    }
+     //Serial.println("test_actionFlag 3 val = " + String(actionFlag));
     if (actionFlag == 60) {
       actionFlag = 0; //reset the actionflag
       pairOnActionflag();
     }
+     //Serial.println("test_actionFlag 4 val = " + String(actionFlag));
     if (actionFlag == 21) {
       actionFlag = 0; //reset the actionflag
       coordinator(true); // start normal operation mode
     }
+ //Serial.println("test_actionFlag 5 val = " + String(actionFlag));
 // mosquitto test **********************************************    
     if (actionFlag == 24) { // set by the mqtt config page
         actionFlag = 0; //reset the actionflag
@@ -117,9 +124,29 @@ if (actionFlag == 15) {
         MQTT_Client.setCallback ( MQTT_Receive_Callback ) ;
         if (Mqtt_Format != 0) mqttConnect(); // reconnect mqtt after change of settings
     }    
+ //Serial.println("test_actionFlag 6 val = " + String(actionFlag));
     if (actionFlag == 25) {
       actionFlag = 0; //reset the actionflag
       getTijd(); // recalculate time after change of settings
+    }
+    //Serial.println("test_actionFlag 7 val = " + String(actionFlag));
+    if (actionFlag > 239 && actionFlag < 249) {
+      int whichInv = actionFlag - 240; // with 248 this would be 8  0 1 2 3 4 5 6 7 8 is in range
+      Serial.println("inside actionFlag: whichInv is " + String(whichInv));
+      actionFlag = 0; //reset the actionflag
+
+      if(setMaxPower(whichInv) == true) {
+          String bestand = "/Inv_Prop" + String(whichInv) + ".str"; // /Inv_Prop0.str
+          consoleOut("going to write " + bestand );
+          String term= "throttle inv " + String(whichInv) + " success";
+          Update_Log(2, term.c_str());
+      } else {
+        // the setPower command failed, so we set out value to 800
+        Inv_Prop[whichInv].maxPower = 800;
+        String term= "throttle inv " + String(whichInv) + " failed";
+        Serial.println("throttle failed inv " + String(whichInv));
+        Update_Log(2, term.c_str());
+      }
     }
     if (actionFlag == 43) { //triggered by the console
         actionFlag = 0; //reset the actionflag
