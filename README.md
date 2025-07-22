@@ -21,7 +21,8 @@ july 7 2025: There is a new version [ESP32-ECU_v1_1](https://github.com/patience
 The frontpage:<br>
 ![frontpage](https://user-images.githubusercontent.com/12282915/229239150-05f6d29d-7620-4363-94fc-787b09d11fad.jpg)
 <br><br>The details page:<br>
-![details](https://user-images.githubusercontent.com/12282915/229239148-fc0c345e-5291-49b7-a36c-70f452333a61.jpg)
+![details](https://github.com/user-attachments/assets/db17c692-f8a6-420a-94f1-a9f16b8cd3de)
+
 
 ## features
 - Simply to connect to your wifi
@@ -34,6 +35,7 @@ The frontpage:<br>
 - Smart timekeeping
 - A lot of system info on the webpage
 - Easy firmware update "Over The Air"
+- We can set a max output for an inverter (throttling)
 
 ## the hardware
 It is nothing more than an esp32 device and a prepared cc2530, cc2531 zigbee module. And a powersupply.
