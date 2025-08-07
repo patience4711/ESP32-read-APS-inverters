@@ -15,7 +15,8 @@ The system is intended for reading APS Systems inverters. The program can pair a
 Please see the <a href='https://github.com/patience4711/ESP32-read-APS-inverters/wiki'>WIKI</a> for information on building it, the working, etc. 
 
 ## downloads
-july 7 2025: There is a new version [ESP32-ECU_v1_1](https://github.com/patience4711/ESP32-read-APS-inverters/blob/main/ESP32_ECU_v1_1.ino.bin) Please see changelog.
+Aug 7 2025 : There is a new version [esp32-ecu_v1_2](https://github.com/patience4711/ESP32-read-APS-inverters/blob/main/ESP32_ECU_v1_2.bin)
+Please see changelog.
 
 <br><br>
 The frontpage:<br>
@@ -54,6 +55,9 @@ the new data.
 
 
 ## changelog ##
+version ESP32-ECU_V1_2:
+* added options to throttle ineverter (tested on YC600 and DS3)
+
 version ESP32-ECU_V1_1:
 * adapted to a modern ArduinoIDE(2.3.4) and board definitions(2.0.18 arduino5)
 * changed the SPIFFS save functions
