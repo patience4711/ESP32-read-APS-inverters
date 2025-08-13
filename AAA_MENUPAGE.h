@@ -14,8 +14,7 @@ const char MENUPAGE[] PROGMEM = R"=====(
 </head><body>
 <div id='msect'>
 <div id='menu'>
-  <a id="fleft" href='/LOGPAGE'>journal</a>
-  <a  href="/" class='close' >&times;</a>  
+    <a  href="/" class='close' >&times;</a>  
 </div>
 <br><br>
 <kop>ESP32 ECU MENU</kop><br><br>

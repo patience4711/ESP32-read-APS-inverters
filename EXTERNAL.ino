@@ -30,7 +30,23 @@ if ( intern ) {    //DebugPrintln("the request comes from inside the network");
 //  request->send(200, "text/html", toSend);
 //  }
 
- // POLL=; 
+  //say we ha a request <ip of ecu>/TROTTLE?inv=1&val=500
+  if ( serverUrl.indexOf("THROTTLE") > -1) 
+  {
+
+    int Inv = request->arg("inv").toInt() | 10;
+    int throtVal = request->arg("val").toInt() | 800;
+    Inv_Prop[Inv].maxPower = throtVal;
+    if(Inv > 8 || Inv < 0 || throtVal > 500 || throtVal < 0 ){
+      request->send ( 200, "text/plain", "invalid value(s)" );
+      return;
+    }
+    actionFlag = 240+Inv;
+    String term = "attempt throttling inverter " + String(Inv) + " to " + String(throtVal);
+    request->send ( 200, "text/plain", term );
+    return;
+  }
+  
   if ( serverUrl.indexOf("POLL=") > -1) {
       if(Polling)
       {

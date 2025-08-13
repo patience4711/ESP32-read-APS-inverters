@@ -9,10 +9,10 @@ const char CONSOLE_HTML[] PROGMEM = R"=====(
 <link rel="stylesheet" type="text/css" href="/STYLESHEET">
 <script>
 function helpfunctie() {
-document.getElementById("help").style.display = "block";
+document.getElementById("hulp").style.display = "block";
 }
 function sl() {  
-document.getElementById("help").style.display = "none";
+document.getElementById("hulp").style.display = "none";
 }
 
 </script>
@@ -40,8 +40,9 @@ document.getElementById("help").style.display = "none";
   <span class='close' onclick='sl();'>&times;</span><h3>CONSOLE COMMANDS</h3>
   <b>10;ZBT=message: </b> send a zigbee message (e.g. 2710).<br><br>
   <b>10;SENDRAW=message: </b> send a raw zigbee message (no checksum etc).<br><br>
+  <b>10;QUERY=x: </b> query inverter data.<br><br>
   <b>10;DELETE=filename: </b> delete a file.<br><br>
-  <b>10;INV_REBOOT: </b> reboot an unresponsive inverter<br><br>
+  <b>10;INV_REBOOT=x: </b> reboot an unresponsive inverter<br><br>
   <b>10;HEALTH: </b> healthcheck zigbee hw/system<br><br>
   <b>10;POLL=x: </b> poll inverter #x<br><br>
   <b>10;INIT_N: </b> start the zigbee coordinator<br><br>
@@ -51,6 +52,7 @@ document.getElementById("help").style.display = "none";
   <b>10;FILES: </b> show filesystem<br><br>
   <b>10;TESTMQTT: </b>sends a mqtt testmessage<br><br>  
   <b>10;CLEAR: </b> clear console window<br><br> 
+  <b>10;THROTTLE=x-500; </b> throttle inverter x 500
   </div>
 
 <div id='msect'>
@@ -176,7 +178,42 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
               actionFlag=47;
               return;
           } else 
-           
+          if (strncasecmp(txBuffer+3,"QUERY=",6) == 0) {
+            //input can be 10;QUERY=0; 
+            //ws.textAll("received " + String( (char*)data) + "<br>"); 
+              //int kz = String(txBuffer[9]).toInt();
+              int kz = atoi(txBuffer + 9);
+              if ( kz > inverterCount-1 ) {
+              ws.textAll("error, no such inverter");
+              return;  
+              }
+              ws.textAll("console query inverter " + String(kz));
+              iKeuze=kz;
+              actionFlag=57;
+              return;
+          } else
+
+          if (strncasecmp(txBuffer+3,"THROTTLE=",9) == 0) {
+            //input can be 10;EDIT=0-AABB; 
+            char *first = txBuffer + 12;
+            char *second = strchr(first, '-'); // find dash
+            int kz; 
+            if (second) {
+                *second = '\0'; // terminate first number
+                kz = atoi(first);
+                int watt = atoi(second + 1);
+            consoleOut("inverter = " + String(kz));
+            consoleOut("watt = " + String(watt));
+            Inv_Prop[kz].maxPower = watt;
+            }  
+              if ( kz > inverterCount-1 ) {
+              ws.textAll("error, no such inverter");
+              return;  
+              }
+             actionFlag = 240 + kz; 
+              ws.textAll("actionFlag=" + String(actionFlag));
+              return;
+          } else  
           if (strncasecmp(txBuffer+3,"EDIT=",5) == 0) {
             //input can be 10;EDIT=0-AABB; 
             //ws.textAll("received " + String( (char*)data) + "<br>"); 

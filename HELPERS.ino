@@ -132,21 +132,25 @@ int readInverterfiles() {
     //Serial.println("test_actionFlag 7 val = " + String(actionFlag));
     if (actionFlag > 239 && actionFlag < 249) {
       int whichInv = actionFlag - 240; // with 248 this would be 8  0 1 2 3 4 5 6 7 8 is in range
-      Serial.println("inside actionFlag: whichInv is " + String(whichInv));
+      consoleOut("inside actionFlag: whichInv is " + String(whichInv));
       actionFlag = 0; //reset the actionflag
 
       if(setMaxPower(whichInv) == true) {
-          String bestand = "/Inv_Prop" + String(whichInv) + ".str"; // /Inv_Prop0.str
-          consoleOut("going to write " + bestand );
+         Inv_Prop[whichInv].throttled = true;
           String term= "throttle inv " + String(whichInv) + " success";
           Update_Log(2, term.c_str());
       } else {
         // the setPower command failed, so we set out value to 800
-        Inv_Prop[whichInv].maxPower = 800;
+        Inv_Prop[whichInv].maxPower = -1;
+        Inv_Prop[whichInv].throttled = false;
         String term= "throttle inv " + String(whichInv) + " failed";
-        Serial.println("throttle failed inv " + String(whichInv));
+        consoleOut("throttle failed inv " + String(whichInv));
         Update_Log(2, term.c_str());
       }
+    
+    String bestand = "/Inv_Prop" + String(whichInv) + ".str"; // /Inv_Prop0.str
+    consoleOut("going to write " + bestand );
+    writeStruct(bestand, whichInv); // alles opslaan in SPIFFS
     }
     if (actionFlag == 43) { //triggered by the console
         actionFlag = 0; //reset the actionflag
@@ -177,6 +181,13 @@ int readInverterfiles() {
         polling(iKeuze);
         //events.send( "getall", "message");
         eventSend(2); 
+    }
+    // query a single inverter
+    if (actionFlag == 57) { //triggered by the webpage zbtest and mqtt
+        actionFlag = 0; //reset the actionflag
+        querying(iKeuze);
+        //events.send( "getall", "message");
+        //eventSend(2); 
     }
     //polling all inverters
     if (actionFlag == 48) { //triggered by the webpage zbtest and mqtt

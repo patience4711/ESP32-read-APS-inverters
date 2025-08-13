@@ -120,6 +120,9 @@ void start_portal() {
 // therefor we first go in wifi APSTA
   WiFi.mode(WIFI_AP_STA);
   Serial.println("Connecting to " + String(ssid));
+  //WiFi.config(0U, 0U, 0U);
+  WiFi.config(IPAddress(0,0,0,0), IPAddress(0,0,0,0), IPAddress(0,0,0,0)); //wipe event. static ip
+  WiFi.persistent(true);
   WiFi.begin(ssid, pass);  
   Serial.println("send confirm page  ");
 

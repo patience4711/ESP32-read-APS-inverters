@@ -53,7 +53,7 @@ margin: 0 auto;
 width:98vw;
 }
 
-#menu { margin: 0 auto; height:48px; width: 60vw; overflow: hidden; background-color: #333; border-radius:6px;}
+#menu { height:48px; width: 60vw; overflow: hidden; background-color: #333; border-radius:6px;}
 #menu a:link, #menu a:visited, #menu2 a:link, #menu2 a:visited  { /*only in the div menu*/
   background-color: #333;
   color: white;
@@ -108,9 +108,10 @@ b { color: #eab3f2; margin-left: 4px; font-size:16px;}
 .fright {float:right;}
 
 @media only screen and (max-width: 800px) { 
-.divstijl, #menu {width:100%; max-width: 98vw}
+.divstijl {margin: 0 auto; width:98vw;}
+#menu {width:98vw;}
 .close { font-size: 32px; width:20px; padding: 0px 10px;}
-body  { font-size:12px; margin-left: 0px;}
+body  { font-size:12px; margin-left: 2px;}
 
 input, .sb1 { font-size:16px; }
 .sb1 {height:24px;} 

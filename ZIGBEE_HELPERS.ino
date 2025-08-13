@@ -9,8 +9,7 @@ char * readZB( char inMess[] ) {
     //if not within the reactiontime we return NULL
     if( !waitSerial2Available() ) {
         inMess[0]='\0';
-        term = " readZB nothing to read";
-        consoleOut(F(" readZB nothing to read"));
+        consoleOut(F(" readZB: nothing to read"));
         return inMess;
     }
     
@@ -84,7 +83,7 @@ void sendZB( char printString[] )
             
     }
     
-    consoleOut("  sendZB FE" + String(bufferSend));
+    consoleOut("sendZB FE" + String(bufferSend));
      
     //else if (diagNose == 2) ws.textAll("sendZB FE" + String(bufferSend));
 }
@@ -116,9 +115,9 @@ char bufferCRC_2[254] = {0};
 // **************************************************************************
 
 // calculate and return the length of the message
-char *sLen(char Command[])  
+char *sLen(const char Command[])  
 {
-    char bufferSln[254]; // why is this so big 254
+    static char bufferSln[8]; // why is this so big 254
     sprintf(bufferSln, "%02X", (strlen(Command) / 2 - 2));
     delayMicroseconds(250); //give memset a little bit of time to empty all the buffers
     return bufferSln;
@@ -191,7 +190,7 @@ void inverterReboot(int which) {
 void resetValues(bool energy, bool mustSend) {
       for(int z=0; z<inverterCount; z++) 
       { 
-         for(int y=0; y<5; y++ ) Inv_Data[z].power[y] = 0.0; // make powervalues null
+         for(int y=0; y<4; y++ ) Inv_Data[z].power[y] = 0.0; // make powervalues null
          //DebugPrintln("reset power values");
          if(energy) 
          {

@@ -18,7 +18,7 @@ void handle_Serial () {
             }
        }  
      Serial.println("InputBuffer_Serial = " + String(InputBuffer_Serial) );
-     diagNose = 1; // direct the output to serial
+     diagNose = 2; // direct the output to serial
      Serial.println("\nType 10;HELP to list available commands");
      if (strlen(InputBuffer_Serial) > 6) {                                // need to see minimal 8 characters on the serial port
        if (strncmp (InputBuffer_Serial,"10;",3) == 0) {                 // Command from Master to RFLink
@@ -27,14 +27,16 @@ void handle_Serial () {
               scroll(4);
               Serial.println(F("*** AVAILABLE COMMANDS ***"));
               Serial.println(F("10;DIAG=x; (if x = 1 set diagNose for serial debug)"));
-              Serial.println(F("10;POLL=x; (poll inverter nr x (9=all))"));                            
+              Serial.println(F("10;POLL=x; (poll inverter nr x (9=all))")); 
+              Serial.println(F("10;QUERY=x; (query inverter nr x (9=all))"));                           
               Serial.println(F("10;ZBT=; (send zigbee message, e.g. 10;zbt=2101 (ping))"));
               Serial.println(F("10;SENDRAW=; (send raw zbmessage, no FE checksum etc)"));
               Serial.println(F("10;DELETE=<file>; (delete a file)"));              
               Serial.println(F("10;HEALTH; (perform healthcheck zigbee)"));             
-              Serial.println(F("10;INV_REBOOT; (reboot an unresponsive inverter)"));
+              Serial.println(F("10;INV_REBOOT=x; (reboot an unresponsive inverter)"));
               Serial.println(F("10;ZB_reset; (reset the cc2530 via its resetpin)"));
               Serial.println(F("10;EDIT=x-AABB; (edit the id of an inverter)"));
+              Serial.println(F("10;THROTTLE=x-300; (throttle inv x 300)"));
               #ifdef TEST
               Serial.println(F("10;TESTINV; (decode a testanswer for inv 0)"));
               #endif
@@ -111,41 +113,81 @@ void handle_Serial () {
                 } 
                 return; } else {
                    Serial.print(F("\n\npoll inverter ")); Serial.println(String(kz));
-                polling(kz);
-                Serial.println(F("\n\npolling ready"));
-                return; }
+                   polling(kz);
+                   Serial.println(F("\n\npolling ready"));
+                   return; }
           } else
-          
-          
+            if (strncasecmp(InputBuffer_Serial+3,"THROTTLE=",9) == 0) {
+            //input can be 10;EDIT=0-AABB; 
+            char *first = InputBuffer_Serial + 12;
+            char *second = strchr(first, '-'); // find dash
+            int kz;
+            if (second) {
+                *second = '\0'; // terminate first number
+                kz = atoi(first);
+                int watt = atoi(second + 1);
+            Serial.println("inverter = " + String(kz));
+            Serial.println("watt = " + String(watt));
+            Serial.println("inverterCount =" + String(inverterCount));
+            Inv_Prop[kz].maxPower = watt;
+            }  
+              if ( kz > inverterCount-1 ) {
+              Serial.println("error, no such inverter");
+              return;  
+              }
+             actionFlag = 240 + kz; 
+              return;
+          } else 
+          //  Serial.println("checking the buffer ");
+          //  for (int i = 0; i < 15; i++) {
+          //     Serial.print(i);
+          //     Serial.print(": ");
+          //     Serial.print(InputBuffer_Serial[i]);
+          //     Serial.print(" (");
+          //     Serial.print((int)InputBuffer_Serial[i]);
+          //     Serial.println(")");
+          // }
+           if (strncasecmp(InputBuffer_Serial+3,"QUERY=",6) == 0) {
+
+              int kz = atoi(InputBuffer_Serial + 9); // number starts at index 9
+              if ( kz > inverterCount ) {
+              Serial.println(F("\n\nerror, non-existing inverter"));
+              return;  
+              }
+              Serial.print("\n\nquerying inverter " + String(kz));
+              querying(kz);
+              Serial.println(F("\n\nquery ready"));
+              return; 
+          } else
+
           // simulate a polled inverter
           if (strncasecmp(InputBuffer_Serial+3,"FORCE=",6) == 0) {
               Serial.println(F("\n\nforce values in Inv_Data for all ")); 
               for (int z=0; z<inverterCount; z++) {
+                   String id = "0AB" + String(z);
                    polled[z] = true; 
-                   sprintf(Inv_Prop[z].invID, "%s", "A1B2");
+                   sprintf(Inv_Prop[z].invID, "%s", id);
                       
-                   Inv_Data[z].acv = 220.1;
-                   Inv_Data[z].heath = 16.2;
-                   Inv_Data[z].sigQ = 79;
+                   Inv_Data[z].acv = 220.1 + z*1.1 ;
+                   Inv_Data[z].heath = 16.2 + z*2;
+                   Inv_Data[z].sigQ = 79+z;
                    Inv_Data[z].freq = 50.1;
                      // now for all panels
-                   Inv_Data[z].dcc[0] = 1.23;
+                   Inv_Data[z].dcc[0] = 1.23+z*1.1;
                    Inv_Data[z].dcv[0] = 30.11;
-                   Inv_Data[z].power[0]=300.1;
+                   Inv_Data[z].power[0]=300.1+z*20;
                                  
                    Inv_Data[z].dcc[1] = 1.24;
                    Inv_Data[z].dcv[1] = 31.22;
-                   Inv_Data[z].power[1] = 310.2;
+                   Inv_Data[z].power[1] = 310.2 + z*23;
       
                    Inv_Data[z].dcc[2] = 1.25;
                    Inv_Data[z].dcv[2] = 32.23;
-                   Inv_Data[z].power[2] = 330.3;
+                   Inv_Data[z].power[2] = 330.3+z*26;
       
                    Inv_Data[z].dcc[3] = 1.26;
-                   Inv_Data[z].dcv[3] = 33.44;
-                   Inv_Data[z].power[3] = 340.3;            
-                   
-                   Inv_Data[z].en_total=1300.1;
+                   Inv_Data[z].dcv[3] = 33.44+z*2;
+                   Inv_Data[z].power[3] = 340.3+z*30;            
              }
              eventSend(2); // inform the webpage
              return;

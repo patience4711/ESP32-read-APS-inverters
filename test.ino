@@ -17,7 +17,7 @@ void testMessage(bool console)
        sendZB(sendCmd);
        // find the answer
        
-      decodeGeneralAnswer();
+      decodeGeneralAnswer(false);
       delayMicroseconds(250);
        
        // cleanup
@@ -42,7 +42,7 @@ void rawMessage(bool console) {
        sendRaw(sendCmd); // this adds the
        // find the answer
        
-      decodeGeneralAnswer();
+      decodeGeneralAnswer(false);
       
       delayMicroseconds(250);
        
@@ -84,9 +84,9 @@ void sendRaw( char printString[] )
 
 
 // ******************************************************************
-//                    decode zigbee answer
+//                    decode general zigbee answer
 // ******************************************************************
-int decodeGeneralAnswer()
+int decodeGeneralAnswer(bool throttle)
 {
     char messageToDecode[CC2530_MAX_SERIAL_BUFFER_SIZE] = {0};
   
@@ -120,7 +120,7 @@ int decodeGeneralAnswer()
       consoleOut("no route receipt");
       //return 12; // this command seems facultative
     } else 
-    if (strstr(messageToDecode, "4481") == NULL)
+    if (strstr(messageToDecode, "4481") == NULL && strstr(messageToDecode, "4480") == NULL)
     {
       consoleOut("no  AF_INCOMING_MSG"); // this is the real answer
       fault=13;
@@ -131,11 +131,12 @@ int decodeGeneralAnswer()
       return fault;
     }
    
-    consoleOut("received response " + String(messageToDecode) );
+    //consoleOut("received response " + String(messageToDecode) );
          
-    // so now we have a message containing    
+    // if we are here we have a message containing 44810000    
     // shorten the message by removing everything before 4481
-
+    if(throttle) return 0;
+   
     tail = split(messageToDecode, "44810000"); // remove the 0000 as well
     //tail = after removing the 1st part
     // in tail at offset 14, 2 bytes with signalQuality reside   
@@ -143,6 +144,8 @@ int decodeGeneralAnswer()
   
     return 0;
 } 
+
+
 
 #ifdef TEST
 void testDecode() {
@@ -159,7 +162,6 @@ void testDecode() {
      case 1: // test qs1 johan
        strncpy(inMessage, "FE0164010064FE034480001401D2FE72448100000601C0051414005E00905D5B00005E801000085070FBFB51B103EB0F419300CAF069D9F068C7C068C1206804B868E0000006A80001BB38134D01CCE90E0A01FD1E052201D967D0641F0003055400000000000000000000000000000000000000000000000000002B2A0000FEFEC0050E55",300);
        break;
-     case 2: // ds3
        if(testCounter == 0) {
     // from npeters tracefile at 9:53 and 9:57
        strncpy(inMessage, "FE0164010064FE034480001401D2FE0345C4226C00CCFE0345C4226C00CCFE0345C43A1000A8FE724481000006013A101414007100B57CFA00005E703000021300fbfb5cbbbb2000fc0001ffff000000000000000006e506ee00E200EA036e13882D5F01480026ffff052508430049F8C40048C77C00ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3896fefe",300);   

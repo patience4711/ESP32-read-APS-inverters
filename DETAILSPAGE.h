@@ -7,7 +7,8 @@ const char DETAILSPAGE [] PROGMEM = R"=====(
 <style>
 .l_s table, .l_s th, .l_s td {border: 1px solid blue; font-size:14px; text-align:center} 
 .l_s tr {height:30px;} 
-.l_s .pol {display:none;}  
+.l_s .pol {display:none;} 
+input {text-align: center;} 
 @media only screen and (max-width: 800px) {.l_s .l_s th, .l_s td { width:60px; font-size:12px; }} </style>
 <script type="text/javascript">
 function showSubmit() {
@@ -50,7 +51,7 @@ e.onreadystatechange=function(){
 <tr><td> ac voltage<td id="acv">n/a</td></tr>
 <tr><td> temperature<td id="tmp">n/a</td></tr> 
 <tr><td> frequency<td id="fr">n/a</td></tr>
-<tr><td> throttle<td><form id='formulier' method='get' action='submitform'><input id='pMax' name='pMax' value="" type='number' min='0' max='500' step='100' class="inp3" oninput='showSubmit()'></input><input type='hidden' id='INV' name='INV' value=""></input></tr></form>
+<tr><td> throttle<td><form id='formulier' method='get' action='submitform'><input id='pMax' name='pMax' value="" type='number' min='0' max='500' step='20' class="inp3" oninput='showSubmit()'></input><input type='hidden' id='INV' name='INV' value=""></input></tr></form>
 </table>
 
 <h4>INVERTER OUTPUT</h4><div id="dcvc" style="display:none;"><table>

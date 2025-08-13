@@ -104,6 +104,7 @@ void basisConfigsave() {
     json["inverterCount"] = inverterCount;
     json["Polling"] = Polling;
     json["pollOffset"] = pollOffset;
+        
     File configFile = SPIFFS.open("/basisconfig.json", "w");
     if (!configFile) {
       //DebugPrintln("open file for writing failed");
@@ -186,7 +187,6 @@ bool file_open_for_read(const char* bestand)
                     strcpy (userPwd, doc["userPwd"] | "1111" );
                     pollOffset = doc["pollOffset"].as<int>() | 0;
                     Polling = doc["Polling"].as<bool>() | false;
-                  
               }            
 
             if ( strcmp(bestand, "/mqttconfig.json") == 0) {
@@ -213,6 +213,8 @@ void printStruct( String bestand ) {
       Serial.println("Inv_Prop[" + String(ivn) + "].invType = " + String(Inv_Prop[ivn].invType));
       Serial.println("Inv_Prop[" + String(ivn) + "].invIdx = " + String(Inv_Prop[ivn].invIdx));
       Serial.println("Inv_Prop[" + String(ivn) + "].conPanels = " + String(Inv_Prop[ivn].conPanels[0])  + String(Inv_Prop[ivn].conPanels[1]) + String(Inv_Prop[ivn].conPanels[2]) + String(Inv_Prop[ivn].conPanels[3]));      
+      Serial.println("Inv_Prop[" + String(ivn) + "].throttled = " + String(Inv_Prop[ivn].throttled));
+      Serial.println("Inv_Prop[" + String(ivn) + "].maxPower = " + String(Inv_Prop[ivn].maxPower));
       Serial.println("");
       Serial.println("****************************************");
       
