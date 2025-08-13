@@ -15,7 +15,7 @@ The system is intended for reading APS Systems inverters. The program can pair a
 Please see the <a href='https://github.com/patience4711/ESP32-read-APS-inverters/wiki'>WIKI</a> for information on building it, the working, etc. 
 
 ## downloads
-Aug 7 2025 : There is a new version [esp32-ecu_v1_2](https://github.com/patience4711/ESP32-read-APS-inverters/blob/main/ESP32_ECU_v1_2.bin)
+Aug 13 2025 : There is a new version [esp32-ecu_v1_3](https://github.com/patience4711/ESP32-read-APS-inverters/blob/main/ESP32_ECU_v1_3.bin)
 Please see changelog.
 
 <br><br>
@@ -36,7 +36,7 @@ The frontpage:<br>
 - Smart timekeeping
 - A lot of system info on the webpage
 - Easy firmware update "Over The Air"
-- We can set a max output for an inverter (throttling)
+- We can set a max output for inverters (throttling)
 
 ## the hardware
 It is nothing more than an esp32 device and a prepared cc2530, cc2531 zigbee module. And a powersupply.
@@ -55,8 +55,14 @@ the new data.
 
 
 ## changelog ##
+version ESP32-ECU_V1_3:
+* improved inverter throttling (works for YC600 and DS3)
+* added an inverter query command via console
+* added a mosquitto intopic based on chipId
+* Throttling is possible via http request or mosquitto
+  
 version ESP32-ECU_V1_2:
-* added options to throttle ineverter (tested on YC600 and DS3)
+* added options to throttle inverter (tested on YC600 and DS3)
 
 version ESP32-ECU_V1_1:
 * adapted to a modern ArduinoIDE(2.3.4) and board definitions(2.0.18 arduino5)
