@@ -22,7 +22,7 @@ if(Inv_Prop[which].invType == 2)  // DS3
       uint8_t vv = (s - 0x29) & 0xFF;
       Serial.println("for maxpower = " + String(Inv_Prop[which].maxPower) + " * 16.59, the values are ");
       Serial.printf("MSB: %02X, LSB: %02X, VV: %02X\n", msb, lsb, vv);
-      snprintf(powCommand, sizeof(powCommand), "2401%s1414060001000F13%sFBFB06AA270000%02X%02X01%02XFEFE", Inv_Prop[0].invID, ecu_id_reverse, msb, lsb, vv);
+      snprintf(powCommand, sizeof(powCommand), "2401%s1414060001000F13%sFBFB06AA270000%02X%02X01%02XFEFE", Inv_Prop[which].invID, ecu_id_reverse, msb, lsb, vv);
       consoleOut("The raw powCommand for DS3 = " + String(powCommand));
       // now we send the command immediately and discard the response
       if(zigbeeUp == 1) sendZB(powCommand);
@@ -32,7 +32,7 @@ if(Inv_Prop[which].invType == 2)  // DS3
       }
        //now we send a nonsense command this should look like
       //24013A101414060000050F1380971B01B3D6FBFB06DE00000000000000FEFE
-      snprintf(powCommand, sizeof(powCommand), "2401%s1414060001000F13%sFBFB06DE00000000000000FEFE", Inv_Prop[0].invID, ecu_id_reverse);
+      snprintf(powCommand, sizeof(powCommand), "2401%s1414060001000F13%sFBFB06DE00000000000000FEFE", Inv_Prop[which].invID, ecu_id_reverse);
       if(zigbeeUp == 1) sendZB(powCommand);
       //we discard this inMessage also
       if( waitSerial2Available() ) {
@@ -54,7 +54,7 @@ if(Inv_Prop[which].invType == 2)  // DS3
       Serial.println("hexStr = " + String(hexStr));
      //construct command
      powCommand[0]='\0'; // make sure its empty
-     snprintf(powCommand, sizeof(powCommand), "2401%s1414060001000F13%sFBFB061C8C02%s00", Inv_Prop[0].invID, ecu_id_reverse, hexStr);
+     snprintf(powCommand, sizeof(powCommand), "2401%s1414060001000F13%sFBFB061C8C02%s00", Inv_Prop[which].invID, ecu_id_reverse, hexStr);
          
      // now we calculate the checksum( the last 2 bytes)
      int getal=0;
@@ -86,14 +86,13 @@ if(Inv_Prop[which].invType == 2)  // DS3
     }
     //now we send a nonsense command this should look like
     //24013A101414060000050F1380971B01B3D6FBFB06DE00000000000000FEFE
-    snprintf(powCommand, sizeof(powCommand), "2401%s1414060001000F13%sFBFB06DE00000000000000FEFE", Inv_Prop[0].invID, ecu_id_reverse);
+    snprintf(powCommand, sizeof(powCommand), "2401%s1414060001000F13%sFBFB06DE00000000000000FEFE", Inv_Prop[which].invID, ecu_id_reverse);
     if(zigbeeUp == 1) sendZB(powCommand);
     //we discard this inMessage also
     if( waitSerial2Available() ) {
           empty_serial2(); // clear the incoming data
     }
     // now we should send the inverterquery to find out whether the command succeeded or not.
-    snprintf(powCommand, sizeof(powCommand), "2401%s1414060001000F13%sFBFB06DE000000000000E4FEFE", Inv_Prop[which].invID, ecu_id_reverse); 
   }    
   
   // now we can send the

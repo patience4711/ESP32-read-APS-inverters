@@ -18,10 +18,11 @@ bool mqttConnect() {   //
       {
          //connected, so subscribe to inTopic (not for thingspeak)
         if(Mqtt_Format != 5 ) {
-        if(  MQTT_Client.subscribe ( "ESP32-ECU/in" ) ) {
+        String clientid = getChipId(false) + "/in"; 
+        if(  MQTT_Client.subscribe ( clientid.c_str() ) ) {
         //if(  MQTT_Client.subscribe ( Mqtt_inTopic ) ) { 
                //if(diagNose) ws.textAll("subscribed to " + String(Mqtt_inTopic ));
-               consoleOut("subscribed to ESP32-ECU/in");
+               consoleOut("subscribed to " + clientid);
            }
         }
          consoleOut(F("mqtt connected"));
@@ -66,12 +67,30 @@ void MQTT_Receive_Callback(char *topic, byte *payload, unsigned int length)
        consoleOut("mqtt no valid json ");
         return;
     } 
-    
+    consoleOut("Deserialized JSON:");
+    serializeJson(doc, Serial);     // Print in one line
+    Serial.println();
     // We check the kind of command format received with MQTT
-    //now we have a payload like {"poll",1}    
-
-    if( doc["poll"] != 0 )
+      // if( doc["throttle"] != 0 )
+    //if(doc.containsKey("throttle"))
+    if (!doc["throttle"].isNull())
     {
+       int invert = doc["throttle"].as<int>(); 
+       int throtVal = doc["val"].as<int>(); 
+       String term = "mqtt got message {\"throttle\":" + String(invert) + ",\"val\":" + String(throtVal) + "}";
+       consoleOut(term);
+      if(invert > inverterCount || invert < 0 || throtVal > 700 || throtVal < 20 )
+         {
+         consoleOut("invalid value(s), skipping");
+         return; 
+         }
+      Inv_Prop[invert].maxPower = throtVal;
+      actionFlag = 240 + invert;  
+    }  
+
+    if (!doc["poll"].isNull())
+    {
+      //now we have a payload like {"poll",1} 
         int inv = doc["poll"].as<int>(); 
         consoleOut( "got message {\"poll\":" + String(inv) + "}" );
 
@@ -99,5 +118,6 @@ void MQTT_Receive_Callback(char *topic, byte *payload, unsigned int length)
         {
           consoleOut("polling = automatic, skipping");
         }
+        consoleOut("nothing familiair found in mqtt");
     }
 }

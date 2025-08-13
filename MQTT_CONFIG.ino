@@ -18,9 +18,9 @@ const char MQTTCONFIG[] PROGMEM = R"=====(
     </select>
   <tr><td >address<td><input class='inp6' name='mqtAdres' value='{mqttAdres}' size='31' placeholder='broker adres'></tr>
   <tr><td >port<td><input class='inp2' name='mqtPort' value='{mqttPort}' size='31' placeholder='mqtt port'></tr>
-  
-  <tr><td>topic:&nbsp<td><input class='inp6' name='mqtoutTopic' value='{mqttoutTopic}' placeholder='mqtt topic receive' length='60'></tr>
   <tr><td>state idx:&nbsp<td><input class='inp2' name='mqidx' value='{idx}' size='4' length='4'></tr>
+  <tr><td>outtopic:&nbsp<td><input class='inp6' name='mqtoutTopic' value='{mqttoutTopic}' placeholder='mqtt topic transmit' length='60'></tr>
+  <tr><td>intopic:&nbsp<td><input class='inp6' name='mqtinTopic' value='{mqttinTopic}' placeholder='mqtt topic receive' length='60'></tr>
   <tr><td>username:&nbsp<td><input class='inp6' name='mqtUser' value='{mqtu}'></td></tr>
   <tr><td>password:&nbsp<td><input class='inp6' name='mqtPas' value='{mqtp}'></td></tr>
   <tr><td>client id:&nbsp<td><input class='inp6' name='mqtCi' value='{mqtc}' readonly></td></tr>
@@ -42,11 +42,12 @@ webPage = FPSTR(HTML_HEAD);
 webPage += FPSTR(MQTTCONFIG);  
 
   //altijd de mqtt gegevens terugzetten
- 
+ String Mqtt_inTopic=getChipId(false) + "/in";
 webPage.replace("{mqttAdres}",    String(Mqtt_Broker)   );
 webPage.replace("{mqttPort}",     String(Mqtt_Port)     );
 //webPage.replace("{mqttinTopic}",  String(Mqtt_inTopic)  );
 webPage.replace("{mqttoutTopic}", String(Mqtt_outTopic) );
+webPage.replace("{mqttinTopic}", String(Mqtt_inTopic) );
 webPage.replace("{mqtu}",         String(Mqtt_Username) );
 webPage.replace("{mqtp}",         String(Mqtt_Password) );
 webPage.replace("{idx}"          , String(Mqtt_stateIDX) ); 

@@ -30,24 +30,33 @@ if ( intern ) {    //DebugPrintln("the request comes from inside the network");
 //  request->send(200, "text/html", toSend);
 //  }
 
-  //say we ha a request <ip of ecu>/TROTTLE?inv=1&val=500
+  //say we have a request <ip of ecu>/TROTTLE?inv=1&val=500
+  //say we have a request ip_of_ecu/TROTTLE0=300
   if ( serverUrl.indexOf("THROTTLE") > -1) 
   {
 
-    int Inv = request->arg("inv").toInt() | 10;
-    int throtVal = request->arg("val").toInt() | 800;
-    Inv_Prop[Inv].maxPower = throtVal;
-    if(Inv > 8 || Inv < 0 || throtVal > 500 || throtVal < 0 ){
+    int Invert = request->arg("inv").toInt();
+    int throtVal = request->arg("val").toInt();
+
+    if (Invert > inverterCount) Invert = 10;
+    if (throtVal == 0) throtVal = 800;
+  
+    Serial.println("inv = " + String(Invert));
+    Serial.println("val = " + String(throtVal));
+    Inv_Prop[Invert].maxPower = throtVal;
+    if(Invert > inverterCount || Invert < 0 || throtVal > 700 || throtVal < 20 )
+    {
       request->send ( 200, "text/plain", "invalid value(s)" );
-      return;
+      return; 
     }
-    actionFlag = 240+Inv;
-    String term = "attempt throttling inverter " + String(Inv) + " to " + String(throtVal);
+    actionFlag = 240+Invert;
+    String term = "attempt throttling inverter " + String(Invert) + " to " + String(throtVal);
     request->send ( 200, "text/plain", term );
     return;
   }
   
-  if ( serverUrl.indexOf("POLL=") > -1) {
+  if ( serverUrl.indexOf("POLL=") > -1) 
+  {
       if(Polling)
       {
          request->send ( 200, "text/plain", "polling is automatic, skipping" ); //zend bevestiging
