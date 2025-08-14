@@ -39,7 +39,7 @@ if(Inv_Prop[which].invType == 2)  // DS3
           empty_serial2(); // clear the incoming data
     }
     // now we should send the inverterquery to find out whether the command succeeded or not.
-    snprintf(powCommand, sizeof(powCommand), "2401%s1414060001000F13%sFBFB06DE000000000000E4FEFE", Inv_Prop[which].invID, ecu_id_reverse); 
+    //snprintf(powCommand, sizeof(powCommand), "2401%s1414060001000F13%sFBFB06DE000000000000E4FEFE", Inv_Prop[which].invID, ecu_id_reverse); 
   
   }  else
   {
@@ -93,9 +93,11 @@ if(Inv_Prop[which].invType == 2)  // DS3
           empty_serial2(); // clear the incoming data
     }
     // now we should send the inverterquery to find out whether the command succeeded or not.
+  //snprintf(powCommand, sizeof(powCommand), "2401%s1414060001000F13%sFBFB06DE000000000000E4FEFE", Inv_Prop[which].invID, ecu_id_reverse); 
   }    
   
-  // now we can send the
+  // now we can send the query which is the same for both inverters
+  snprintf(powCommand, sizeof(powCommand), "2401%s1414060001000F13%sFBFB06DE000000000000E4FEFE", Inv_Prop[which].invID, ecu_id_reverse);
   // consoleOut("\nzigbeeUp value = " + String(zigbeeUp));
   if(zigbeeUp != 1) {
       Serial.println("no zigbee coordinator, fail"); 
