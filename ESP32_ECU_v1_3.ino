@@ -282,6 +282,7 @@ void setup() {
   // ****************** mqtt init *********************
   MQTT_Client.setKeepAlive(150);
   MQTT_Client.setServer(Mqtt_Broker, atoi(Mqtt_Port));
+  MQTT_Client.setBufferSize(300); //to avoid freeze ups
   MQTT_Client.setCallback ( MQTT_Receive_Callback ) ;
 
   if ( Mqtt_Format != 0 ) 
