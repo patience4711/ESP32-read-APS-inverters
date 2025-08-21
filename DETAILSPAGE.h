@@ -22,9 +22,9 @@ document.getElementById('formulier').submit();
 //function loadScript(){loadData(),setInterval((function(){loadData()}),9e4)}
 function loadScript() {
  loadData();
- setInterval(function ld() {
-   loadData();
- },90000);
+ //setInterval(function ld() {
+ //  loadData();
+ //},90000);
 } 
 
 
