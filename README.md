@@ -59,7 +59,7 @@ version ESP32-ECU_V1_3:
 * improved inverter throttling (works for YC600 and DS3)
 * added an inverter query command via console
 * added a mosquitto intopic based on chipId
-* Throttling is possible via http request or mosquitto
+* Throttling is possible via ui, http request or mosquitto
   
 version ESP32-ECU_V1_2:
 * added options to throttle inverter (tested on YC600 and DS3)
