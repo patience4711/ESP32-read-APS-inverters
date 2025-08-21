@@ -94,7 +94,8 @@ int readInverterfiles() {
     if (actionFlag == 10) { // the button was pressed a long time, start ap
      delay(2000); // give the server the time to send the confirm
      consoleOut("rebooting");
-     write_eeprom();
+     String key = "req";
+     preferences.putString(key.c_str(), requestUrl);
      ESP.restart();
   }
     
@@ -132,26 +133,30 @@ int readInverterfiles() {
     //Serial.println("test_actionFlag 7 val = " + String(actionFlag));
     if (actionFlag > 239 && actionFlag < 249) {
       int whichInv = actionFlag - 240; // with 248 this would be 8  0 1 2 3 4 5 6 7 8 is in range
-      consoleOut("inside actionFlag: whichInv is " + String(whichInv));
+      consoleOut("inside actionFlag: inverter is " + String(whichInv));
       actionFlag = 0; //reset the actionflag
-
-      if(setMaxPower(whichInv) == true) {
-         Inv_Prop[whichInv].throttled = true;
+      int errorCode = setMaxPower(whichInv);
+      if(errorCode == 0) {
+         //Inv_Prop[whichInv].throttled = true;
           String term= "throttle inv " + String(whichInv) + " success";
           Update_Log(2, term.c_str());
       } else {
-        // the setPower command failed, so we set out value to 800
-        Inv_Prop[whichInv].maxPower = -1;
-        Inv_Prop[whichInv].throttled = false;
+        // the setPower command failed, if not 15 we set -1
+        if(errorCode != 15) 
+           { 
+             String key = "maxPwr" + String(whichInv);
+             preferences.putInt(key.c_str(), -1 );
+           }//Inv_Prop[whichInv].throttled = false;
         String term= "throttle inv " + String(whichInv) + " failed";
         consoleOut("throttle failed inv " + String(whichInv));
         Update_Log(2, term.c_str());
       }
-    
-    String bestand = "/Inv_Prop" + String(whichInv) + ".str"; // /Inv_Prop0.str
-    consoleOut("going to write " + bestand );
-    writeStruct(bestand, whichInv); // alles opslaan in SPIFFS
+    eventSend(0);
+    //String bestand = "/Inv_Prop" + String(whichInv) + ".str"; // /Inv_Prop0.str
+    //consoleOut("going to write " + bestand );
+    //writeStruct(bestand, whichInv); // alles opslaan in SPIFFS
     }
+
     if (actionFlag == 43) { //triggered by the console
         actionFlag = 0; //reset the actionflag
         inverterReboot(iKeuze);
@@ -193,7 +198,7 @@ int readInverterfiles() {
     if (actionFlag == 48) { //triggered by the webpage zbtest and mqtt
         actionFlag = 0; //reset the actionflag
             ledblink(1,100);
-             poll_all(); 
+            poll_all(); 
     }
 
     if (actionFlag == 49) { //triggered by console testmqtt
