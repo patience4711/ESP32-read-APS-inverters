@@ -15,6 +15,7 @@ The system is intended for reading APS Systems inverters. The program can pair a
 Please see the <a href='https://github.com/patience4711/ESP32-read-APS-inverters/wiki'>WIKI</a> for information on building it, the working, etc. 
 
 ## downloads
+Sept 3 2025  : There is a new version [esp32-ecu_V1-4](https://github.com/patience4711/ESP32-read-APS-inverters/blob/main/ESP32_ECU_v1_4.ino.bin)<br>
 Aug 14 2025 : There is a new version [esp32-ecu_v1_3_expb](https://github.com/patience4711/ESP32-read-APS-inverters/blob/main/ESP32_ECU_v1_3_expb.bin)
 Please see changelog.
 
@@ -55,7 +56,7 @@ the new data.
 
 
 ## changelog ##
-version ESP32-ECU_V1_3_expb:
+version ESP32-ECU_V1_4 :
 * improved inverter throttling (works for YC600 and DS3)
 * added an inverter query command via console
 * added a mosquitto intopic based on chipId
