@@ -16,6 +16,7 @@ Please see the <a href='https://github.com/patience4711/ESP32-read-APS-inverters
 
 ## downloads
 Sept 5 2025  : There is a new version [esp32-ecu_V1-4a](https://github.com/patience4711/ESP32-read-APS-inverters/blob/main/ESP32_ECU_v1_4a.bin)<br>
+Please pay attention: Due to a new value (calibration) you should check all settings, some may get corrupted because the differetn spiffs usage.
 Aug 14 2025 : There is a new version [esp32-ecu_v1_3_expb](https://github.com/patience4711/ESP32-read-APS-inverters/blob/main/ESP32_ECU_v1_3_expb.bin)
 Please see changelog.
 
