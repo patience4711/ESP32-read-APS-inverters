@@ -15,8 +15,8 @@ The system is intended for reading APS Systems inverters. The program can pair a
 Please see the <a href='https://github.com/patience4711/ESP32-read-APS-inverters/wiki'>WIKI</a> for information on building it, the working, etc. 
 
 ## downloads
-Sept 5 2025  : There is a new version [esp32-ecu_V1-4a](https://github.com/patience4711/ESP32-read-APS-inverters/blob/main/ESP32_ECU_v1_4a.bin)<br>
-Please pay attention: Due to a new value (calibration) you should check all settings, some may get corrupted because the different spiffs usage.
+Sept 10 2025  : There is a new version [esp32-ecu_V1-4b](https://github.com/patience4711/ESP32-read-APS-inverters/blob/main/ESP32_ECU_v1_4b.bin)<br>
+Please pay attention: Due to a new value (calibration) you should check all settings, especially the inverter settings, calibration. Some values may get corrupted because the different spiffs usage.
 Aug 14 2025 : There is a new version [esp32-ecu_v1_3_expb](https://github.com/patience4711/ESP32-read-APS-inverters/blob/main/ESP32_ECU_v1_3_expb.bin)
 Please see changelog.
 
@@ -62,6 +62,7 @@ version ESP32-ECU_V1_4 :
 * added an inverter query command via console
 * added a mosquitto intopic based on chipId
 * Throttling is possible via ui, http request or mosquitto
+* API's can have a debug argument to show debug info.
   
 version ESP32-ECU_V1_2:
 * added options to throttle inverter (tested on YC600 and DS3)
