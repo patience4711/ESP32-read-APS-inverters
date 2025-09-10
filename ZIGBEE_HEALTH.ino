@@ -86,7 +86,7 @@ int checkCoordinator() {
     
     //Device State 09 started as zigbeecoordinator     
     
-    if (diagNose !=0) consoleOut("checkZigbeeRadio");
+    consoleOut("checkZigbeeRadio");
     //if(log) Update_Log("zigbee", "checking zb module");
     //check the radio, send FE00670067
     // when ok the returned string = FE0E670000FFFF + ECU_ID REVERSE + 00000709001
@@ -122,7 +122,7 @@ int checkCoordinator() {
           // the tail should contain 0709
           if( strstr(tail, "0709") ) 
             {
-              if( diagNose != 0 ) consoleOut("found 0709, running oke");
+              consoleOut("found 0709, running oke");
               zigbeeUp = 1;
               return 0;            
             } 

@@ -1,7 +1,13 @@
 const char MQTTCONFIG[] PROGMEM = R"=====(
 <body>
+<script>
+function helpFunction() {
+  alert(' if you changed broker or topic you can test via \n\r http//ip of ecu/TESTMQTT?debug')
+}
+</script>
 <div id='msect'>
 <div id='menu'>
+    <a href='#' onclick='helpFunction()'>&quest;</a>
     <a href="#" class='close' onclick='cl();'>&times;</a>
     <a href="#" id="sub" style='background:green; display: none' onclick='submitFunction()'>save</a><br>
 </div>
@@ -19,8 +25,8 @@ const char MQTTCONFIG[] PROGMEM = R"=====(
   <tr><td >address<td><input class='inp6' name='mqtAdres' value='{mqttAdres}' size='31' placeholder='broker adres'></tr>
   <tr><td >port<td><input class='inp2' name='mqtPort' value='{mqttPort}' size='31' placeholder='mqtt port'></tr>
   <tr><td>state idx:&nbsp<td><input class='inp2' name='mqidx' value='{idx}' size='4' length='4'></tr>
-  <tr><td>outtopic:&nbsp<td><input class='inp6' name='mqtoutTopic' value='{mqttoutTopic}' placeholder='mqtt topic transmit' length='60'></tr>
-  <tr><td>intopic:&nbsp<td><input class='inp6' name='mqtinTopic' value='{mqttinTopic}' placeholder='mqtt topic receive' length='60'></tr>
+  <tr><td>outtopic:&nbsp<td><input class='inp6' name='mqtoutTopic' value='{mqttoutTopic}' placeholder='transmit topic' length='60'></tr>
+  <tr><td>intopic:&nbsp<td><input class='inp6' name='mqtinTopic' value='{mqttinTopic}' readonly placeholder='receive topic' length='60'></tr>
   <tr><td>username:&nbsp<td><input class='inp6' name='mqtUser' value='{mqtu}'></td></tr>
   <tr><td>password:&nbsp<td><input class='inp6' name='mqtPas' value='{mqtp}'></td></tr>
   <tr><td>client id:&nbsp<td><input class='inp6' name='mqtCi' value='{mqtc}' readonly></td></tr>

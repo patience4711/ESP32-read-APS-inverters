@@ -5,6 +5,7 @@ bool mqttConnect() {   //
     return true;
     }
     // we are here because w'r not connected. Signal with the LED
+    consoleOut("mqtt connecting");
     ledblink(2,70);
 
     if (Mqtt_Port[0] == '\0' ) strcpy(Mqtt_Port, "1883");   // just in case ....
@@ -75,17 +76,19 @@ void MQTT_Receive_Callback(char *topic, byte *payload, unsigned int length)
     //if(doc.containsKey("throttle"))
     if (!doc["throttle"].isNull())
     {
-       int invert = doc["throttle"].as<int>(); 
+       int Invert = doc["throttle"].as<int>(); 
        int throtVal = doc["val"].as<int>(); 
-       String term = "mqtt got message {\"throttle\":" + String(invert) + ",\"val\":" + String(throtVal) + "}";
+       String term = "mqtt got message {\"throttle\":" + String(Invert) + ",\"val\":" + String(throtVal) + "}";
        consoleOut(term);
-      if(invert > inverterCount || invert < 0 || throtVal > 700 || throtVal < 20 )
+      if(Invert > inverterCount || Invert < 0 || throtVal > 700 || throtVal < 20 )
          {
          consoleOut("invalid value(s), skipping");
          return; 
          }
-      Inv_Prop[invert].maxPower = throtVal;
-      actionFlag = 240 + invert;  
+      // write the desired throtval 
+      desiredThrottle[Invert] = throtVal;
+      //Inv_Prop[invert].maxPower = throtVal;
+      actionFlag = 240 + Invert;  
     }  
 
     if (!doc["poll"].isNull())
@@ -94,7 +97,7 @@ void MQTT_Receive_Callback(char *topic, byte *payload, unsigned int length)
         int inv = doc["poll"].as<int>(); 
         consoleOut( "got message {\"poll\":" + String(inv) + "}" );
 
-        if(!Polling)
+        if( !Polling && dayTime )
         {
              
             //ws.textAll( "found {\"poll\" " + String(inv) + "}\"" );
@@ -107,7 +110,7 @@ void MQTT_Receive_Callback(char *topic, byte *payload, unsigned int length)
 
             if ( iKeuze < inverterCount ) 
             { 
-              actionFlag = 47; // takes care for the polling
+              actionFlag = 220+inv; // takes care for the polling
               return;
             } else {
                consoleOut("mqtt error no inv " + String(iKeuze));
@@ -116,7 +119,7 @@ void MQTT_Receive_Callback(char *topic, byte *payload, unsigned int length)
         }
         else
         {
-          consoleOut("polling = automatic, skipping");
+          consoleOut("autopolling set or nightTime, skipping");
         }
         consoleOut("nothing familiair found in mqtt");
     }

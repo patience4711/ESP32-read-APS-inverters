@@ -38,21 +38,15 @@ document.getElementById("hulp").style.display = "none";
 <body>
   <div id='hulp'>
   <span class='close' onclick='sl();'>&times;</span><h3>CONSOLE COMMANDS</h3>
-  <b>10;ZBT=message: </b> send a zigbee message (e.g. 2710).<br><br>
-  <b>10;SENDRAW=message: </b> send a raw zigbee message (no checksum etc).<br><br>
-  <b>10;QUERY=x: </b> query inverter data.<br><br>
   <b>10;DELETE=filename: </b> delete a file.<br><br>
   <b>10;INV_REBOOT=x: </b> reboot an unresponsive inverter<br><br>
   <b>10;HEALTH: </b> healthcheck zigbee hw/system<br><br>
-  <b>10;POLL=x: </b> poll inverter #x<br><br>
   <b>10;INIT_N: </b> start the zigbee coordinator<br><br>
   <b>10;DIAG: </b> change debug, 0=disable, 1=console, 2=serial<br><br>
   <b>10;EDIT=0-AABB: </b> mark an inverter as paired<br><br>
   <b>10;ERASE: </b> delete all inverter files<br><br>
-  <b>10;FILES: </b> show filesystem<br><br>
-  <b>10;TESTMQTT: </b>sends a mqtt testmessage<br><br>  
   <b>10;CLEAR: </b> clear console window<br><br> 
-  <b>10;THROTTLE=x-500; </b> throttle inverter x 500
+
   </div>
 
 <div id='msect'>
@@ -164,56 +158,56 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
               return;
           } else         
 
-          if (strncasecmp(txBuffer+3,"POLL=",5) == 0) {
-            //input can be 10;POLL=0; 
-            //ws.textAll("received " + String( (char*)data) + "<br>"); 
-              int kz = String(txBuffer[8]).toInt();
-              if ( kz > inverterCount-1 ) {
-              ws.textAll("error, no such inverter");
-              if ( kz == 9 ) actionFlag=48; // poll all
-              return;  
-              }
-              ws.textAll("poll inverter " + String(kz));
-              iKeuze=kz;
-              actionFlag=47;
-              return;
-          } else 
-          if (strncasecmp(txBuffer+3,"QUERY=",6) == 0) {
-            //input can be 10;QUERY=0; 
-            //ws.textAll("received " + String( (char*)data) + "<br>"); 
-              //int kz = String(txBuffer[9]).toInt();
-              int kz = atoi(txBuffer + 9);
-              if ( kz > inverterCount-1 ) {
-              ws.textAll("error, no such inverter");
-              return;  
-              }
-              ws.textAll("console query inverter " + String(kz));
-              iKeuze=kz;
-              actionFlag=57;
-              return;
-          } else
+          // if (strncasecmp(txBuffer+3,"POLL=",5) == 0) {
+          //   //input can be 10;POLL=0; 
+          //   //ws.textAll("received " + String( (char*)data) + "<br>"); 
+          //     int kz = String(txBuffer[8]).toInt();
+          //     if ( kz > inverterCount-1 ) {
+          //     ws.textAll("error, no such inverter");
+          //     if ( kz == 9 ) actionFlag=48; // poll all
+          //     return;  
+          //     }
+          //     ws.textAll("poll inverter " + String(kz));
+          //     //iKeuze=kz;
+          //     actionFlag=160+kz;
+          //     return;
+          // } else 
+          // if (strncasecmp(txBuffer+3,"QUERY=",6) == 0) {
+          //   //input can be 10;QUERY=0; 
+          //   //ws.textAll("received " + String( (char*)data) + "<br>"); 
+          //     //int kz = String(txBuffer[9]).toInt();
+          //     int kz = atoi(txBuffer + 9);
+          //     if ( kz > inverterCount-1 ) {
+          //     ws.textAll("error, no such inverter");
+          //     return;  
+          //     }
+          //     ws.textAll("console query inverter " + String(kz));
+          //     iKeuze=kz;
+          //     actionFlag=57;
+          //     return;
+          // } else
 
-          if (strncasecmp(txBuffer+3,"THROTTLE=",9) == 0) {
-            //input can be 10;EDIT=0-AABB; 
-            char *first = txBuffer + 12;
-            char *second = strchr(first, '-'); // find dash
-            int kz; 
-            if (second) {
-                *second = '\0'; // terminate first number
-                kz = atoi(first);
-                int watt = atoi(second + 1);
-            consoleOut("inverter = " + String(kz));
-            consoleOut("watt = " + String(watt));
-            Inv_Prop[kz].maxPower = watt;
-            }  
-              if ( kz > inverterCount-1 ) {
-              ws.textAll("error, no such inverter");
-              return;  
-              }
-             actionFlag = 240 + kz; 
-              ws.textAll("actionFlag=" + String(actionFlag));
-              return;
-          } else  
+          // if (strncasecmp(txBuffer+3,"THROTTLE=",9) == 0) {
+          //   //input can be 10;EDIT=0-AABB; 
+          //   char *first = txBuffer + 12;
+          //   char *second = strchr(first, '-'); // find dash
+          //   int kz; 
+          //   if (second) {
+          //       *second = '\0'; // terminate first number
+          //       kz = atoi(first);
+          //       int watt = atoi(second + 1);
+          //   consoleOut("inverter = " + String(kz));
+          //   consoleOut("watt = " + String(watt));
+          //   desiredThrottle[kz] = watt;
+          //   }  
+          //     if ( kz > inverterCount-1 ) {
+          //     ws.textAll("error, no such inverter");
+          //     return;  
+          //     }
+          //    actionFlag = 240 + kz; 
+          //     ws.textAll("actionFlag=" + String(actionFlag));
+          //     return;
+          // } else  
           if (strncasecmp(txBuffer+3,"EDIT=",5) == 0) {
             //input can be 10;EDIT=0-AABB; 
             //ws.textAll("received " + String( (char*)data) + "<br>"); 
@@ -239,12 +233,12 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
           } else          
 
    
- // ************  test mosquitto *******************************          
-           if (strncasecmp(txBuffer+3,"TESTMQTT",8) == 0) {  
-              ws.textAll("test mosquitto");
-              actionFlag=49; // perform the healthcheck
-              return;             
-          } else 
+//  // ************  test mosquitto *******************************          
+//            if (strncasecmp(txBuffer+3,"TESTMQTT",8) == 0) {  
+//               ws.textAll("test mosquitto");
+//               actionFlag=49; // perform the healthcheck
+//               return;             
+//           } else 
 
            if (strncasecmp(txBuffer+3,"CLEAR",5) == 0) {  
               ws.textAll("clearWindow");
@@ -256,36 +250,36 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
               ws.textAll("reboot inverter " + String(kz));
               if ( kz > inverterCount-1 ) 
               {
-                 ws.textAll("error, non-excisting inverter");
+                 ws.textAll("error, non-existing inverter");
                  return;  
               }
                  actionFlag = 34;
               return;
           } else
 
-           if (strncasecmp(txBuffer+3,"FILES",5) == 0) {  
-              //we do this in the loop
-              ws.textAll("listing files..\n");
-              actionFlag = 46;
-              return;             
+          //  if (strncasecmp(txBuffer+3,"FILES",5) == 0) {  
+          //     //we do this in the loop
+          //     ws.textAll("listing files..\n");
+          //     actionFlag = 46;
+          //     return;             
           
-          } else 
+          // } else 
  
  
- // ********************** zigbee test new*****************************          
-           if (strncasecmp(txBuffer+3,"ZBT=",4) == 0) {  
-              ws.textAll("going to send a teststring, len=" + String(len));
-              //we do this in the loop
-              actionFlag = 45;
-              return;             
-          } else 
- // ********************** zigbee test raw *****************************          
-           if (strncasecmp(txBuffer+3,"SENDRAW=",8) == 0) {  
-              ws.textAll("send a raw message, len=" + String(len));
-              //we do this in the loop
-              actionFlag = 55;
-              return;             
-          } else 
+//  // ********************** zigbee test new*****************************          
+//            if (strncasecmp(txBuffer+3,"ZBT=",4) == 0) {  
+//               ws.textAll("going to send a teststring, len=" + String(len));
+//               //we do this in the loop
+//               actionFlag = 45;
+//               return;             
+//           } else 
+//  // ********************** zigbee test raw *****************************          
+//            if (strncasecmp(txBuffer+3,"SENDRAW=",8) == 0) {  
+//               ws.textAll("send a raw message, len=" + String(len));
+//               //we do this in the loop
+//               actionFlag = 55;
+//               return;             
+//           } else 
            if (strncasecmp(txBuffer+3,"ERASE",5) == 0) {  
               ws.textAll("going to delete all inverter files");
               String bestand;
@@ -331,6 +325,7 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
 
       if (strncasecmp(txBuffer+3, "DIAG",4) == 0) // normal operation
       {
+       
          switch(diagNose) {
          case 0: 
             diagNose = 1; 
@@ -343,7 +338,7 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
             break; 
          }
          ws.textAll("set diagnose to " + String(diagNose) );
-         write_eeprom();
+         //write_eeprom();
          return;   
 // ****************************************************************
       } else      

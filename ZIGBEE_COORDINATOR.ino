@@ -70,15 +70,14 @@ void coordinator_init() {
     *  Finished. Heap=26712
     *  
     */
-    Serial.println("cordinator init 1");
-    if( diagNose != 0 ) consoleOut("init zb coordinator");
+    //Serial.println("coordinator init 1");
+    consoleOut("init zb coordinator");
     zigbeeUp = 11; //initial it is initializing 11, 0=down 1=up
     yield();    
     char ecu_id_reverse[13]; //= {ECU_REVERSE()};
     ECU_REVERSE().toCharArray(ecu_id_reverse, 13);
     char initCmd[254]={0};
     char s_d[254]={0}; // provide a buffer for the call to readZB
-Serial.println("cordinator init 1");
     // commands for setting up coordinater
     char initBaseCommand[][254] = {
       "2605030103", // ok   this is a ZB_WRITE_CONFIGURATION CMD //changed to 01

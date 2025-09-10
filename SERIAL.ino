@@ -27,16 +27,16 @@ void handle_Serial () {
               scroll(4);
               Serial.println(F("*** AVAILABLE COMMANDS ***"));
               Serial.println(F("10;DIAG=x; (if x = 1 set diagNose for serial debug)"));
-              Serial.println(F("10;POLL=x; (poll inverter nr x (9=all))")); 
-              Serial.println(F("10;QUERY=x; (query inverter nr x (9=all))"));                           
-              Serial.println(F("10;ZBT=; (send zigbee message, e.g. 10;zbt=2101 (ping))"));
-              Serial.println(F("10;SENDRAW=; (send raw zbmessage, no FE checksum etc)"));
+             // Serial.println(F("10;POLL=x; (poll inverter nr x (9=all))")); 
+             // Serial.println(F("10;QUERY=x; (query inverter nr x (9=all))"));                           
+             // Serial.println(F("10;ZBT=; (send zigbee message, e.g. 10;zbt=2101 (ping))"));
+             // Serial.println(F("10;SENDRAW=; (send raw zbmessage, no FE checksum etc)"));
               Serial.println(F("10;DELETE=<file>; (delete a file)"));              
               Serial.println(F("10;HEALTH; (perform healthcheck zigbee)"));             
               Serial.println(F("10;INV_REBOOT=x; (reboot an unresponsive inverter)"));
               Serial.println(F("10;ZB_reset; (reset the cc2530 via its resetpin)"));
               Serial.println(F("10;EDIT=x-AABB; (edit the id of an inverter)"));
-              Serial.println(F("10;THROTTLE=x-300; (throttle inv x 300)"));
+              //Serial.println(F("10;THROTTLE=x-300; (throttle inv x 300)"));
               #ifdef TEST
               Serial.println(F("10;TESTINV; (decode a testanswer for inv 0)"));
               #endif
@@ -53,32 +53,32 @@ void handle_Serial () {
               return;
           } else
               
-// // ********************** zigbee test new*****************************          
-        if (strncasecmp(InputBuffer_Serial+3,"ZBT=",4) == 0) { 
-            char tmp[128]={0}; 
-            int len = strlen(InputBuffer_Serial); 
-              Serial.println("\n\nsend a zigbee command, len=" + String(len));
-            for(int i=0; i<len; i++) 
-            {
-              tmp[i] = InputBuffer_Serial[i+7];
-            }
-            //Serial.print("command = " + String(tmp));
-            testMessage(false);
-            return;             
-        } else 
+// // // ********************** zigbee test new*****************************          
+//         if (strncasecmp(InputBuffer_Serial+3,"ZBT=",4) == 0) { 
+//             char tmp[128]={0}; 
+//             int len = strlen(InputBuffer_Serial); 
+//               Serial.println("\n\nsend a zigbee command, len=" + String(len));
+//             for(int i=0; i<len; i++) 
+//             {
+//               tmp[i] = InputBuffer_Serial[i+7];
+//             }
+//             //Serial.print("command = " + String(tmp));
+//             testMessage(false);
+//             return;             
+//        } else 
           // // ********************** zigbee raw *****************************          
-        if (strncasecmp(InputBuffer_Serial+3,"SENDRAW=",8) == 0) { 
-            char tmp[128]={0}; 
-            int len = strlen(InputBuffer_Serial); 
-              Serial.println("\n\nsend a zigbee command, len=" + String(len));
-            for(int i=0; i<len; i++) 
-            {
-              tmp[i] = InputBuffer_Serial[i+11];
-            }
-            //Serial.print("command = " + String(tmp));
-            rawMessage(false);
-            return; 
-        } else 
+        // if (strncasecmp(InputBuffer_Serial+3,"SENDRAW=",8) == 0) { 
+        //     char tmp[128]={0}; 
+        //     int len = strlen(InputBuffer_Serial); 
+        //       Serial.println("\n\nsend a zigbee command, len=" + String(len));
+        //     for(int i=0; i<len; i++) 
+        //     {
+        //       tmp[i] = InputBuffer_Serial[i+11];
+        //     }
+        //     //Serial.print("command = " + String(tmp));
+        //     rawMessage(false);
+        //     return; 
+        // } else 
           
            if (strncasecmp(InputBuffer_Serial+3,"EDIT=",5) == 0) {
              int kz = String(InputBuffer_Serial[8]).toInt();
@@ -97,47 +97,47 @@ void handle_Serial () {
               return;
           } else          
           
-          if (strncasecmp(InputBuffer_Serial+3,"POLL=",5) == 0) {
-            //input can be 10;POLL=0;  
-              int kz = String(InputBuffer_Serial[8]).toInt();
-              if ( kz > inverterCount ) {
-              Serial.println(F("\n\nerror, non-excisting inverter"));
-              return;  
-              }
-              if(kz==9) {
-                Serial.println(F("\n\npolling all inverters"));
-                ledblink(1,100);
-                for(int i=0; i<inverterCount; i++)
-                {     
-                  if(String(Inv_Prop[i].invID) != "0000") polling(i);
-                } 
-                return; } else {
-                   Serial.print(F("\n\npoll inverter ")); Serial.println(String(kz));
-                   polling(kz);
-                   Serial.println(F("\n\npolling ready"));
-                   return; }
-          } else
-            if (strncasecmp(InputBuffer_Serial+3,"THROTTLE=",9) == 0) {
-            //input can be 10;EDIT=0-AABB; 
-            char *first = InputBuffer_Serial + 12;
-            char *second = strchr(first, '-'); // find dash
-            int kz;
-            if (second) {
-                *second = '\0'; // terminate first number
-                kz = atoi(first);
-                int watt = atoi(second + 1);
-            Serial.println("inverter = " + String(kz));
-            Serial.println("watt = " + String(watt));
-            Serial.println("inverterCount =" + String(inverterCount));
-            Inv_Prop[kz].maxPower = watt;
-            }  
-              if ( kz > inverterCount-1 ) {
-              Serial.println("error, no such inverter");
-              return;  
-              }
-             actionFlag = 240 + kz; 
-              return;
-          } else 
+          // if (strncasecmp(InputBuffer_Serial+3,"POLL=",5) == 0) {
+          //   //input can be 10;POLL=0;  
+          //     int kz = String(InputBuffer_Serial[8]).toInt();
+          //     if ( kz > inverterCount ) {
+          //     Serial.println(F("\n\nerror, non-existing inverter"));
+          //     return;  
+          //     }
+          //     if(kz==9) {
+          //       Serial.println(F("\n\npolling all inverters"));
+          //       ledblink(1,100);
+          //       for(int i=0; i<inverterCount; i++)
+          //       {     
+          //         if(String(Inv_Prop[i].invID) != "0000") polling(i);
+          //       } 
+          //       return; } else {
+          //          Serial.print(F("\n\npoll inverter ")); Serial.println(String(kz));
+          //          polling(kz);
+          //          Serial.println(F("\n\npolling ready"));
+          //          return; }
+          // } else
+          //   if (strncasecmp(InputBuffer_Serial+3,"THROTTLE=",9) == 0) {
+          //   //input can be 10;EDIT=0-AABB; 
+          //   char *first = InputBuffer_Serial + 12;
+          //   char *second = strchr(first, '-'); // find dash
+          //   int kz;
+          //   if (second) {
+          //       *second = '\0'; // terminate first number
+          //       kz = atoi(first);
+          //       int watt = atoi(second + 1);
+          //   Serial.println("inverter = " + String(kz));
+          //   Serial.println("watt = " + String(watt));
+          //   Serial.println("inverterCount =" + String(inverterCount));
+          //   desiredThrottle[kz] = watt;
+          //   }  
+          //     if ( kz > inverterCount-1 ) {
+          //     Serial.println("error, no such inverter");
+          //     return;  
+          //     }
+          //    actionFlag = 240 + kz; 
+          //     return;
+          // } else 
           //  Serial.println("checking the buffer ");
           //  for (int i = 0; i < 15; i++) {
           //     Serial.print(i);
@@ -147,18 +147,18 @@ void handle_Serial () {
           //     Serial.print((int)InputBuffer_Serial[i]);
           //     Serial.println(")");
           // }
-           if (strncasecmp(InputBuffer_Serial+3,"QUERY=",6) == 0) {
+          //  if (strncasecmp(InputBuffer_Serial+3,"QUERY=",6) == 0) {
 
-              int kz = atoi(InputBuffer_Serial + 9); // number starts at index 9
-              if ( kz > inverterCount ) {
-              Serial.println(F("\n\nerror, non-existing inverter"));
-              return;  
-              }
-              Serial.print("\n\nquerying inverter " + String(kz));
-              querying(kz);
-              Serial.println(F("\n\nquery ready"));
-              return; 
-          } else
+          //     int kz = atoi(InputBuffer_Serial + 9); // number starts at index 9
+          //     if ( kz > inverterCount ) {
+          //     Serial.println(F("\n\nerror, non-existing inverter"));
+          //     return;  
+          //     }
+          //     Serial.print("\n\nquerying inverter " + String(kz));
+          //     querying(kz);
+          //     Serial.println(F("\n\nquery ready"));
+          //     return; 
+          // } else
 
           // simulate a polled inverter
           if (strncasecmp(InputBuffer_Serial+3,"FORCE=",6) == 0) {

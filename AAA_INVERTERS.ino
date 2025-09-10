@@ -52,7 +52,7 @@ window.location.href='/MENU';
 <a href='/INV?welke=8' style='display:%none'8%>inv. 8</a>
 <a href='/INV?welke=99' style='color:#66ff33; display:%none'99%>add</a>
 </div>
-<center><div class='divstijl' style='height:64vh;'><center>
+<center><div class='divstijl' style='height:70vh;'><center>
 <form id='formulier' method='get' action='inverterconfig' oninput='showSubmit()' onsubmit="return confirm('sure to save this inverter?')">
     %<FORMPAGE>%
     <br>
@@ -91,6 +91,7 @@ window.location.href='/MENU';
     <option value='1' invtype_1>QS1</option></select>
     </tr>
     <tr><td class="cap" >NAME<td class="cap" ><input class='inp4' id='il' name='il' maxlength='12' value='{location}'></input>
+    <tr><td class="cap" >CALIBR<td class="cap" ><input class='inp2' id='cv' name='tc' type='number' min='-15' max='15' step='1' value='{tc}'></input>
     <tr><td class="cap" >DOM. IDX<td class="cap" ><input class='inp2' name='mqidx' value='{idx}' size='4' length='4'></td></tr>
     <tr><td class="cap" >PANELS: 
     <td style='width: 230px;'>
@@ -150,6 +151,7 @@ void handleInverterconfig(AsyncWebServerRequest *request)
    strcpy(Inv_Prop[iKeuze].invSerial, request->arg("iv").c_str());
    Inv_Prop[iKeuze].invType = request->arg("invt").toInt(); //values are 0 1 2  
    Inv_Prop[iKeuze].invIdx = request->arg("mqidx").toInt(); //values are 0 1  
+   Inv_Prop[iKeuze].calib = request->arg("tc").toInt(); //values are 0 1
 // the selectboxes
    char tempChar[1] = "";
    if(request->hasParam("pan1")) { Inv_Prop[iKeuze].conPanels[0] = true;} else { Inv_Prop[iKeuze].conPanels[0] = false;}  // mqselect
@@ -209,14 +211,14 @@ void handleInverterdel(AsyncWebServerRequest *request)
     printInverters(); 
     
     consoleOut("inverterCount after removal = " + String(inverterCount));
-
+    procesId = 2;
     confirm();
     request->send(200, "text/html", toSend);
 }
 
 void printInverters() { 
       if(diagNose == 0 ) return;     
-      consoleOut(F(" ****** excisting inverter files ******"));
+      consoleOut(F(" ****** existing inverter files ******\n"));
       for (int x=0; x < inverterCount+1; x++) 
       {
       String bestand = "/Inv_Prop" + String(x) + ".str";
@@ -378,6 +380,7 @@ void inverterForm() {
         toSend.replace("000000", String(Inv_Prop[iKeuze].invSerial)); // handled by the script
         toSend.replace("{location}", String(Inv_Prop[iKeuze].invLocation));
         toSend.replace("{idx}", String(Inv_Prop[iKeuze].invIdx));
+        toSend.replace("{tc}", String(Inv_Prop[iKeuze].calib));
         // the selectboxes
         if (Inv_Prop[iKeuze].conPanels[0]) { toSend.replace("#1check", "checked");}
         if (Inv_Prop[iKeuze].conPanels[1]) { toSend.replace("#2check", "checked");}
@@ -411,6 +414,7 @@ void inverterForm() {
         toSend.replace("000000", "");
         toSend.replace("{location}", "");
         toSend.replace("{idx}", "0");
+        toSend.replace("{tc}", "0");
         }
 
     } else { // so if inverterCount == 0 we present this page
@@ -421,19 +425,26 @@ void inverterForm() {
 
 void structCopy(int a, int b) {
 
-//  char invLocation[13] = "N/A";
-//  char invSerial[13]   = "000000000000";
-//  char invID[5]        = "0000";
-//  int  invType         = 0;
-//  int  invIdx          = 0;
-//  bool conPanels[4]    = {true,true,true,true}; 
-
+/*typedef struct{
+  char invLocation[13] = "N/A";
+  char invSerial[13]   = "000000000000";
+  char invID[5]        = "0000";
+  int  invType         = 0;
+  int  invIdx          = 0;
+  bool conPanels[4]    = {true,true,true,true};
+  int  maxPower        = 500;
+  int  calib           = 0 ;
+  bool throttled       = false;
+*/
    //copy all the values of struct 1 to struct 2  
    strcpy(Inv_Prop[a].invLocation, Inv_Prop[b].invLocation);
    strcpy(Inv_Prop[a].invSerial,   Inv_Prop[b].invSerial);
    strcpy(Inv_Prop[a].invID,   Inv_Prop[b].invID);
    Inv_Prop[a].invType      = Inv_Prop[b].invType;
    Inv_Prop[a].invIdx       = Inv_Prop[b].invIdx;
+   //Inv_Prop[a].maxPower     = Inv_Prop[b].maxPower;
+   Inv_Prop[a].calib        = Inv_Prop[b].calib;
+  // Inv_Prop[a].throttled    = Inv_Prop[b].throttled;
    Inv_Prop[a].conPanels[0] = Inv_Prop[b].conPanels[0];
    Inv_Prop[a].conPanels[1] = Inv_Prop[b].conPanels[1];
    Inv_Prop[a].conPanels[2] = Inv_Prop[b].conPanels[2];

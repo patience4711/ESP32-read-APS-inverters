@@ -30,6 +30,7 @@ void delayedReset() {
 
 void flashErase(AsyncWebServerRequest *request) {
 // call this from the portal to erase the wifi and the flash
+     procesId = 2;
      confirm();
      request->send(200, "text/html", toSend);
      resetTicker.once(3.0, delayedReset); // 1-second delay
@@ -53,7 +54,7 @@ int readInverterfiles() {
   {
   String bestand = "/Inv_Prop" + String(x) + ".str";  
   //consoleOut("reading file " + bestand);
-      if (!leesStruct(bestand)) 
+      if (!readStruct(bestand)) 
       { 
         // if the file not exists we break
         consoleOut("no file " + bestand); 
@@ -65,6 +66,9 @@ int readInverterfiles() {
 
     void test_actionFlag() {
     if(actionFlag == 0) return;
+    
+    consoleOut("testing actionFlag = " + String(actionFlag));
+    
     //if(actionFlag != 0) Serial.println("test_actionFlag 1 val = " + String(actionFlag));  
     // ******************  reset the nework data and reboot in AP *************************
     if (actionFlag == 11 || value == 11) 
@@ -130,9 +134,13 @@ int readInverterfiles() {
       actionFlag = 0; //reset the actionflag
       getTijd(); // recalculate time after change of settings
     }
-    //Serial.println("test_actionFlag 7 val = " + String(actionFlag));
+
+   // *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *
+   //                               T H R O T T L I N G                  
+   // *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *
     if (actionFlag > 239 && actionFlag < 249) {
       int whichInv = actionFlag - 240; // with 248 this would be 8  0 1 2 3 4 5 6 7 8 is in range
+      if(diagNose == 10) diagNose = 3;
       consoleOut("inside actionFlag: inverter is " + String(whichInv));
       actionFlag = 0; //reset the actionflag
       int errorCode = setMaxPower(whichInv);
@@ -146,12 +154,19 @@ int readInverterfiles() {
            { 
              String key = "maxPwr" + String(whichInv);
              preferences.putInt(key.c_str(), -1 );
-           }//Inv_Prop[whichInv].throttled = false;
+           }
         String term= "throttle inv " + String(whichInv) + " failed";
         consoleOut("throttle failed inv " + String(whichInv));
         Update_Log(2, term.c_str());
       }
+     // if we throttled via an api and had debug set we do this
+     if (diagNose == 3) diagNose = 0;  
+    
     eventSend(0);
+    procesId = 1; // for the confirm
+    #ifdef TEST
+       testCounter += 1;
+    #endif
     //String bestand = "/Inv_Prop" + String(whichInv) + ".str"; // /Inv_Prop0.str
     //consoleOut("going to write " + bestand );
     //writeStruct(bestand, whichInv); // alles opslaan in SPIFFS
@@ -165,35 +180,52 @@ int readInverterfiles() {
         actionFlag = 0; //reset the actionflag
         healthCheck(); 
     }
-    if (actionFlag == 45) { //triggered by the webconsole
+    if (actionFlag == 45) { //triggered by the api (external)
         actionFlag = 0; //reset the actionflag
         //Serial.println("someone made actionFlag 45 !!"); the uin8_t doesn't allow 301
-        testMessage(true); // the bool decides where to find the input
+        testMessage(); // the bool decides where to find the input
+        if(diagNose == 3) diagNose = 1;
     }
-        if (actionFlag == 55) { //triggered by the webconsole
-        actionFlag = 0; //reset the actionflag
-        //Serial.println("someone made actionFlag 45 !!"); the uin8_t doesn't allow 301
-        rawMessage(true); // the bool decides where to find the input
-    }
+    //     if (actionFlag == 55) { //triggered by the webconsole
+    //     actionFlag = 0; //reset the actionflag
+    //     //Serial.println("someone made actionFlag 45 !!"); the uin8_t doesn't allow 301
+    //     rawMessage(true); // the bool decides where to find the input
+    // }
     if (actionFlag == 46) { //triggered by the webpage zbtest
         actionFlag = 0; //reset the actionflag
         showDir(); 
     }
     
-    // polling a single inverter
-    if (actionFlag == 47) { //triggered by the webpage zbtest and mqtt
-        actionFlag = 0; //reset the actionflag
-        polling(iKeuze);
-        //events.send( "getall", "message");
-        eventSend(2); 
+   // *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *
+   //                               P O L L I N G                  
+   // *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *
+    if (actionFlag > 219 && actionFlag < 229) {
+      int whichInv = actionFlag - 220; // with 248 this would be 8  0 1 2 3 4 5 6 7 8 is in range
+      consoleOut("inside actionFlag: inverter is " + String(whichInv));
+      actionFlag = 0; //reset the actionflag
+      polling(whichInv);
+      // if we polled via an api and had debug set we do this
+      if (diagNose == 3) diagNose = 0;  
+      eventSend(2);
     }
+    
+    if (actionFlag > 209 && actionFlag < 219) {
+            int whichInv = actionFlag - 210;
+            actionFlag = 0;
+            if(diagNose == 10) diagNose = 3;
+            consoleOut("inside actionFlag: inverter is " + String(whichInv));
+            querying(whichInv);
+        //events.send( "getall", "message");
+             if (diagNose == 3) diagNose = 0;
+    }
+
     // query a single inverter
-    if (actionFlag == 57) { //triggered by the webpage zbtest and mqtt
-        actionFlag = 0; //reset the actionflag
-        querying(iKeuze);
-        //events.send( "getall", "message");
-        //eventSend(2); 
-    }
+    // if (actionFlag == 57) { //triggered by QUERY?inv=0
+    //     actionFlag = 0; //reset the actionflag
+    //     querying(iKeuze);
+    //     //events.send( "getall", "message");
+    //     if (diagNose == 3) diagNose = 0;
+    // }
     //polling all inverters
     if (actionFlag == 48) { //triggered by the webpage zbtest and mqtt
         actionFlag = 0; //reset the actionflag
@@ -205,8 +237,9 @@ int readInverterfiles() {
         actionFlag = 0; //reset the actionflag
         ledblink(1,100);
         // always first drop the existing connection
+        if(diagNose == 10) diagNose = 3;
         MQTT_Client.disconnect();
-        ws.textAll("dropped connection");
+        consoleOut("mqtt forced drop connection");
         delay(100);
         char Mqtt_send[26] = {0};
        
@@ -221,9 +254,9 @@ int readInverterfiles() {
         if(Mqtt_Format == 5) toMQTT = "field1=12.3&field4=44.4&status=MQTTPUBLISH";
         
         if( MQTT_Client.publish (Mqtt_outTopic, toMQTT.c_str() ) ) {
-            ws.textAll("sent mqtt message : " + toMQTT);
+            consoleOut("sent mqtt message : " + toMQTT);
         } else {
-            ws.textAll("sending mqtt message failed : " + toMQTT);    
+            consoleOut("sending mqtt message failed : " + toMQTT);    
         }
       } 
      // the not connected message is displayed by mqttConnect()
@@ -270,14 +303,19 @@ void showDir() {
 
   // function to 
 void consoleOut(String toLog) {
- 
-  if( diagNose == 0 ) return; 
-  if (diagNose == 2 )
-  {
-      Serial.println(toLog);
-  } else {
-      delay(100); // otherwise the socket cannot keep up
-      ws.textAll(toLog);
-  }
 
+ switch (diagNose) 
+    { case 0:  
+          break;
+      case 1:       
+          delay(100); // otherwise the socket cannot keep up
+          ws.textAll(toLog);
+          break;
+      case 2: 
+          Serial.println(toLog);
+          break;
+      case 3:
+           toLog += "\n";
+          debugLog += toLog;   
+    }
 }

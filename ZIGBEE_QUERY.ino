@@ -8,11 +8,11 @@ void querying(int which) {
     //                                            2401  1414060000100F13  FBFB06DE000000000000E4FEFE
     snprintf(queryCommand, sizeof(queryCommand), "2401%s1414060001000F13%sFBFB06DE000000000000E4FEFE", Inv_Prop[which].invID, ecu_id_reverse);
     // put in the CRC at the end of the command done in sendZigbee
-    consoleOut("raw queryCommand :" + String(queryCommand));
+    consoleOut("\nraw queryCommand :" + String(queryCommand));
     #ifndef TEST
     if(zigbeeUp != 1) 
     {
-      consoleOut(F("skipping query, coordinator down!")); //
+      consoleOut(F("\nskipping query, coordinator down!")); //
       return;
     }
     #endif
@@ -96,7 +96,7 @@ int decodeQueryAnswer(int welke, bool throTTle)
     
     // we must handle the DS3 and YC600 differently 
     
-    float calibrateFactor =  1.0 + Inv_Prop[welke].calib / 100.0; //eg 1.12
+    //float calibrateFactor =  1.0 + Inv_Prop[welke].calib / 100.0; //eg 1.12
     String key = "maxPwr" + String(welke);
     consoleOut("preferences key = " + key);
     // **************************************************************
@@ -118,21 +118,25 @@ int decodeQueryAnswer(int welke, bool throTTle)
             before[4] = '\0'; 
             // before is the hex value of the throttle setting
             // convert from hex string to int
-            int decimalValue = (int)strtol(before, NULL, 16) / 28.89; 
-            // we calulate the original value 
+            //int decimalValue = (int)strtol(before, NULL, 16) / 28.89; 
+            int decimalValue = (strtol(before, NULL, 16) * 100 + 2889/2) / 2889;
+            // we calculate the original value 
             //double result = decimalValue / 28.89;
-            
-            programmedVal = floor(decimalValue / calibrateFactor);
+            programmedVal = decimalValue - Inv_Prop[welke].calib;
+            //programmedVal = floor(decimalValue / calibrateFactor);
+            #ifdef TEST
+               programmedVal = 100 * testCounter - Inv_Prop[welke].calib;
+            #endif   
             consoleOut("power value in YC600 = " + String(programmedVal));
             // we always write this value in preferences
             preferences.putInt(key.c_str(), programmedVal );
-            Serial.println("preference written = " + String(preferences.getInt(key.c_str(), 0)));
+            consoleOut("preference written = " + String(preferences.getInt(key.c_str(), 0)));
             // if we are here, a valid query is done and we have the throtvalue written
             // if throttled, we determine wheter the throttle succeeded, this is only the 
             // case when desired and programmed match     
             if(throTTle) 
                 {
-                    consoleOut("the wanted throttle = " + String(desiredThrottle[welke]));
+                    consoleOut("the desired throttle = " + String(desiredThrottle[welke]));
                     if(abs(programmedVal - desiredThrottle[welke]) > 2) 
                     {
                       consoleOut("desired and programmed throttlevalue mismatch"); 
@@ -153,19 +157,25 @@ int decodeQueryAnswer(int welke, bool throTTle)
      
      char powval[5]; // 4 chars + null terminator
      memcpy(powval, payload + 10, 4); // copy "26E2"
-     int decimalValue = (int)strtol(powval, NULL, 16) / 16.59;
-     programmedVal = floor(decimalValue / calibrateFactor);
+     //int decimalValue = (int)strtol(powval, NULL, 16) / 16.59;
+    int decimalValue = (strtol(powval, NULL, 16) * 100 + 1659/2) / 1659;
+
+     programmedVal = decimalValue - Inv_Prop[welke].calib;
+      #ifdef TEST
+          programmedVal = 100 * testCounter;
+      #endif 
+     
      consoleOut("throttle value in DS3 = " + String(programmedVal)) ;
      // we always write this value in preferences
      preferences.putInt(key.c_str(), programmedVal );
-     Serial.println("preference written = " + String(preferences.getInt(key.c_str(), 0)));
+     consoleOut("preference written = " + String(preferences.getInt(key.c_str(), 0)));
      // if we are here, a valid query is done and we have the throtvalue written
      // if throttled, we determine wheter the throttle succeeded, this is only the 
      // case when desired and programmed match
      
         if(throTTle) 
         {
-            consoleOut("the wanted throttle = " + String(desiredThrottle[welke]));
+            consoleOut("the desired throttle = " + String(desiredThrottle[welke]));
             if(abs(programmedVal - desiredThrottle[welke]) > 2) {
                consoleOut("desired and programmed throttlevalue mismatch"); 
                // to indicate that there was a failure 

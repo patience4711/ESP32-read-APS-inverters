@@ -45,18 +45,18 @@ void writeStruct( String whichfile, int nummer) {
            
 }
 
-bool leesStruct(String whichfile) {
-      Serial.println("leesStruct whichfile = " + whichfile);
+bool readStruct(String whichfile) {
+      consoleOut("readStruct whichfile = " + whichfile);
       if (!SPIFFS.exists(whichfile)) {
-         Serial.print(F("Failed to open for read")); Serial.println(whichfile);
+         consoleOut("Failed to open for read" + whichfile);
          return false;           
       } 
       // the file exists so we can open it for read
       File configFile = SPIFFS.open(whichfile, "r");
       int ivn = whichfile.substring(9,10).toInt();
 
-      Serial.print(F( "leesStruct ivn = ")); Serial.println(String(ivn) );  
-      Serial.print(F("reading ")); Serial.println(whichfile);
+      consoleOut("readStruct ivn = " + String(ivn) );  
+      consoleOut("reading " + whichfile);
       configFile.read( (unsigned char *)&Inv_Prop[ivn], sizeof(Inv_Prop[ivn]) );
       configFile.close();
       return true;
@@ -65,7 +65,7 @@ bool leesStruct(String whichfile) {
 
 
 // **************************************************************************** 
-//                      de gegevens opslaan in SPIFFS                         *  
+//                      save the data in SPIFFS                         *  
 // ****************************************************************************
 void wifiConfigsave() {
    Serial.println("saving config");
@@ -149,7 +149,8 @@ void mqttConfigsave() {
 
 bool file_open_for_read(const char* bestand) 
 {
-      //DebugPrint("we are in file_open_for_read, bestand = "); //DebugPrintln(bestand); 
+      String Output = "";
+      consoleOut("we are in file_open_for_read, file = " + String(bestand)); //DebugPrintln(bestand); 
         JsonDocument doc;
         File configFile = SPIFFS.open(bestand, "r");
         if (configFile) {
@@ -161,7 +162,9 @@ bool file_open_for_read(const char* bestand)
             // Continue with fallback values
         } else {
         // no error so we can print the file
-            serializeJson(doc, Serial);  // always print
+            //serializeJson(doc, Serial);  // always print
+            serializeJson(doc, Output);  // always print
+            consoleOut(Output);
         }
     } else {
         Serial.print(F("Cannot open config file: "));
@@ -200,22 +203,37 @@ bool file_open_for_read(const char* bestand)
             }
              return true;
 } 
-
-
 void printStruct( String bestand ) {
 //input String bestand = "/Inv_Prop" + String(x) + ".str";
       //String bestand = bestand + String(i) + ".str"
       //leesStruct(bestand); is done at boottime
       int ivn = bestand.substring(9,10).toInt();
-      Serial.println("Inv_Prop[" + String(ivn) + "].invLocation = " + String(Inv_Prop[ivn].invLocation));     
-      Serial.println("Inv_Prop[" + String(ivn) + "].invSerial = " + String(Inv_Prop[ivn].invSerial));
-      Serial.println("Inv_Prop[" + String(ivn) + "].invID = " + String(Inv_Prop[ivn].invID)); 
-      Serial.println("Inv_Prop[" + String(ivn) + "].invType = " + String(Inv_Prop[ivn].invType));
-      Serial.println("Inv_Prop[" + String(ivn) + "].invIdx = " + String(Inv_Prop[ivn].invIdx));
-      Serial.println("Inv_Prop[" + String(ivn) + "].conPanels = " + String(Inv_Prop[ivn].conPanels[0])  + String(Inv_Prop[ivn].conPanels[1]) + String(Inv_Prop[ivn].conPanels[2]) + String(Inv_Prop[ivn].conPanels[3]));      
-      Serial.println("Inv_Prop[" + String(ivn) + "].throttled = " + String(Inv_Prop[ivn].throttled));
-      Serial.println("Inv_Prop[" + String(ivn) + "].maxPower = " + String(Inv_Prop[ivn].maxPower));
-      Serial.println("");
-      Serial.println("****************************************");
-      
+      consoleOut("Inv_Prop[" + String(ivn) + "].invLocation = " + String(Inv_Prop[ivn].invLocation));     
+      consoleOut("Inv_Prop[" + String(ivn) + "].invSerial = " + String(Inv_Prop[ivn].invSerial));
+      consoleOut("Inv_Prop[" + String(ivn) + "].invID = " + String(Inv_Prop[ivn].invID)); 
+      consoleOut("Inv_Prop[" + String(ivn) + "].invType = " + String(Inv_Prop[ivn].invType));
+      consoleOut("Inv_Prop[" + String(ivn) + "].invIdx = " + String(Inv_Prop[ivn].invIdx));
+      consoleOut("Inv_Prop[" + String(ivn) + "].calib = " + String(Inv_Prop[ivn].calib));
+      consoleOut("Inv_Prop[" + String(ivn) + "].conPanels = " + String(Inv_Prop[ivn].conPanels[0])  + String(Inv_Prop[ivn].conPanels[1]) + String(Inv_Prop[ivn].conPanels[2]) + String(Inv_Prop[ivn].conPanels[3]));      
+      //Serial.println("Inv_Prop[" + String(ivn) + "].throttled = " + String(Inv_Prop[ivn].throttled));
+      //Serial.println("Inv_Prop[" + String(ivn) + "].maxPower = " + String(Inv_Prop[ivn].maxPower));
+      consoleOut("");
+      consoleOut("****************************************");
 }
+
+// void printStruct( String bestand ) {
+// //input String bestand = "/Inv_Prop" + String(x) + ".str";
+//       //String bestand = bestand + String(i) + ".str"
+//       //leesStruct(bestand); is done at boottime
+//       int ivn = bestand.substring(9,10).toInt();
+//       Serial.println("Inv_Prop[" + String(ivn) + "].invLocation = " + String(Inv_Prop[ivn].invLocation));     
+//       Serial.println("Inv_Prop[" + String(ivn) + "].invSerial = " + String(Inv_Prop[ivn].invSerial));
+//       Serial.println("Inv_Prop[" + String(ivn) + "].invID = " + String(Inv_Prop[ivn].invID)); 
+//       Serial.println("Inv_Prop[" + String(ivn) + "].invType = " + String(Inv_Prop[ivn].invType));
+//       Serial.println("Inv_Prop[" + String(ivn) + "].invIdx = " + String(Inv_Prop[ivn].invIdx));
+//       Serial.println("Inv_Prop[" + String(ivn) + "].conPanels = " + String(Inv_Prop[ivn].conPanels[0])  + String(Inv_Prop[ivn].conPanels[1]) + String(Inv_Prop[ivn].conPanels[2]) + String(Inv_Prop[ivn].conPanels[3]));      
+//       //Serial.println("Inv_Prop[" + String(ivn) + "].throttled = " + String(Inv_Prop[ivn].throttled));
+//       //Serial.println("Inv_Prop[" + String(ivn) + "].maxPower = " + String(Inv_Prop[ivn].maxPower));
+//       Serial.println("");
+//       Serial.println("****************************************");
+// }

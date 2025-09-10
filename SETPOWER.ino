@@ -14,45 +14,41 @@ ECU_REVERSE().toCharArray(ecu_id_reverse, 13);
 
 // calculate a checkval to determine whether the throttle succeeds
 // can be used for both inverters
-calibratedVal = static_cast<int>(
-   ceil(desiredThrottle[which] * (1.0 + Inv_Prop[which].calib / 100.0)) 
-);
-//consoleOut ("checkVal = " + String(checkVal)); 
+// calibratedVal = static_cast<int>(
+//    ceil(desiredThrottle[which] * (1.0 + Inv_Prop[which].calib / 100.0)) 
+// );
+calibratedVal = desiredThrottle[which] + Inv_Prop[which].calib;
+consoleOut ("user input calibrated = " + String(calibratedVal)); 
 
 if(Inv_Prop[which].invType == 2)  // DS3
 {
       consoleOut("sending the throttle command for DS3");
-       //Scaled = static_cast<int>(
-       //   ceil((Inv_Prop[which].maxPower * (1.0 + Inv_Prop[which].calib / 100.0)) * 16.59)
-       //);
       // first we convert the scaled maxPower value to hex, ( msb and lsb )
       // and calculate the validation byte
-      Scaled = calibratedVal * 16.59;
+      Scaled = (calibratedVal * 1659 + 50) / 100; // this rounds up instead of down
+      //Scaled = calibratedVal * 16.59;
       uint8_t msb = (Scaled >> 8) & 0xFF; // 0x02
       uint8_t lsb = Scaled & 0xFF;        // 0x58
       // Compute validation byte
       uint8_t s = (msb + lsb) & 0xFF;
       uint8_t vv = (s - 0x29) & 0xFF;
-      Serial.println("for maxpower = " + String(desiredThrottle[which]) + " * 16.59, the values are ");
-      Serial.printf("MSB: %02X, LSB: %02X, VV: %02X\n", msb, lsb, vv);
+      //Serial.println("for maxpower = " + String(desiredThrottle[which]) + " * 16.59, the values are ");
+      //Serial.printf("MSB: %02X, LSB: %02X, VV: %02X\n", msb, lsb, vv);
       snprintf(powCommand, sizeof(powCommand), "2401%s1414060001000F13%sFBFB06AA270000%02X%02X01%02XFEFE", Inv_Prop[which].invID, ecu_id_reverse, msb, lsb, vv);
       consoleOut("The raw powCommand for DS3 = " + String(powCommand));
        
   }  else
   {
      consoleOut("sending the throttle command for YC600 / QS1");
-     
- //     Scaled = static_cast<int>(
- //         ceil((Inv_Prop[which].maxPower * (1.0 + Inv_Prop[which].calib / 100.0)) * 16.59)
- //      );
-     Scaled = calibratedVal * 28.89;  // 
+     Scaled = (calibratedVal * 2889 + 50) / 100; // this rounds up instead of down
+     //Scaled = calibratedVal * 28.89;  // 
      char hexStr[5]; // Enough for "FFFFFFFF" + null terminator
      // Convert Scaled to hexadecimal string
      // %04X ensures it's always 4 hex digits, uppercase, zero-padded
-     Serial.println("Scaled = " + String(Scaled));
+     //Serial.println("Scaled = " + String(Scaled));
      snprintf(hexStr, sizeof(hexStr), "%04X", Scaled);
      //cout << "hexStr = " << hexStr << "\n<br>"<< endl;
-      Serial.println("hexStr = " + String(hexStr));
+      //Serial.println("hexStr = " + String(hexStr));
      //construct command
      powCommand[0]='\0'; // make sure its empty
      snprintf(powCommand, sizeof(powCommand), "2401%s1414060001000F13%sFBFB061C8C02%s00", Inv_Prop[which].invID, ecu_id_reverse, hexStr);

@@ -157,8 +157,8 @@ request->send(200, "text/html", toSend); //send the html code to the client
 
 //  server.onNotFound(handlePortalNotFound);
   server.onNotFound([](AsyncWebServerRequest *request) {
-  String message="file not found";
-  AsyncWebServerResponse *response = request->beginResponse(404,"text/plain",message);
+  String message="<html><body><h3>file not found</h3></body></html>";
+  AsyncWebServerResponse *response = request->beginResponse(200,"text/html",message);
   response->addHeader("Cache-Control", "no-cache, no-store, must-revalidate");
   response->addHeader("Pragma", "no-cache");
   response->addHeader("Expires", "-1");

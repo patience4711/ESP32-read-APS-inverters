@@ -48,7 +48,7 @@ request->send_P(200, "text/html", DETAILSPAGE);
 //***********************************************************************
 server.on("/get.Data", HTTP_GET, [](AsyncWebServerRequest *request) {
   strcpy( requestUrl, request->url().c_str() );
-  Serial.println("get.Data url = " + String(requestUrl));
+  //consoleOut("get.Data url = " + String(requestUrl));
   handleDataRequests(request);
 });
 
@@ -95,17 +95,6 @@ confirm(); // puts a response in toSend
 request->send(200, "text/html", toSend);
 });
 
-// server.on("/IPCONFIG", HTTP_GET, [](AsyncWebServerRequest *request) {
-//   if(checkRemote( request->client()->remoteIP().toString()) ) request->redirect( "/DENIED" );
-//   loginBoth(request, "admin");
-//   zendPageIPconfig();
-//   request->send(200, "text/html", toSend);
-// });
-
-// server.on("/IPconfig", HTTP_GET, [](AsyncWebServerRequest *request) {
-//   handleIPconfig(request);
-// });
-
 server.on("/MQTT", HTTP_GET, [](AsyncWebServerRequest *request) {
   if(checkRemote( request->client()->remoteIP().toString()) ) request->redirect( "/DENIED" );
   loginBoth(request, "admin");
@@ -124,20 +113,13 @@ server.on("/GEOCONFIG", HTTP_GET, [](AsyncWebServerRequest *request) {
   //request->send(200, "text/html", toSend);
 });
 
-// server.on("/POWERCONFIG", HTTP_GET, [](AsyncWebServerRequest *request) {
-//   if(checkRemote( request->client()->remoteIP().toString()) ) request->redirect( "/DENIED" );
-//   loginBoth(request, "admin");
-//   //requestUrl = request->url();
-//   strcpy( requestUrl, request->url().c_str() );
-//   zendPagePowerconfig(request);
-//   //request->send(200, "text/html", toSend);
-// });
-
 server.on("/REBOOT", HTTP_GET, [](AsyncWebServerRequest *request) {
   loginBoth(request, "admin");
   actionFlag = 10;
-  confirm(); 
   strcpy( requestUrl, "/");
+  procesId = 3;
+  confirm(); 
+  //strcpy( requestUrl, "/");
   request->send(200, "text/html", toSend);
 });
 
@@ -169,20 +151,20 @@ server.on("/LOGPAGE", HTTP_GET, [](AsyncWebServerRequest *request) {
   request->send_P(200, "text/html", LOGPAGE, putList);
 });
 
-server.on("/MQTT_TEST", HTTP_GET, [](AsyncWebServerRequest *request) {
-loginBoth(request, "admin");
-char Mqtt_send[26] = {0};
-strcpy( Mqtt_send , Mqtt_outTopic);
-if(Mqtt_send[strlen(Mqtt_send -1)] == '/') {
-  strcat(Mqtt_send, String(Inv_Prop[0].invIdx).c_str());
-}
+// server.on("/MQTT_TEST", HTTP_GET, [](AsyncWebServerRequest *request) {
+// loginBoth(request, "admin");
+// char Mqtt_send[26] = {0};
+// strcpy( Mqtt_send , Mqtt_outTopic);
+// if(Mqtt_send[strlen(Mqtt_send -1)] == '/') {
+//   strcat(Mqtt_send, String(Inv_Prop[0].invIdx).c_str());
+// }
 
-String toMQTT = "{\"test\":\"" + String(Mqtt_send) + "\"}";
-//DebugPrintln("MQTT_Client.publish the message : " + toMQTT);
-MQTT_Client.publish ( Mqtt_send, toMQTT.c_str(), true );
-toSend = "sent mqtt message : " + toMQTT;
-request->send( 200, "text/plain", toSend  );
-});
+// String toMQTT = "{\"test\":\"" + String(Mqtt_send) + "\"}";
+// //DebugPrintln("MQTT_Client.publish the message : " + toMQTT);
+// MQTT_Client.publish ( Mqtt_send, toMQTT.c_str(), true );
+// toSend = "sent mqtt message : " + toMQTT;
+// request->send( 200, "text/plain", toSend  );
+// });
   
 // ********************************************************************
 //                    inverters
@@ -195,6 +177,7 @@ server.on("/INVSCRIPT", HTTP_GET, [](AsyncWebServerRequest *request) {
 server.on("/INV_CONFIG", HTTP_GET, [](AsyncWebServerRequest *request) {
   if(checkRemote( request->client()->remoteIP().toString()) ) request->redirect( "/DENIED" );  
   iKeuze=0;
+  
   strcpy( requestUrl, request->url().c_str() ); 
   inverterForm(); // prepare the page part with the form
   request->send_P(200, "text/html", INVCONFIG_START, processor);
@@ -219,11 +202,15 @@ server.on("/INV_DEL", HTTP_GET, [](AsyncWebServerRequest *request) {
 });
 
 server.on("/INV", HTTP_GET, [](AsyncWebServerRequest *request) {
-    strcpy( requestUrl, request->url().c_str() );
+    //strcpy( requestUrl, request->url().c_str() );
     //bool nothing = false;
     int i = atoi(request->arg("welke").c_str()) ;
     iKeuze = i;
-    consoleOut("?INV iKeuze at enter = " + String(iKeuze));
+    String toReturn = "/INV?welke=" + String(iKeuze);
+    strcpy(requestUrl, toReturn.c_str() ); 
+    consoleOut("requestUrl = " + String(requestUrl));
+       
+    consoleOut("INV iKeuze at enter = " + String(iKeuze));
     if( iKeuze == 99 ) {
         iKeuze = inverterCount; //indicate this is an adition
         inverterCount += 88;
@@ -318,12 +305,32 @@ server.onNotFound([](AsyncWebServerRequest *request){
 server.begin(); 
 }
 
+//void confirm() {
+//toSend="<html><body onload=\"setTimeout(function(){window.location.href='";
+//toSend+=String(requestUrl);
+//int waitTime = 3000*procesId;
+//toSend += "';}, " + String(waitTime) + " );\"><br><br><center><h3>processing<br>your request,<br>please wait</html>";
+//}
 void confirm() {
-toSend="<html><body onload=\"setTimeout(function(){window.location.href='";
-toSend+=String(requestUrl);
-toSend+="';}, 3000 );\"><br><br><center><h3>processing<br>your request,<br>please wait</html>";
-//Serial.println(toSend);
+toSend  = "<html><head><script>";
+toSend += "let waitTime=" + String(3000*procesId) + ";";
+toSend += "function redirect(){";
+toSend += " let counter=document.getElementById('counter');";
+toSend += " let secs=waitTime/1000;";
+toSend += " counter.textContent=secs;";
+toSend += " let timer=setInterval(function(){";
+toSend += "   secs--; counter.textContent=secs;";
+toSend += "   if(secs<=0){ clearInterval(timer); window.location.href='" + String(requestUrl) + "'; }";
+toSend += " },1000);";
+toSend += "}";
+toSend += "</script></head>";
+toSend += "<body onload='redirect()'>";
+toSend += "<br><br><center><h3>processing<br>your request,<br>please wait<br><br>";
+toSend += "Redirecting in <span id='counter'></span> seconds...</h3></center>";
+toSend += "</body></html>";
 }
+
+
 
 double round2(double value) {
    return (int)(value * 100 + 0.5) / 100.0;

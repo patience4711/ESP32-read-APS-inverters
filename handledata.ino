@@ -2,10 +2,10 @@ void handleDataRequests(AsyncWebServerRequest *request)
 
   {
   //consoleOut"handleDataRequest");
-  Serial.println("handleDataRequest the request is " + String(requestUrl));
+  //Serial.println("handleDataRequest the request is " + String(requestUrl));
   if( request->hasArg("Power") )
     {
-     consoleOut("found POWER");  
+    // consoleOut("found POWER");  
      int i = atoi(request->arg("inv").c_str()) ;
      AsyncResponseStream *response = request->beginResponseStream("application/json");
      JsonDocument root;
@@ -37,7 +37,7 @@ void handleDataRequests(AsyncWebServerRequest *request)
 
       if( request->hasArg("General") )
     { 
-    consoleOut("found General");
+    //consoleOut("found arg General");
     char temp[15]={0};
     uint8_t remote = 0;
     if(checkRemote( request->client()->remoteIP().toString()) ) remote = 1; // for the menu link
@@ -58,7 +58,7 @@ void handleDataRequests(AsyncWebServerRequest *request)
 // the get.Data request, send by detailspage    
     if(request->hasArg("Inverter"))  // this is the get.Data
     { 
-    consoleOut("found Inverter");
+    //consoleOut("found arg Inverter");
     // this is used by the detailspage and for http requests      
     // set the array into a json object
     AsyncResponseStream *response = request->beginResponseStream("application/json");
@@ -66,6 +66,7 @@ void handleDataRequests(AsyncWebServerRequest *request)
     JsonObject root = doc.to<JsonObject>();
     int i;
     i = (request->arg("Inverter").toInt()) | iKeuze;
+    consoleOut("inverter = " + String(i));
     if( i < inverterCount) { // check that this is a valid value
       root["inv"] = i;
       root["name"] = Inv_Prop[i].invLocation;
@@ -79,8 +80,11 @@ void handleDataRequests(AsyncWebServerRequest *request)
       root["sq"] = round1(Inv_Data[i].sigQ);     
       root["pw_total"] = round1(Inv_Data[i].pw_total);
       root["en_total"] = round2(Inv_Data[i].en_total/(float)1000); // rounded
-      root["pwMax"] = Inv_Prop[i].maxPower;
-      if(Inv_Prop[i].throttled == true) root["throttled"] = 1; else root["throttled"] = 0;
+      String key = "maxPwr" + String(i);
+      root["pwMax"] = preferences.getInt(key.c_str(), 0);
+      
+      //root["pwMax"] = Inv_Prop[i].maxPower;
+      //if(Inv_Prop[i].throttled == true) root["throttled"] = 1; else root["throttled"] = 0;
       
       for(int z = 0; z < 4; z++ ) 
       {

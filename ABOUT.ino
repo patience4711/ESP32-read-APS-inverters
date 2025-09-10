@@ -30,7 +30,7 @@ strcpy_P(page, ABOUT);
   int dagen = urens/24;
  
   strcat(page, "<br><table><tr><TH colspan='2'> SYSTEM INFORMATION</th></tr>" );
-  strcat(page, "<tr><td>firmware version<td>ESP32-ECU-v1_3</tr>");
+  strcat(page, "<tr><td>firmware version<td>ESP32-ECU-v1_4b</tr>");
   if ( timeRetrieved ) strcat(page,"<tr><td>time retrieved<td>yes</tr>"); else strcat(page,"<tr><td>time retrieved<td>n</tr>");
   sprintf(temp, "<tr><td>systemtime<td> %d:%d " , hour(), minute());
   switch (dst) {

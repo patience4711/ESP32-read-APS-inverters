@@ -47,6 +47,7 @@ void handleForms(AsyncWebServerRequest *request)
   if(request->hasParam("pMax")) // name of the hidden input
   {    // because of the hidden input named maxPower we know we received the setPower form 
       Serial.println("found pMax");
+      procesId = 3;
       // check that the form has the right params ( should be pMax and MPW)
       int params = request->params();
       Serial.print("Number of params: ");
@@ -61,36 +62,19 @@ void handleForms(AsyncWebServerRequest *request)
        
        int Inv = request->arg("INV").toInt();
        Serial.println("the form is for inverter " + String(Inv));
-       Inv_Prop[Inv].maxPower = request->getParam("pMax")->value().toInt();
-      //{
-        //  int add; // to determin which inverter we are editing
-          // if(request->hasParam("maxP0")) {Inv_Prop[0].maxPower = request->getParam("maxP0")->value().toInt(); add=0;}
-          // if(request->hasParam("maxP1")) {Inv_Prop[1].maxPower = request->getParam("maxP1")->value().toInt(); add=1;}
-          // if(request->hasParam("maxP2")) {Inv_Prop[2].maxPower = request->getParam("maxP2")->value().toInt(); add=2;}
-          // if(request->hasParam("maxP3")) {Inv_Prop[3].maxPower = request->getParam("maxP3")->value().toInt(); add=3;}
-          // if(request->hasParam("maxP4")) {Inv_Prop[4].maxPower = request->getParam("maxP4")->value().toInt(); add=4;}
-          // if(request->hasParam("maxP5")) {Inv_Prop[5].maxPower = request->getParam("maxP5")->value().toInt(); add=5;}
-          // if(request->hasParam("maxP6")) {Inv_Prop[6].maxPower = request->getParam("maxP6")->value().toInt(); add=6;}     
-          // if(request->hasParam("maxP7")) {Inv_Prop[7].maxPower = request->getParam("maxP7")->value().toInt(); add=7;}
-          // if(request->hasParam("maxP8")) {Inv_Prop[8].maxPower = request->getParam("maxP8")->value().toInt(); add=8;}
-          //for (int i = 0; i <= 8; i++) {
-          //    String paramName = "maxP" + String(i);
-          //    Serial.println("parameter name = " + paramName);
-          //    if (request->hasParam(paramName)) {
-          //        Inv_Prop[i].maxPower = request->getParam(paramName)->value().toInt();
-          //       add = i;
-          //        break;
-          //    }
-          //}
-                
-          Serial.println("Inv_Prop[Inv].maxPower set to = " + String(Inv_Prop[Inv].maxPower)); 
-          actionFlag=240 + Inv; // save the settings and send zigbee to inverter
-          Serial.println("actionFlag set to " + String(actionFlag));
-          //Serial.println("setting the return url to /details?inv=");
-          String toReturn = "/details?inv=" + String(Inv);
-          strcpy(requestUrl, toReturn.c_str() ); 
-          Serial.println("requestUrl = " + String(requestUrl));
-          return;
+       desiredThrottle[Inv] = request->getParam("pMax")->value().toInt();
+       // write the desired throttlevalue in preferences
+       //String key = "maxPwr" + String(welke);
+       //preferences.putUInt(key.c_str(), maxPw);
+       //desiredThrottle =
+       Serial.println("throttle set to = " + String(desiredThrottle[Inv])); 
+       actionFlag=240 + Inv; // save the settings and send zigbee to inverter
+       Serial.println("actionFlag set to " + String(actionFlag));
+       //Serial.println("setting the return url to /details?inv=");
+       String toReturn = "/details?inv=" + String(Inv);
+       strcpy(requestUrl, toReturn.c_str() ); 
+       Serial.println("requestUrl = " + String(requestUrl));
+       return;
 
   }
 
