@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE nmaprun>
+<?xml-stylesheet href="file:///C:/Program Files (x86)/Nmap/nmap.xsl" type="text/xsl"?>
+<!-- Nmap 7.97 scan initiated Tue Sep 16 14:55:21 2025 as: nmap -sC -sV -p1-65535 -oA result 172.30.1.1 -->
+<nmaprun scanner="nmap" args="nmap -sC -sV -p1-65535 -oA result 172.30.1.1" start="1758027321" startstr="Tue Sep 16 14:55:21 2025" version="7.97" xmloutputversion="1.05">
+<scaninfo type="syn" protocol="tcp" numservices="65535" services="1-65535"/>
+<verbose level="0"/>
+<debugging level="0"/>
+<hosthint><status state="up" reason="arp-response" reason_ttl="0"/>
+<address addr="172.30.1.1" addrtype="ipv4"/>
+<address addr="AC:48:2D:14:0F:8B" addrtype="mac" vendor="Ralinwi Nanjing Electronic Technology"/>
+<hostnames>
+</hostnames>
+</hosthint>
+<host starttime="1758027332" endtime="1758034589"><status state="up" reason="arp-response" reason_ttl="0"/>
+<address addr="172.30.1.1" addrtype="ipv4"/>
+<address addr="AC:48:2D:14:0F:8B" addrtype="mac" vendor="Ralinwi Nanjing Electronic Technology"/>
+<hostnames>
+</hostnames>
+<ports><extraports state="filtered" count="65535">
+<extrareasons reason="no-response" count="65535" proto="tcp" ports="1-65535"/>
+</extraports>
+</ports>
+<times srtt="109000" rttvar="109000" to="545000"/>
+</host>
+<runstats><finished time="1758034589" timestr="Tue Sep 16 16:56:29 2025" summary="Nmap done at Tue Sep 16 16:56:29 2025; 1 IP address (1 host up) scanned in 7268.53 seconds" elapsed="7268.53" exit="success"/><hosts up="1" down="0" total="1"/>
+</runstats>
+</nmaprun>
