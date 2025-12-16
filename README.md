@@ -42,7 +42,7 @@ The frontpage:<br>
 - We can set a max output for inverters (throttling)
 
 ## the hardware
-It is nothing more than an esp32 device and a prepared cc2530, cc2531 zigbee module. And a powersupply.
+It is nothing more than an esp32 (simple ESP32Dev WROOM32 not a C3 C6 S2 S3 H6) device and a prepared cc2530, cc2531 zigbee module. And a powersupply.
 The zigbeemodule should be flashed with a firmware that is developped by kadsol : [CC25xx_firmware](https://github.com/Koenkk/zigbee2mqtt/files/10193677/discord-09-12-2022.zip). The firmware is also available [here](https://github.com/patience4711/read-APSystems-YC600-QS1-DS3/blob/main/cc25xx_firmware.zip). Much more info as to the development of this software can be found here https://github.com/Koenkk/zigbee2mqtt/issues/4221.
 
 For info on how to build and use it, please see the [wiki](https://github.com/patience4711/ESP32-read-APS-inverters/wiki)
