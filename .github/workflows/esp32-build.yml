@@ -37,7 +37,7 @@ jobs:
         arduino-cli compile \
           --fqbn esp32:esp32:esp32 \
           --output-dir ./build \
-          ESP32_ECU_v1_4.ino
+          ESP32-read-APS-inverters.ino
     
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
