@@ -15,12 +15,12 @@ jobs:
       uses: actions/checkout@v4
     
     - name: Set up Arduino CLI
-      uses: arduino/setup-arduino-cli@v1
+      uses: arduino/setup-arduino-cli@v2
     
     - name: Install ESP32 core
       run: |
         arduino-cli config init --overwrite
-        arduino-cli core install esp32:esp32@2.0.18
+        arduino-cli core install esp32:esp32
     
     - name: Install libraries
       run: |
@@ -30,7 +30,7 @@ jobs:
         arduino-cli lib install "PubSubClient"
         arduino-cli lib install "NTPClient"
         arduino-cli lib install "Ticker"
-        arduino-cli lib install "TimeLib"
+        arduino-cli lib install "Time"
     
     - name: Build firmware
       run: |
