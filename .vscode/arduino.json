@@ -1,0 +1,1 @@
+{\n  "board": "esp32:esp32:esp32",\n  "sketch": "ESP32_ECU_v1_4/ESP32_ECU_v1_4.ino",\n  "port": "COM3",\n  "configuration": {\n    "upload": {\n      "port": "COM3"\n    }\n  }\n}
