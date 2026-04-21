@@ -27,6 +27,7 @@ jobs:
         arduino-cli lib install "ArduinoJson"
         arduino-cli lib install "ESPAsyncWebSrv"
         arduino-cli lib install "AsyncTCP"
+        arduino-cli lib install "PSACrypto"
         arduino-cli lib install "PubSubClient"
         arduino-cli lib install "NTPClient"
         arduino-cli lib install "Ticker"
