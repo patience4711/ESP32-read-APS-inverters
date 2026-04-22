@@ -37,21 +37,19 @@ jobs:
         
     - name: Debug - List workspace contents
       run: |
-        echo "=== Root directory ==="
-        ls -la
         echo "=== Current directory ==="
         pwd
         echo "=== Subdirectories ==="
-        find . -maxdepth 2 -type f -name "*.h" -o -name "*.ino" -name "*.c*"        
+        find . -maxdepth 2 -type f -regex '.*\.\(h\|ino\|c.*\)'
     
     - name: Build firmware
       run: |
         arduino-cli compile \
           --fqbn esp32:esp32:esp32 \
           --output-dir ./build \
-          --library ./sunMoon \
-          --libraries "$(pwd)" \
+          --library ./ \
           ESP32-read-APS-inverters.ino
+        arduino-cli lib list
     
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
