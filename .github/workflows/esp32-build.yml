@@ -34,6 +34,15 @@ jobs:
         arduino-cli lib install "NTPClient"
         arduino-cli lib install "Ticker"
         arduino-cli lib install "Time"
+        
+    - name: Debug - List workspace contents
+      run: |
+        echo "=== Root directory ==="
+        ls -la
+        echo "=== Current directory ==="
+        pwd
+        echo "=== Subdirectories ==="
+        find . -maxdepth 2 -type f -name "*.h" -o -name "*.ino"        
     
     - name: Build firmware
       run: |
@@ -51,11 +60,3 @@ jobs:
         retention-days: 30
         compression-level: 6
 
-    - name: Debug - List workspace contents
-      run: |
-        echo "=== Root directory ==="
-        ls -la
-        echo "=== Current directory ==="
-        pwd
-        echo "=== Subdirectories ==="
-        find . -maxdepth 2 -type f -name "*.h" -o -name "*.ino"        
