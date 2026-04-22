@@ -41,6 +41,9 @@ jobs:
         pwd
         echo "=== Subdirectories ==="
         find . -maxdepth 2 -type f -regex '.*\.\(h\|ino\|c.*\)'
+        echo "=== Subdirectory Time ==="
+        ls /home/runner/Arduino/libraries/Time
+        cat /home/runner/Arduino/libraries/Time/Time.h
     
     - name: Build firmware
       run: |
