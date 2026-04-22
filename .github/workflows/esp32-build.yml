@@ -49,8 +49,8 @@ jobs:
         arduino-cli compile \
           --fqbn esp32:esp32:esp32 \
           --output-dir ./build \
-          --libraries ./sunMoon \
-          --libraries "$(pwd)/sunMoon" \
+          --library ./sunMoon \
+          --libraries "$(pwd)" \
           ESP32-read-APS-inverters.ino
     
     - name: Upload artifacts
