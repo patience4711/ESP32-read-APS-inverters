@@ -47,7 +47,8 @@ jobs:
         arduino-cli compile \
           --fqbn esp32:esp32:esp32 \
           --output-dir ./build \
-          --library ./ \
+          --libraries ~/Arduino/libraries \
+          --libraries "$(pwd)" \
           ESP32-read-APS-inverters.ino
         arduino-cli lib list
     
