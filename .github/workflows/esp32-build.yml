@@ -42,7 +42,7 @@ jobs:
         echo "=== Current directory ==="
         pwd
         echo "=== Subdirectories ==="
-        find . -maxdepth 2 -type f -name "*.h" -o -name "*.ino"        
+        find . -maxdepth 2 -type f -name "*.h" -o -name "*.ino" -name "*.c*"        
     
     - name: Build firmware
       run: |
@@ -50,6 +50,7 @@ jobs:
           --fqbn esp32:esp32:esp32 \
           --output-dir ./build \
           --libraries ./sunMoon \
+          --libraries "$(pwd)/sunMoon" \
           ESP32-read-APS-inverters.ino
     
     - name: Upload artifacts
