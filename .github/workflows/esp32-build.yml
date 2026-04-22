@@ -43,14 +43,17 @@ jobs:
         find . -maxdepth 2 -type f -regex '.*\.\(h\|ino\|c.*\)'
         echo "=== Subdirectory Time ==="
         ls /home/runner/Arduino/libraries/Time
-        cat /home/runner/Arduino/libraries/Time/Time.h
+        echo "Bad Hack: Windows is Case insensitive with filenames "
+        echo "therfore Time.h was satisfied with existing time.h "
+        echo "but on Linux this does matter. Thats the reason this Library was renamed TimeLib "
+        echo "Lets correct this issue before compiling. "
+        sed -i 's/<Time\.h>/<TimeLib\.h>/' ./sunMoon/sunMoon.h
     
     - name: Build firmware
       run: |
         arduino-cli compile \
           --fqbn esp32:esp32:esp32 \
           --output-dir ./build \
-          --libraries ~/Arduino/libraries \
           --libraries "$(pwd)" \
           ESP32-read-APS-inverters.ino
         arduino-cli lib list
